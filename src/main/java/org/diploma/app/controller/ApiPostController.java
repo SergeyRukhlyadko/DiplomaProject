@@ -50,7 +50,7 @@ class ApiPostController  {
 
             PostDto postDto = new PostDto(
                 post.getId(),
-                post.getTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+                post.getTime().atZone(ZoneId.systemDefault()).toEpochSecond(),
                 new UserDto(user.getId(), user.getName()),
                 post.getTitle(),
                 post.getText(),

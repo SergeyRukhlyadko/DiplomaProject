@@ -26,6 +26,7 @@ import javax.persistence.EntityNotFoundException;
 import java.security.Principal;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -92,5 +93,10 @@ class ApiPostController  {
             "  \"count\":0,\n" +
             "  \"posts\":[]\n" +
             "}");
+    }
+
+    @PostMapping("/like")
+    DefaultBody like(Principal principal, @RequestBody HashMap<String, Integer> requestBody) {
+        return new DefaultBody(postService.like(principal.getName(), requestBody.get("post_id")));
     }
 }

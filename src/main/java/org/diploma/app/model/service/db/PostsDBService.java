@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -20,6 +21,12 @@ public class PostsDBService {
 
     @Autowired
     PostsRepository postsRepository;
+
+    public Posts find(int id) {
+        return postsRepository.findById(id).orElseThrow(
+            () -> new EntityNotFoundException("Post with id " + id + " not found")
+        );
+    }
 
     public Page<Posts> findActiveAndAcceptedAndBeforeNow(int offset, int limit, Sort sort) {
         return postsRepository.findByIsActiveAndModerationStatusAndTimeBefore(

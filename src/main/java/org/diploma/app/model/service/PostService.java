@@ -2,10 +2,12 @@ package org.diploma.app.model.service;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
+import org.diploma.app.model.db.entity.PostVotes;
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.Tags;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
+import org.diploma.app.model.service.db.PostVotesDBService;
 import org.diploma.app.model.service.db.PostsDBService;
 import org.diploma.app.model.service.db.Tag2postDBService;
 import org.diploma.app.model.service.db.TagsDBService;
@@ -16,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -39,6 +42,9 @@ public class PostService {
 
     @Autowired
     Tag2postDBService tag2postDBService;
+
+    @Autowired
+    PostVotesDBService postVotesDBService;
 
     public Map<String, String> create(String email, boolean isActive, Date timestamp, String title, String text, List<String> tags) {
         Map<String, String> errors = new HashMap<>();
@@ -103,5 +109,34 @@ public class PostService {
             case BEST:
         }
         return null;
+    }
+
+    public boolean like(String email, int postId) {
+        try {
+            Users user = usersDBService.find(email);
+            Posts post = postsDBService.find(postId);
+            List<PostVotes> postVotes = post.getPostVotes();
+            PostVotes existVote = null;
+            for(PostVotes postVote : postVotes) {
+                if (postVote.getUserId().getId() == user.getId()) {
+                    existVote = postVote;
+                    break;
+                }
+            }
+
+            if (existVote == null) {
+                postVotesDBService.saveLike(user, post);
+            } else if (existVote.getValue() == 1) {
+                return false;
+            } else if (existVote.getValue() == -1) {
+                existVote.setTime(LocalDateTime.now());
+                existVote.setValue((byte) 1);
+                postVotesDBService.save(existVote);
+            }
+        } catch(EntityNotFoundException e) {
+            return false;
+        }
+
+        return true;
     }
 }

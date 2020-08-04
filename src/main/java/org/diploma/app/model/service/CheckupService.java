@@ -39,7 +39,7 @@ public class CheckupService {
 
     public void email(String email) {
         if (emailService.check(email)) {
-            if (usersDBService.exist(email))
+            if (usersDBService.exists(email))
                 errors.put("email", "Этот e-mail уже зарегистрирован");
         } else  {
             errors.put("email", "Неверный формат e-mail");

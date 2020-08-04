@@ -29,11 +29,11 @@ public class UsersDBService {
         );
     }
 
-    public boolean exist(int id) {
+    public boolean exists(int id) {
         return usersRepository.existsById(id);
     }
 
-    public boolean exist(String email) {
+    public boolean exists(String email) {
         return usersRepository.existsUsersByEmail(email);
     }
 

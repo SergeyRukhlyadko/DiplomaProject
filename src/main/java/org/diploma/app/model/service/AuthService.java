@@ -100,7 +100,7 @@ public class AuthService {
     }
 
     public boolean restorePassword(String email) {
-        if (emailService.check(email) && usersDBService.exist(email)) {
+        if (emailService.check(email) && usersDBService.exists(email)) {
             String code = UUID.randomUUID().toString();
             try {
                 usersDBService.updateCodeByEmail(email, code);

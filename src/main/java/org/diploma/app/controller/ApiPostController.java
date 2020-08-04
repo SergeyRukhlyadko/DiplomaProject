@@ -111,4 +111,10 @@ class ApiPostController  {
     DefaultBody like(Principal principal, @RequestBody HashMap<String, Integer> requestBody) {
         return new DefaultBody(postService.like(principal.getName(), requestBody.get("post_id")));
     }
+
+    @PostMapping("/dislike")
+    DefaultBody dislike(Principal principal, @RequestBody HashMap<String, Integer> requestBody) {
+        return new DefaultBody(postService.dislike(principal.getName(), requestBody.get("post_id")));
+    }
+
 }

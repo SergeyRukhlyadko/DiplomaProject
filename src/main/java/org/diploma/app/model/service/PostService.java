@@ -112,6 +112,14 @@ public class PostService {
     }
 
     public boolean like(String email, int postId) {
+        return addPostVote(email, postId, (byte) 1);
+    }
+
+    public boolean dislike(String email, int postId) {
+        return addPostVote(email, postId, (byte) -1);
+    }
+
+    private boolean addPostVote(String email, int postId, byte value) {
         try {
             Users user = usersDBService.find(email);
             Posts post = postsDBService.find(postId);
@@ -126,11 +134,11 @@ public class PostService {
 
             if (existVote == null) {
                 postVotesDBService.saveLike(user, post);
-            } else if (existVote.getValue() == 1) {
+            } else if (existVote.getValue() == value) {
                 return false;
-            } else if (existVote.getValue() == -1) {
+            } else if (existVote.getValue() == -value) {
                 existVote.setTime(LocalDateTime.now());
-                existVote.setValue((byte) 1);
+                existVote.setValue(value);
                 postVotesDBService.save(existVote);
             }
         } catch(EntityNotFoundException e) {

@@ -8,6 +8,7 @@ import org.diploma.app.controller.response.ErrorBody;
 import org.diploma.app.controller.response.ResponsePostBody;
 import org.diploma.app.controller.response.dto.PostDto;
 import org.diploma.app.controller.response.dto.UserDto;
+import org.diploma.app.model.db.entity.PostVotes;
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.service.PostService;
@@ -49,14 +50,25 @@ class ApiPostController  {
             Posts post = iterator.next();
             Users user = post.getUserId();
 
+            int likeCount = 0;
+            int dislikeCount = 0;
+            List<PostVotes> postVotes = post.getPostVotes();
+            for(PostVotes postVote : postVotes) {
+                if (postVote.getValue() == 1) {
+                    likeCount++;
+                } else {
+                    dislikeCount++;
+                }
+            }
+
             PostDto postDto = new PostDto(
                 post.getId(),
                 post.getTime().atZone(ZoneId.systemDefault()).toEpochSecond(),
                 new UserDto(user.getId(), user.getName()),
                 post.getTitle(),
                 post.getText(),
-                0,
-                0,
+                likeCount,
+                dislikeCount,
                 post.getPostComments().size(),
                 post.getViewCount()
             );

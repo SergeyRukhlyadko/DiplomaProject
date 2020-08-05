@@ -9,6 +9,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addFormatters(FormatterRegistry registry) {
-        registry.addConverter(new RequestEnumConverter());
+        registry.addConverter(new SortModeConverter());
+        registry.addConverter(new ModerationStatusConverter());
     }
 }

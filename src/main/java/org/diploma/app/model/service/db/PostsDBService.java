@@ -34,15 +34,15 @@ public class PostsDBService {
         );
     }
 
-    public Page<Posts> findActiveAndAccepted(int page, int size) {
-        return postsRepository.findByIsActiveAndModerationStatus(
-            PageRequest.of(page, size), true, ModerationStatus.ACCEPTED
+    public Page<Posts> findActiveAndAcceptedAndModeratorId(Users user, int page, int size) {
+        return postsRepository.findByIsActiveAndModerationStatusAndModeratorId(
+            PageRequest.of(page, size), true, ModerationStatus.ACCEPTED, user
         );
     }
 
-    public Page<Posts> findActiveAndDeclined(int page, int size) {
-        return postsRepository.findByIsActiveAndModerationStatus(
-            PageRequest.of(page, size), true, ModerationStatus.DECLINED
+    public Page<Posts> findActiveAndDeclinedAndModeratorId(Users user, int page, int size) {
+        return postsRepository.findByIsActiveAndModerationStatusAndModeratorId(
+            PageRequest.of(page, size), true, ModerationStatus.DECLINED, user
         );
     }
 

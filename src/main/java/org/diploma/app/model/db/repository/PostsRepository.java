@@ -1,6 +1,7 @@
 package org.diploma.app.model.db.repository;
 
 import org.diploma.app.model.db.entity.Posts;
+import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,4 +20,8 @@ public interface PostsRepository extends JpaRepository<Posts, Integer> {
     );
 
     Page<Posts> findByIsActiveAndModerationStatus(Pageable pageable, boolean isActive, ModerationStatus moderationStatus);
+
+    Page<Posts> findByIsActiveAndModerationStatusAndModeratorId(
+        Pageable pageable, boolean isActive, ModerationStatus moderationStatus, Users moderatorId
+    );
 }

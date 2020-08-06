@@ -16,6 +16,7 @@ import org.diploma.app.model.util.SortMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
@@ -111,14 +112,19 @@ public class PostService {
         return null;
     }
 
-    public Page<Posts> find(int offset, int limit, ModerationStatus status) {
+    public Page<Posts> find(String email, int offset, int limit, ModerationStatus status) {
+        Users user = usersDBService.find(email);
+
+        if (!user.isModerator())
+            throw new AccessDeniedException("User is not a moderator");
+
         switch(status) {
             case NEW:
                 return postsDBService.findActiveAndNew(offset / limit, limit);
             case ACCEPTED:
-                return postsDBService.findActiveAndAccepted(offset / limit, limit);
+                return postsDBService.findActiveAndAcceptedAndModeratorId(user, offset / limit, limit);
             case DECLINED:
-                return postsDBService.findActiveAndDeclined(offset / limit, limit);
+                return postsDBService.findActiveAndDeclinedAndModeratorId(user, offset / limit, limit);
             default:
                 StringBuilder sb = new StringBuilder();
                 sb.append("Supported statuses: ");

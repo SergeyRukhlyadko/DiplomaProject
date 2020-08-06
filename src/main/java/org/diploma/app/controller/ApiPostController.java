@@ -3,6 +3,7 @@ package org.diploma.app.controller;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.controller.request.post.RequestPostBody;
+import org.diploma.app.controller.response.BadRequestBody;
 import org.diploma.app.controller.response.DefaultBody;
 import org.diploma.app.controller.response.ErrorBody;
 import org.diploma.app.controller.response.ResponseBodyFactory;
@@ -13,6 +14,7 @@ import org.diploma.app.model.util.SortMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -79,8 +81,14 @@ class ApiPostController  {
     }
 
     @GetMapping("/moderation")
-    ResponseEntity<?> moderation(@RequestParam int offset, @RequestParam int limit, @RequestParam ModerationStatus status) {
-        Page<Posts> posts = postService.find(offset, limit, status);
+    ResponseEntity<?> moderation(Principal principal, @RequestParam int offset, @RequestParam int limit, @RequestParam ModerationStatus status) {
+        Page<Posts> posts;
+        try {
+            posts = postService.find(principal.getName(), offset, limit, status);
+        } catch(AccessDeniedException e) {
+            return ResponseEntity.status(400).body(new BadRequestBody("Пользователь не модератор"));
+        }
+
         return ResponseEntity.ok(new ResponseBodyFactory().createResponsePostBody(posts));
     }
 }

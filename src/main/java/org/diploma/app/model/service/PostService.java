@@ -111,6 +111,29 @@ public class PostService {
         return null;
     }
 
+    public Page<Posts> find(int offset, int limit, ModerationStatus status) {
+        switch(status) {
+            case NEW:
+                return postsDBService.findActiveAndNew(offset / limit, limit);
+            case ACCEPTED:
+                return postsDBService.findActiveAndAccepted(offset / limit, limit);
+            case DECLINED:
+                return postsDBService.findActiveAndDeclined(offset / limit, limit);
+            default:
+                StringBuilder sb = new StringBuilder();
+                sb.append("Supported statuses: ");
+
+                ModerationStatus[] moderationStatuses = ModerationStatus.values();
+                for(int i = 0; i < moderationStatuses.length; i++ ) {
+                    sb.append(moderationStatuses[i]);
+                    if (i != moderationStatuses.length - 1)
+                        sb.append(", ");
+                }
+
+                throw new IllegalArgumentException(sb.toString());
+        }
+    }
+
     public boolean like(String email, int postId) {
         return addPostVote(email, postId, (byte) 1);
     }

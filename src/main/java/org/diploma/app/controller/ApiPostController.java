@@ -5,12 +5,9 @@ import lombok.experimental.FieldDefaults;
 import org.diploma.app.controller.request.post.RequestPostBody;
 import org.diploma.app.controller.response.DefaultBody;
 import org.diploma.app.controller.response.ErrorBody;
-import org.diploma.app.controller.response.ResponsePostBody;
-import org.diploma.app.controller.response.dto.PostDto;
-import org.diploma.app.controller.response.dto.UserDto;
-import org.diploma.app.model.db.entity.PostVotes;
+import org.diploma.app.controller.response.ResponseBodyFactory;
 import org.diploma.app.model.db.entity.Posts;
-import org.diploma.app.model.db.entity.Users;
+import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
 import org.diploma.app.model.service.PostService;
 import org.diploma.app.model.util.SortMode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,11 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.persistence.EntityNotFoundException;
 import java.security.Principal;
-import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -43,39 +36,7 @@ class ApiPostController  {
     @GetMapping
     ResponseEntity<?> post(@RequestParam int offset, @RequestParam int limit, @RequestParam SortMode mode) {
         Page<Posts> posts = postService.find(offset, limit, mode);
-        Iterator<Posts> iterator = posts.iterator();
-
-        List<PostDto> postDtoList = new ArrayList<>();
-        while(iterator.hasNext()) {
-            Posts post = iterator.next();
-            Users user = post.getUserId();
-
-            int likeCount = 0;
-            int dislikeCount = 0;
-            List<PostVotes> postVotes = post.getPostVotes();
-            for(PostVotes postVote : postVotes) {
-                if (postVote.getValue() == 1) {
-                    likeCount++;
-                } else {
-                    dislikeCount++;
-                }
-            }
-
-            PostDto postDto = new PostDto(
-                post.getId(),
-                post.getTime().atZone(ZoneId.systemDefault()).toEpochSecond(),
-                new UserDto(user.getId(), user.getName()),
-                post.getTitle(),
-                post.getText(),
-                likeCount,
-                dislikeCount,
-                post.getPostComments().size(),
-                post.getViewCount()
-            );
-
-            postDtoList.add(postDto);
-        }
-        return ResponseEntity.ok(new ResponsePostBody(posts.getTotalElements(), postDtoList));
+        return ResponseEntity.ok(new ResponseBodyFactory().createResponsePostBody(posts));
     }
 
     @PostMapping
@@ -117,4 +78,9 @@ class ApiPostController  {
         return new DefaultBody(postService.dislike(principal.getName(), requestBody.get("post_id")));
     }
 
+    @GetMapping("/moderation")
+    ResponseEntity<?> moderation(@RequestParam int offset, @RequestParam int limit, @RequestParam ModerationStatus status) {
+        Page<Posts> posts = postService.find(offset, limit, status);
+        return ResponseEntity.ok(new ResponseBodyFactory().createResponsePostBody(posts));
+    }
 }

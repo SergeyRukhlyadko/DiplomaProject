@@ -28,6 +28,24 @@ public class PostsDBService {
         );
     }
 
+    public Page<Posts> findActiveAndNew(int page, int size) {
+        return postsRepository.findByIsActiveAndModerationStatus(
+            PageRequest.of(page, size), true, ModerationStatus.NEW
+        );
+    }
+
+    public Page<Posts> findActiveAndAccepted(int page, int size) {
+        return postsRepository.findByIsActiveAndModerationStatus(
+            PageRequest.of(page, size), true, ModerationStatus.ACCEPTED
+        );
+    }
+
+    public Page<Posts> findActiveAndDeclined(int page, int size) {
+        return postsRepository.findByIsActiveAndModerationStatus(
+            PageRequest.of(page, size), true, ModerationStatus.DECLINED
+        );
+    }
+
     public Page<Posts> findActiveAndAcceptedAndBeforeNow(int offset, int limit, Sort sort) {
         return postsRepository.findByIsActiveAndModerationStatusAndTimeBefore(
             PageRequest.of(offset, limit, sort), true, ModerationStatus.ACCEPTED, LocalDateTime.now()

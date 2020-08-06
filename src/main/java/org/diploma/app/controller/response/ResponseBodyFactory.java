@@ -5,6 +5,7 @@ import org.diploma.app.controller.response.dto.UserDto;
 import org.diploma.app.model.db.entity.PostVotes;
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.Users;
+import org.jsoup.Jsoup;
 import org.springframework.data.domain.Page;
 
 import java.time.ZoneId;
@@ -38,7 +39,7 @@ public class ResponseBodyFactory {
                 post.getTime().atZone(ZoneId.systemDefault()).toEpochSecond(),
                 new UserDto(user.getId(), user.getName()),
                 post.getTitle(),
-                post.getText(),
+                Jsoup.parse(post.getText()).text(),
                 likeCount,
                 dislikeCount,
                 post.getPostComments().size(),

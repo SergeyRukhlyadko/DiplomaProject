@@ -59,4 +59,9 @@ public class CheckupService {
         if (!captchaCodesDBService.find(captchaSecret).getCode().equals(captcha))
             errors.put("captcha", "Код с картинки введён неверно");
     }
+
+    public void comment(String text) {
+        if (text.length() < 2)
+            errors.put("text", "Текст комментария не задан или слишком короткий");
+    }
 }

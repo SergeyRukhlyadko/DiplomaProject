@@ -3,9 +3,13 @@ package org.diploma.app.model.service;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.model.db.entity.GlobalSettings;
+import org.diploma.app.model.db.entity.PostComments;
+import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.Tags;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.service.db.GlobalSettingsDBService;
+import org.diploma.app.model.service.db.PostCommentsDBService;
+import org.diploma.app.model.service.db.PostsDBService;
 import org.diploma.app.model.service.db.TagsDBService;
 import org.diploma.app.model.service.db.UsersDBService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +33,12 @@ public class GeneralService {
 
     @Autowired
     UsersDBService usersDBService;
+
+    @Autowired
+    PostCommentsDBService postCommentsDBService;
+
+    @Autowired
+    PostsDBService postsDBService;
 
     public Users changeModeratorStatus(String email) {
         Users user = usersDBService.find(email);
@@ -60,5 +70,16 @@ public class GeneralService {
 
     public List<Tags> getAllTags() {
         return tagsDBService.finaAll();
+    }
+
+    public int addComment(String email, int parentId, int postId, String text) {
+        Users user = usersDBService.find(email);
+        Posts post = postsDBService.find(postId);
+        if (parentId == 0) {
+            return postCommentsDBService.save(post, user, text).getId();
+        } else {
+            PostComments postComment = postCommentsDBService.find(parentId);
+            return postCommentsDBService.save(postComment, post, user, text).getId();
+        }
     }
 }

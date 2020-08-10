@@ -140,6 +140,10 @@ public class PostService {
         }
     }
 
+    public Page<Posts> findByTag(int offset, int limit, String tagName) {
+        return postsDBService.findActiveAndAcceptedAndBeforeNow(offset / limit, limit, tagName);
+    }
+
     public boolean like(String email, int postId) {
         return addPostVote(email, postId, (byte) 1);
     }

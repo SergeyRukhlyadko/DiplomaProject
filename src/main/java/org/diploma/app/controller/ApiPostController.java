@@ -7,6 +7,7 @@ import org.diploma.app.controller.response.BadRequestBody;
 import org.diploma.app.controller.response.DefaultBody;
 import org.diploma.app.controller.response.ErrorBody;
 import org.diploma.app.controller.response.ResponseBodyFactory;
+import org.diploma.app.controller.response.ResponsePostBody;
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
 import org.diploma.app.model.service.PostService;
@@ -68,6 +69,11 @@ class ApiPostController  {
             "  \"count\":0,\n" +
             "  \"posts\":[]\n" +
             "}");
+    }
+
+    @GetMapping("/byTag")
+    ResponsePostBody postByTag(@RequestParam int offset, @RequestParam int limit, @RequestParam String tag) {
+        return new ResponseBodyFactory().createResponsePostBody(postService.findByTag(offset, limit, tag));
     }
 
     @PostMapping("/like")

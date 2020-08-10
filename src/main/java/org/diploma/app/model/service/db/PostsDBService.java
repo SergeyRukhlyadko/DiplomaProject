@@ -52,6 +52,12 @@ public class PostsDBService {
         );
     }
 
+    public Page<Posts> findActiveAndAcceptedAndBeforeNow(int offset, int limit, String tagName) {
+        return postsRepository.findByIsActiveAndModerationStatusAndTimeBeforeAndTagName(
+            PageRequest.of(offset, limit), true, ModerationStatus.ACCEPTED, LocalDateTime.now(), tagName
+        );
+    }
+
     public Posts save(boolean isActive, Users user, LocalDateTime time, String title, String text, int viewCount) {
         Posts post = new Posts();
         post.setActive(isActive);

@@ -1,6 +1,8 @@
 package org.diploma.app.model.db.entity;
 
 import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 import javax.persistence.Column;
@@ -16,6 +18,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Setter
+@Getter
 @Entity
 @Table(name = "post_comments")
 public class PostComments {

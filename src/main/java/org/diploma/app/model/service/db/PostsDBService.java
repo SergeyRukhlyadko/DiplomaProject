@@ -69,6 +69,10 @@ public class PostsDBService {
         return postsRepository.save(post);
     }
 
+    public Posts save(Posts post) {
+        return postsRepository.save(post);
+    }
+
     public int count(ModerationStatus moderationStatus) {
         return postsRepository.countByModerationStatus(moderationStatus);
     }

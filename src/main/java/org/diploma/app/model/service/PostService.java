@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
@@ -46,6 +47,9 @@ public class PostService {
 
     @Autowired
     PostVotesDBService postVotesDBService;
+
+    @Autowired
+    AuthService authService;
 
     public Map<String, String> create(String email, boolean isActive, Date timestamp, String title, String text, List<String> tags) {
         Map<String, String> errors = new HashMap<>();
@@ -98,6 +102,24 @@ public class PostService {
             return postsDBService.count(ModerationStatus.NEW);
 
         return 0;
+    }
+
+    public Posts find(String sessionId, int id) {
+        Posts post = postsDBService.find(id);
+
+        try {
+            Users user = authService.checkAuthentication(sessionId);
+            //Если авторизованный пользователь не модератор и не является автором поста, добавить счетчик просмотров
+            if (!user.isModerator() && user.getId() != post.getUserId().getId()) {
+                post.setViewCount(post.getViewCount() + 1);
+                postsDBService.save(post);
+            }
+            return post;
+        } catch(EntityNotFoundException | AuthenticationCredentialsNotFoundException e) {
+            post.setViewCount(post.getViewCount() + 1);
+            postsDBService.save(post);
+            return post;
+        }
     }
 
     public Page<Posts> find(int offset, int limit, SortMode mode) {

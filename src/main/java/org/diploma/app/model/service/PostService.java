@@ -21,6 +21,7 @@ import org.springframework.security.authentication.AuthenticationCredentialsNotF
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -160,6 +161,10 @@ public class PostService {
 
                 throw new IllegalArgumentException(sb.toString());
         }
+    }
+
+    public Page<Posts> findByDate(int offset, int limit, String date) {
+        return postsDBService.findActiveAndAcceptedAndEqualsDate(offset / limit, limit, LocalDate.parse(date));
     }
 
     public Page<Posts> findByTag(int offset, int limit, String tagName) {

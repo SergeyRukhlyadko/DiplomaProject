@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpSession;
 import java.security.Principal;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -81,6 +82,15 @@ class ApiPostController  {
             "  \"count\":0,\n" +
             "  \"posts\":[]\n" +
             "}");
+    }
+
+    @GetMapping("/byDate")
+    ResponseEntity<?> postByDate(@RequestParam int offset, @RequestParam int limit, @RequestParam String date) {
+        try {
+            return ResponseEntity.ok(new ResponseBodyFactory().createResponsePostBody(postService.findByDate(offset, limit, date)));
+        } catch(DateTimeParseException e) {
+            return ResponseEntity.status(400).body(new BadRequestBody("Неверный формат даты"));
+        }
     }
 
     @GetMapping("/byTag")

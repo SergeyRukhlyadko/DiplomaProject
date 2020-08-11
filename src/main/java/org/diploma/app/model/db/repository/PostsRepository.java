@@ -16,6 +16,10 @@ public interface PostsRepository extends JpaRepository<Posts, Integer> {
 
     int countByModerationStatus(ModerationStatus moderationStatus);
 
+    Page<Posts> findByIsActiveAndModerationStatusAndTimeGreaterThanEqualAndTimeLessThan(
+        Pageable pageable, boolean isActive, ModerationStatus moderationStatus, LocalDateTime timeGte, LocalDateTime timeLt
+    );
+
     Page<Posts> findByIsActiveAndModerationStatusAndTimeBefore(
         Pageable pageable, boolean isActive, ModerationStatus moderationStatus, LocalDateTime time
     );

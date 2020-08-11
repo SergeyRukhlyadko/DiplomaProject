@@ -13,6 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -31,6 +32,14 @@ public class PostsDBService {
     public Page<Posts> findActiveAndNew(int page, int size) {
         return postsRepository.findByIsActiveAndModerationStatus(
             PageRequest.of(page, size), true, ModerationStatus.NEW
+        );
+    }
+
+    public Page<Posts> findActiveAndAcceptedAndEqualsDate(int page, int size, LocalDate date) {
+        LocalDateTime timeStart = date.atStartOfDay();
+        LocalDateTime timeEnd = timeStart.plusDays(1);
+        return postsRepository.findByIsActiveAndModerationStatusAndTimeGreaterThanEqualAndTimeLessThan(
+            PageRequest.of(page, size), true, ModerationStatus.ACCEPTED, timeStart, timeEnd
         );
     }
 

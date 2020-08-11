@@ -3,7 +3,9 @@ package org.diploma.app.controller;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.controller.request.post.RequestCommentBody;
+import org.diploma.app.controller.request.post.RequestModerationBody;
 import org.diploma.app.controller.response.BadRequestBody;
+import org.diploma.app.controller.response.DefaultBody;
 import org.diploma.app.controller.response.ErrorBody;
 import org.diploma.app.controller.response.InitBody;
 import org.diploma.app.controller.response.ResponseTagBody;
@@ -119,5 +121,10 @@ class ApiGeneralController {
         } catch(EntityNotFoundException e) {
             return ResponseEntity.status(400).body(new BadRequestBody("Соответствующие комментарий и/или пост не существуют"));
         }
+    }
+
+    @PostMapping("moderation")
+    DefaultBody moderation(Principal principal, @RequestBody RequestModerationBody requestBody) {
+        return new DefaultBody(generalService.changeModerationStatus(principal.getName(), requestBody.getPostId(), requestBody.getDecision()));
     }
 }

@@ -7,15 +7,18 @@ import org.diploma.app.model.db.entity.PostComments;
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.Tags;
 import org.diploma.app.model.db.entity.Users;
+import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
 import org.diploma.app.model.service.db.GlobalSettingsDBService;
 import org.diploma.app.model.service.db.PostCommentsDBService;
 import org.diploma.app.model.service.db.PostsDBService;
 import org.diploma.app.model.service.db.TagsDBService;
 import org.diploma.app.model.service.db.UsersDBService;
+import org.diploma.app.model.util.Decision;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -81,5 +84,28 @@ public class GeneralService {
             PostComments postComment = postCommentsDBService.find(parentId);
             return postCommentsDBService.save(postComment, post, user, text).getId();
         }
+    }
+
+    public boolean changeModerationStatus(String email, int postId, Decision decision) {
+        try {
+            Users user = usersDBService.find(email);
+
+            if (!user.isModerator())
+                return false;
+
+            Posts post = postsDBService.find(postId);
+            post.setModeratorId(user);
+            if (decision.name().equals(Decision.ACCEPT.toString())) {
+                post.setModerationStatus(ModerationStatus.ACCEPTED);
+            } else {
+                post.setModerationStatus(ModerationStatus.DECLINED);
+            }
+
+            postsDBService.save(post);
+        } catch(EntityNotFoundException e) {
+            return false;
+        }
+
+        return true;
     }
 }

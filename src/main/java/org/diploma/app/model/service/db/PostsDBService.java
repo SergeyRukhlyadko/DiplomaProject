@@ -55,27 +55,49 @@ public class PostsDBService {
         );
     }
 
-    public Page<Posts> findActiveAndAcceptedAndBeforeNow(int offset, int limit, Sort sort) {
+    public Page<Posts> findActiveAndAcceptedAndBeforeNow(int page, int limit, Sort sort) {
         return postsRepository.findByIsActiveAndModerationStatusAndTimeBefore(
-            PageRequest.of(offset, limit, sort), true, ModerationStatus.ACCEPTED, LocalDateTime.now()
+            PageRequest.of(page, limit, sort), true, ModerationStatus.ACCEPTED, LocalDateTime.now()
         );
     }
 
-    public Page<Posts> findActiveAndAcceptedAndBeforeNowOrderByCommentCountDesc(int offset, int limit) {
+    public Page<Posts> findActiveAndAcceptedAndBeforeNowOrderByCommentCountDesc(int page, int limit) {
         return postsRepository.findByIsActiveAndModerationStatusAndTimeBeforeOrderByCommentCountDesc(
-            PageRequest.of(offset, limit), true, ModerationStatus.ACCEPTED, LocalDateTime.now()
+            PageRequest.of(page, limit), true, ModerationStatus.ACCEPTED, LocalDateTime.now()
         );
     }
 
-    public Page<Posts> findActiveAndAcceptedAndBeforeNowOrderByLikeCountDesc(int offset, int limit) {
+    public Page<Posts> findActiveAndAcceptedAndBeforeNowOrderByLikeCountDesc(int page, int limit) {
         return postsRepository.findByIsActiveAndModerationStatusAndTimeBeforeOrderByLikeCountDesc(
-            PageRequest.of(offset, limit), true, ModerationStatus.ACCEPTED, LocalDateTime.now()
+            PageRequest.of(page, limit), true, ModerationStatus.ACCEPTED, LocalDateTime.now()
         );
     }
 
-    public Page<Posts> findActiveAndAcceptedAndBeforeNow(int offset, int limit, String tagName) {
+    public Page<Posts> findActiveAndAcceptedAndBeforeNow(int page, int limit, String tagName) {
         return postsRepository.findByIsActiveAndModerationStatusAndTimeBeforeAndTagName(
-            PageRequest.of(offset, limit), true, ModerationStatus.ACCEPTED, LocalDateTime.now(), tagName
+            PageRequest.of(page, limit), true, ModerationStatus.ACCEPTED, LocalDateTime.now(), tagName
+        );
+    }
+
+    public Page<Posts> findInactive(int page, int limit, Users user) {
+        return postsRepository.findByIsActiveAndUserId(PageRequest.of(page, limit), false, user);
+    }
+
+    public Page<Posts> findActiveAndNew(int page, int limit, Users user) {
+        return postsRepository.findByIsActiveAndModerationStatusAndUserId(
+            PageRequest.of(page, limit), true, ModerationStatus.NEW, user
+        );
+    }
+
+    public Page<Posts> findActiveAndDeclined(int page, int limit, Users user) {
+        return postsRepository.findByIsActiveAndModerationStatusAndUserId(
+            PageRequest.of(page, limit), true, ModerationStatus.DECLINED, user
+        );
+    }
+
+    public Page<Posts> findActiveAndAccepted(int page, int limit, Users user) {
+        return postsRepository.findByIsActiveAndModerationStatusAndUserId(
+            PageRequest.of(page, limit), true, ModerationStatus.ACCEPTED, user
         );
     }
 

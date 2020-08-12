@@ -12,6 +12,7 @@ import org.diploma.app.controller.response.ResponsePostByIdBody;
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
 import org.diploma.app.model.service.PostService;
+import org.diploma.app.model.util.PostStatus;
 import org.diploma.app.model.util.SortMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -77,11 +78,8 @@ class ApiPostController  {
     }
 
     @GetMapping("/my")
-    ResponseEntity<?> myPost() {
-        return ResponseEntity.ok("{\n" +
-            "  \"count\":0,\n" +
-            "  \"posts\":[]\n" +
-            "}");
+    ResponsePostBody postMy(Principal principal, @RequestParam int offset, @RequestParam int limit, @RequestParam PostStatus status) {
+        return new ResponseBodyFactory().createResponsePostBody(postService.findMy(principal.getName(), offset, limit, status));
     }
 
     @GetMapping("/byDate")

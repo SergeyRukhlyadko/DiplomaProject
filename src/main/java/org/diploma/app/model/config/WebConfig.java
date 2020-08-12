@@ -11,5 +11,6 @@ public class WebConfig implements WebMvcConfigurer {
     public void addFormatters(FormatterRegistry registry) {
         registry.addConverter(new SortModeConverter());
         registry.addConverter(new ModerationStatusConverter());
+        registry.addConverter(new PostStatusConverter());
     }
 }

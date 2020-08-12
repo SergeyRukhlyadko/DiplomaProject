@@ -51,4 +51,10 @@ public interface PostsRepository extends JpaRepository<Posts, Integer> {
     Page<Posts> findByIsActiveAndModerationStatusAndModeratorId(
         Pageable pageable, boolean isActive, ModerationStatus moderationStatus, Users moderatorId
     );
+
+    Page<Posts> findByIsActiveAndUserId(Pageable pageable, boolean isActive, Users userId);
+
+    Page<Posts> findByIsActiveAndModerationStatusAndUserId(
+        Pageable pageable, boolean isActive, ModerationStatus moderationStatus, Users userId
+    );
 }

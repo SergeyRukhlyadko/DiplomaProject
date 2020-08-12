@@ -12,6 +12,7 @@ import org.diploma.app.model.service.db.PostsDBService;
 import org.diploma.app.model.service.db.Tag2postDBService;
 import org.diploma.app.model.service.db.TagsDBService;
 import org.diploma.app.model.service.db.UsersDBService;
+import org.diploma.app.model.util.PostStatus;
 import org.diploma.app.model.util.SortMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -169,6 +170,34 @@ public class PostService {
                 for(int i = 0; i < moderationStatuses.length; i++ ) {
                     sb.append(moderationStatuses[i]);
                     if (i != moderationStatuses.length - 1)
+                        sb.append(", ");
+                }
+
+                throw new IllegalArgumentException(sb.toString());
+        }
+    }
+
+    public Page<Posts> findMy(String email, int offset, int limit, PostStatus postStatus) {
+        Users user = usersDBService.find(email);
+        int page = offset / limit;
+
+        switch (postStatus) {
+            case INACTIVE:
+                return postsDBService.findInactive(page, limit, user);
+            case PENDING:
+                return postsDBService.findActiveAndNew(page, limit, user);
+            case DECLINED:
+                return postsDBService.findActiveAndDeclined(page, limit, user);
+            case PUBLISHED:
+                return postsDBService.findActiveAndAccepted(page, limit, user);
+            default:
+                StringBuilder sb = new StringBuilder();
+                sb.append("Supported statuses: ");
+
+                PostStatus[] postStatuses = PostStatus.values();
+                for(int i = 0; i < postStatuses.length; i++ ) {
+                    sb.append(postStatuses[i]);
+                    if (i != postStatuses.length - 1)
                         sb.append(", ");
                 }
 

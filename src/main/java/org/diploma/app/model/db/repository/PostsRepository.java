@@ -24,9 +24,23 @@ public interface PostsRepository extends JpaRepository<Posts, Integer> {
         Pageable pageable, boolean isActive, ModerationStatus moderationStatus, LocalDateTime time
     );
 
-    @Query("select p from Posts p \n" +
-        "join Tag2post t2p on p.id = t2p.postId \n" +
-        "join Tags t on t.id = t2p.tagId \n" +
+    @Query("select p from Posts p join PostComments pc on p.id = pc.postId " +
+        "where p.isActive = ?1 and p.moderationStatus = ?2 and p.time < ?3 " +
+        "group by p.id order by count(p) desc")
+    Page<Posts> findByIsActiveAndModerationStatusAndTimeBeforeOrderByCommentCountDesc(
+        Pageable pageable, boolean isActive, ModerationStatus moderationStatus, LocalDateTime time
+    );
+
+    @Query("select p from Posts p join PostVotes pv on p.id = pv.postId " +
+        "where p.isActive = ?1 and p.moderationStatus = ?2 and p.time < ?3 and pv.value = 1" +
+        "group by p.id order by count(p) desc")
+    Page<Posts> findByIsActiveAndModerationStatusAndTimeBeforeOrderByLikeCountDesc(
+        Pageable pageable, boolean isActive, ModerationStatus moderationStatus, LocalDateTime time
+    );
+
+    @Query("select p from Posts p " +
+        "join Tag2post t2p on p.id = t2p.postId " +
+        "join Tags t on t.id = t2p.tagId " +
         "where p.isActive = ?1 and p.moderationStatus = ?2 and p.time < ?3 and t.name = ?4")
     Page<Posts> findByIsActiveAndModerationStatusAndTimeBeforeAndTagName(
         Pageable pageable, boolean isActive, ModerationStatus moderationStatus, LocalDateTime time, String tagName

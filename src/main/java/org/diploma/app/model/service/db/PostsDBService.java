@@ -61,6 +61,18 @@ public class PostsDBService {
         );
     }
 
+    public Page<Posts> findActiveAndAcceptedAndBeforeNowOrderByCommentCountDesc(int offset, int limit) {
+        return postsRepository.findByIsActiveAndModerationStatusAndTimeBeforeOrderByCommentCountDesc(
+            PageRequest.of(offset, limit), true, ModerationStatus.ACCEPTED, LocalDateTime.now()
+        );
+    }
+
+    public Page<Posts> findActiveAndAcceptedAndBeforeNowOrderByLikeCountDesc(int offset, int limit) {
+        return postsRepository.findByIsActiveAndModerationStatusAndTimeBeforeOrderByLikeCountDesc(
+            PageRequest.of(offset, limit), true, ModerationStatus.ACCEPTED, LocalDateTime.now()
+        );
+    }
+
     public Page<Posts> findActiveAndAcceptedAndBeforeNow(int offset, int limit, String tagName) {
         return postsRepository.findByIsActiveAndModerationStatusAndTimeBeforeAndTagName(
             PageRequest.of(offset, limit), true, ModerationStatus.ACCEPTED, LocalDateTime.now(), tagName

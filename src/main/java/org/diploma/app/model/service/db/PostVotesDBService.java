@@ -22,12 +22,12 @@ public class PostVotesDBService {
         return postVotesRepository.save(postVote);
     }
 
-    public PostVotes saveLike(Users userId, Posts postId) {
+    public PostVotes save(Users userId, Posts postId, byte value) {
         PostVotes postVote = new PostVotes();
         postVote.setUserId(userId);
         postVote.setPostId(postId);
         postVote.setTime(LocalDateTime.now());
-        postVote.setValue((byte) 1);
+        postVote.setValue(value);
         return postVotesRepository.save(postVote);
     }
 }

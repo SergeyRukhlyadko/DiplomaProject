@@ -126,13 +126,26 @@ public class PostService {
     public Page<Posts> find(int offset, int limit, SortMode mode) {
         switch(mode) {
             case RECENT:
-                return postsDBService.findActiveAndAcceptedAndBeforeNow(offset, limit, Sort.by("time").ascending());
+                return postsDBService.findActiveAndAcceptedAndBeforeNow(offset / limit, limit, Sort.by("time").ascending());
             case EARLY:
-                return postsDBService.findActiveAndAcceptedAndBeforeNow(offset, limit, Sort.by("time").descending());
+                return postsDBService.findActiveAndAcceptedAndBeforeNow(offset / limit, limit, Sort.by("time").descending());
             case POPULAR:
+                return  postsDBService.findActiveAndAcceptedAndBeforeNowOrderByCommentCountDesc(offset / limit, limit);
             case BEST:
+                return postsDBService.findActiveAndAcceptedAndBeforeNowOrderByLikeCountDesc(offset / limit, limit);
+            default:
+                StringBuilder sb = new StringBuilder();
+                sb.append("Supported statuses: ");
+
+                SortMode[] sortModes = SortMode.values();
+                for(int i = 0; i < sortModes.length; i++ ) {
+                    sb.append(sortModes[i]);
+                    if (i != sortModes.length - 1)
+                        sb.append(", ");
+                }
+
+                throw new IllegalArgumentException(sb.toString());
         }
-        return null;
     }
 
     public Page<Posts> find(String email, int offset, int limit, ModerationStatus status) {
@@ -193,7 +206,7 @@ public class PostService {
             }
 
             if (existVote == null) {
-                postVotesDBService.saveLike(user, post);
+                postVotesDBService.save(user, post, value);
             } else if (existVote.getValue() == value) {
                 return false;
             } else if (existVote.getValue() == -value) {

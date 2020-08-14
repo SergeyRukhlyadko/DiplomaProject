@@ -2,8 +2,11 @@ package org.diploma.app.model.service;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
+import org.diploma.app.model.db.entity.GlobalSettings;
 import org.diploma.app.model.db.entity.Users;
+import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
 import org.diploma.app.model.service.db.CaptchaCodesDBService;
+import org.diploma.app.model.service.db.GlobalSettingsDBService;
 import org.diploma.app.model.service.db.UsersDBService;
 import org.diploma.app.model.util.Captcha;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +46,9 @@ public class AuthService {
     UsersDBService usersDBService;
 
     @Autowired
+    GlobalSettingsDBService globalSettingsDBService;
+
+    @Autowired
     PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -54,7 +60,11 @@ public class AuthService {
         return captcha;
     }
 
-    public Map<String, String> register(String name, String email, String password, String captcha, String captchaSecret) {
+    public Map<String, String> register(String name, String email, String password, String captcha, String captchaSecret) throws RegistrationIsClosedException {
+        GlobalSettings globalSetting = globalSettingsDBService.find(GlobalSetting.MULTIUSER_MODE.toString());
+        if (!globalSetting.isValue())
+            throw new RegistrationIsClosedException();
+
         CheckupService checkupService = context.getBean("checkupService", CheckupService.class);
         checkupService.name(name);
         checkupService.email(email);

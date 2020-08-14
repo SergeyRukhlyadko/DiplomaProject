@@ -12,6 +12,7 @@ import org.diploma.app.controller.response.dto.FullUserDto;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.service.AuthService;
 import org.diploma.app.model.service.PostService;
+import org.diploma.app.model.service.RegistrationIsClosedException;
 import org.diploma.app.model.util.Captcha;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -47,16 +48,20 @@ class ApiAuthController {
 
     @PostMapping("/register")
     ResponseEntity<?> register(@RequestBody RequestRegisterBody requestBody) {
-        Map<String, String> errors = authService.register(
-            requestBody.getName(),
-            requestBody.getEmail(),
-            requestBody.getPassword(),
-            requestBody.getCaptcha(),
-            requestBody.getCaptchaSecret()
-        );
+        try {
+            Map<String, String> errors = authService.register(
+                requestBody.getName(),
+                requestBody.getEmail(),
+                requestBody.getPassword(),
+                requestBody.getCaptcha(),
+                requestBody.getCaptchaSecret()
+            );
 
-        if (!errors.isEmpty())
-            return ResponseEntity.ok(new ErrorBody(errors));
+            if (!errors.isEmpty())
+                return ResponseEntity.ok(new ErrorBody(errors));
+        } catch(RegistrationIsClosedException e) {
+            return ResponseEntity.status(404).build();
+        }
 
         return ResponseEntity.ok(new DefaultBody(true));
     }

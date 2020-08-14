@@ -17,6 +17,12 @@ public class GlobalSettingsDBService {
     @Autowired
     GlobalSettingsRepository globalSettingsRepository;
 
+    public GlobalSettings find(String code) {
+        return globalSettingsRepository.findByCode(code).orElseThrow(
+            () -> new EntityNotFoundException("Global setting " + code + " not found")
+        );
+    }
+
     public Iterator<GlobalSettings> findAll() {
         Iterator<GlobalSettings> iterator = globalSettingsRepository.findAll().iterator();
 

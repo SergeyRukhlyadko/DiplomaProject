@@ -22,4 +22,8 @@ public class Tag2postDBService {
         tag2post.setTagId(tag);
         return tag2postRepository.save(tag2post);
     }
+
+    public void deleteAll(Iterable<Tag2post> iterable) {
+        tag2postRepository.deleteInBatch(iterable);
+    }
 }

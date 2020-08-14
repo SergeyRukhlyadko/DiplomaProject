@@ -116,6 +116,23 @@ public class PostsDBService {
         return postsRepository.save(post);
     }
 
+    public Posts update(Posts post, boolean isActive, LocalDateTime time, String title, String text) {
+        post.setActive(isActive);
+        post.setTime(time);
+        post.setTitle(title);
+        post.setText(text);
+        return postsRepository.save(post);
+    }
+
+    public Posts update(Posts post, boolean isActive, ModerationStatus moderationStatus, LocalDateTime time, String title, String text) {
+        post.setActive(isActive);
+        post.setModerationStatus(moderationStatus);
+        post.setTime(time);
+        post.setTitle(title);
+        post.setText(text);
+        return postsRepository.save(post);
+    }
+
     public int count(ModerationStatus moderationStatus) {
         return postsRepository.countByModerationStatus(moderationStatus);
     }

@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.model.db.entity.PostVotes;
 import org.diploma.app.model.db.entity.Posts;
+import org.diploma.app.model.db.entity.Tag2post;
 import org.diploma.app.model.db.entity.Tags;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
@@ -25,11 +26,13 @@ import javax.persistence.EntityNotFoundException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Service
@@ -97,6 +100,57 @@ public class PostService {
         }
 
         return  errors;
+    }
+
+    public boolean editPost(String email, int postId, boolean isActive, Date timestamp, String title, String text, List<String> tags) {
+        Users user = usersDBService.find(email);
+
+        LocalDateTime dateTimeNow = LocalDateTime.now();
+        LocalDateTime dateTime = LocalDateTime.ofInstant(
+            timestamp.toInstant(),
+            ZoneId.systemDefault()
+        );
+
+        if (dateTime.isBefore(dateTimeNow))
+            dateTime = dateTimeNow;
+
+        Posts post = postsDBService.find(postId);
+
+        if (user.getId() == post.getUserId().getId()) {
+            postsDBService.update(post, isActive, ModerationStatus.NEW, dateTime, title, text);
+        } else if (user.isModerator()) {
+            postsDBService.update(post, isActive, dateTime, title, text);
+        } else {
+            return false;
+        }
+
+        Set<Tag2post> tag2postSet = post.getTag2posts();
+        if (tags.isEmpty()) {
+            if (!tag2postSet.isEmpty())
+                tag2postDBService.deleteAll(tag2postSet);
+        } else {
+            if (!tag2postSet.isEmpty()) {
+                List<Tag2post> tag2postsForDeleteList = new ArrayList<>();
+                for(Tag2post tag2post : tag2postSet) {
+                    if (!tags.remove(tag2post.getTagId().getName()))
+                        tag2postsForDeleteList.add(tag2post);
+                }
+
+                tag2postDBService.deleteAll(tag2postsForDeleteList);
+            }
+
+            for(String tagName : tags) {
+                Optional<Tags> tagOptional = tagsDBService.find(tagName);
+                if (tagOptional.isPresent()) {
+                    tag2postDBService.save(post, tagOptional.get());
+                } else {
+                    Tags tag = tagsDBService.save(tagName);
+                    tag2postDBService.save(post, tag);
+                }
+            }
+        }
+
+        return true;
     }
 
     public int moderationCount(Users user) {

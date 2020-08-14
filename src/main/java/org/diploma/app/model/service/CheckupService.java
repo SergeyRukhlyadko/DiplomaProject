@@ -64,4 +64,20 @@ public class CheckupService {
         if (text.length() < 2)
             errors.put("text", "Текст комментария не задан или слишком короткий");
     }
+
+    public void title(String title) {
+        if (title.isEmpty()) {
+            errors.put("title", "Заголовок не установлен");
+        } else if (title.length() < 3) {
+            errors.put("title", "Заголовок слишком короткий");
+        }
+    }
+
+    public void text(String text) {
+        if (text.isEmpty()) {
+            errors.put("text", "Текст публикации не установлен");
+        } else if (text.length() < 50) {
+            errors.put("text", "Текст публикации слишком короткий");
+        }
+    }
 }

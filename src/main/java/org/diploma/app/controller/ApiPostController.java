@@ -11,16 +11,19 @@ import org.diploma.app.controller.response.ResponsePostBody;
 import org.diploma.app.controller.response.ResponsePostByIdBody;
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
+import org.diploma.app.model.service.CheckupService;
 import org.diploma.app.model.service.PostService;
 import org.diploma.app.model.util.PostStatus;
 import org.diploma.app.model.util.SortMode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -39,12 +42,42 @@ import java.util.Map;
 class ApiPostController  {
 
     @Autowired
+    ApplicationContext context;
+
+    @Autowired
     PostService postService;
 
     @GetMapping
     ResponseEntity<?> post(@RequestParam int offset, @RequestParam int limit, @RequestParam SortMode mode) {
         Page<Posts> posts = postService.find(offset, limit, mode);
         return ResponseEntity.ok(new ResponseBodyFactory().createResponsePostBody(posts));
+    }
+
+    @PutMapping("/{id}")
+    ResponseEntity<?> post(Principal principal, @PathVariable int id, @RequestBody RequestPostBody requestBody) {
+        CheckupService checkupService = context.getBean("checkupService", CheckupService.class);
+        checkupService.title(requestBody.getTitle());
+        checkupService.text(requestBody.getText());
+        Map<String, String> errors = checkupService.getErrors();
+
+        if (!errors.isEmpty())
+            return ResponseEntity.ok().body(new ErrorBody(errors));
+
+        boolean isEdited = postService.editPost(
+            principal.getName(),
+            id,
+            requestBody.isActive(),
+            requestBody.getTimestamp(),
+            requestBody.getTitle(),
+            requestBody.getText(),
+            requestBody.getTags()
+        );
+
+        if (isEdited) {
+            return ResponseEntity.ok(new DefaultBody(isEdited));
+        } else {
+            return ResponseEntity.status(400).body(new BadRequestBody("Пользователь не является модератором или автором поста"));
+        }
     }
 
     @PostMapping

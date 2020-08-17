@@ -1,6 +1,6 @@
 package org.diploma.app.model.db.repository;
 
-import org.diploma.app.model.db.entity.PostStatistics;
+import org.diploma.app.model.db.entity.PostsStatistics;
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
@@ -62,12 +62,10 @@ public interface PostsRepository extends JpaRepository<Posts, Integer> {
 
     @Query(nativeQuery = true, value =
         "select " +
-        "count(p.id) postsCount, " +
-        "(select count(pv.value) from post_votes pv where value = 1) likesCount, " +
-        "(select count(pv.value) from post_votes pv where value = -1) dislikesCount, " +
-        "sum(p.view_count) viewsCount, " +
-        "unix_timestamp(min(p.time)) firstPublication " +
-        "from posts p;"
+        "count(id) postsCount, " +
+        "sum(view_count) viewsCount, " +
+        "unix_timestamp(min(time)) firstPublication " +
+        "from posts;"
     )
-    Optional<PostStatistics> findAllStatistic();
+    Optional<PostsStatistics> findAllStatistic();
 }

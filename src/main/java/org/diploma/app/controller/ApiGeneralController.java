@@ -8,9 +8,14 @@ import org.diploma.app.controller.response.BadRequestBody;
 import org.diploma.app.controller.response.DefaultBody;
 import org.diploma.app.controller.response.ErrorBody;
 import org.diploma.app.controller.response.InitBody;
+import org.diploma.app.controller.response.ResponseStatisticBody;
 import org.diploma.app.controller.response.ResponseTagBody;
 import org.diploma.app.controller.response.dto.TagDto;
+import org.diploma.app.model.db.entity.PostVotesStatistics;
+import org.diploma.app.model.db.entity.PostsStatistics;
 import org.diploma.app.model.db.entity.Tags;
+import org.diploma.app.model.db.entity.Users;
+import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
 import org.diploma.app.model.service.AuthService;
 import org.diploma.app.model.service.CheckupService;
 import org.diploma.app.model.service.GeneralService;
@@ -130,10 +135,21 @@ class ApiGeneralController {
 
     @GetMapping("/statistics/all")
     ResponseEntity<?> statisticsAll(HttpSession session) {
-        try {
-            return ResponseEntity.ok(generalService.getAllPostStatistics(session.getId()));
-        } catch(AccessDeniedException e) {
-            return ResponseEntity.status(401).build();
+        if (!generalService.isEnabled(GlobalSetting.STATISTICS_IS_PUBLIC)) {
+            Users user = authService.checkAuthentication(session.getId());
+            if (!user.isModerator())
+                return ResponseEntity.status(401).build();
         }
+
+        PostsStatistics postsStatistics = generalService.getAllPostStatistics();
+        PostVotesStatistics postVotesStatistics = generalService.getAllPostVoteStatistics();
+
+        return ResponseEntity.ok(new ResponseStatisticBody(
+            postsStatistics.getPostsCount(),
+            postVotesStatistics.getLikesCount(),
+            postVotesStatistics.getDislikesCount(),
+            postsStatistics.getViewsCount(),
+            postsStatistics.getFirstPublication()
+        ));
     }
 }

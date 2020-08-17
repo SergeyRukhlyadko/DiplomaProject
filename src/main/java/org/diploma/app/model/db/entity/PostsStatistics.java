@@ -1,12 +1,8 @@
 package org.diploma.app.model.db.entity;
 
-public interface PostStatistics {
+public interface PostsStatistics {
 
     int getPostsCount();
-
-    int getLikesCount();
-
-    int getDislikesCount();
 
     int getViewsCount();
 

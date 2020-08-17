@@ -2,7 +2,7 @@ package org.diploma.app.model.service.db;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
-import org.diploma.app.model.db.entity.PostStatistics;
+import org.diploma.app.model.db.entity.PostsStatistics;
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
@@ -102,7 +102,7 @@ public class PostsDBService {
         );
     }
 
-    public PostStatistics findAllStatistic() {
+    public PostsStatistics findAllStatistic() {
         //Протестировать запрос, при отсутствии данных и написать обработку
         return postsRepository.findAllStatistic().get();
     }

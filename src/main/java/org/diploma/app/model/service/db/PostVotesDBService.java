@@ -3,6 +3,7 @@ package org.diploma.app.model.service.db;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.model.db.entity.PostVotes;
+import org.diploma.app.model.db.entity.PostVotesStatistics;
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.repository.PostVotesRepository;
@@ -17,6 +18,10 @@ public class PostVotesDBService {
 
     @Autowired
     PostVotesRepository postVotesRepository;
+
+    public PostVotesStatistics findAllStatistic() {
+        return postVotesRepository.findAllStatistic().get();
+    }
 
     public PostVotes save(PostVotes postVote) {
         return postVotesRepository.save(postVote);

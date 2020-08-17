@@ -4,9 +4,11 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.model.db.entity.GlobalSettings;
 import org.diploma.app.model.db.entity.PostComments;
+import org.diploma.app.model.db.entity.PostStatistics;
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.Tags;
 import org.diploma.app.model.db.entity.Users;
+import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
 import org.diploma.app.model.service.db.GlobalSettingsDBService;
 import org.diploma.app.model.service.db.PostCommentsDBService;
@@ -42,6 +44,9 @@ public class GeneralService {
 
     @Autowired
     PostsDBService postsDBService;
+
+    @Autowired
+    AuthService authService;
 
     public Users changeModeratorStatus(String email) {
         Users user = usersDBService.find(email);
@@ -107,5 +112,16 @@ public class GeneralService {
         }
 
         return true;
+    }
+
+    public PostStatistics getAllPostStatistics(String sessionId) {
+        GlobalSettings globalSetting = globalSettingsDBService.find(GlobalSetting.STATISTICS_IS_PUBLIC.toString());
+        if (!globalSetting.isValue()) {
+            Users user = authService.checkAuthentication(sessionId);
+            if (!user.isModerator())
+                throw new AccessDeniedException("User is not a moderator");
+        }
+
+        return postsDBService.findAllStatistic();
     }
 }

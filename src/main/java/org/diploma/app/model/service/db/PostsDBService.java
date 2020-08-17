@@ -2,6 +2,7 @@ package org.diploma.app.model.service.db;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
+import org.diploma.app.model.db.entity.PostStatistics;
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
@@ -99,6 +100,11 @@ public class PostsDBService {
         return postsRepository.findByIsActiveAndModerationStatusAndUserId(
             PageRequest.of(page, limit), true, ModerationStatus.ACCEPTED, user
         );
+    }
+
+    public PostStatistics findAllStatistic() {
+        //Протестировать запрос, при отсутствии данных и написать обработку
+        return postsRepository.findAllStatistic().get();
     }
 
     public Posts save(boolean isActive, Users user, LocalDateTime time, String title, String text, int viewCount) {

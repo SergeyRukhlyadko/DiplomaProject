@@ -1,5 +1,6 @@
 package org.diploma.app.model.db.repository;
 
+import org.diploma.app.model.db.entity.PostStatistics;
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
@@ -10,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Repository
 public interface PostsRepository extends JpaRepository<Posts, Integer> {
@@ -57,4 +59,15 @@ public interface PostsRepository extends JpaRepository<Posts, Integer> {
     Page<Posts> findByIsActiveAndModerationStatusAndUserId(
         Pageable pageable, boolean isActive, ModerationStatus moderationStatus, Users userId
     );
+
+    @Query(nativeQuery = true, value =
+        "select " +
+        "count(p.id) postsCount, " +
+        "(select count(pv.value) from post_votes pv where value = 1) likesCount, " +
+        "(select count(pv.value) from post_votes pv where value = -1) dislikesCount, " +
+        "sum(p.view_count) viewsCount, " +
+        "unix_timestamp((select p.time from posts p order by p.time limit 1)) firstPublication " +
+        "from posts p;"
+    )
+    Optional<PostStatistics> findAllStatistic();
 }

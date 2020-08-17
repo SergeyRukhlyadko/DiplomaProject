@@ -127,4 +127,13 @@ class ApiGeneralController {
     DefaultBody moderation(Principal principal, @RequestBody RequestModerationBody requestBody) {
         return new DefaultBody(generalService.changeModerationStatus(principal.getName(), requestBody.getPostId(), requestBody.getDecision()));
     }
+
+    @GetMapping("/statistics/all")
+    ResponseEntity<?> statisticsAll(HttpSession session) {
+        try {
+            return ResponseEntity.ok(generalService.getAllPostStatistics(session.getId()));
+        } catch(AccessDeniedException e) {
+            return ResponseEntity.status(401).build();
+        }
+    }
 }

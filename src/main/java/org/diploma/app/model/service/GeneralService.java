@@ -127,4 +127,14 @@ public class GeneralService {
     public PostVotesStatistics getAllPostVoteStatistics() {
         return postVotesDBService.findAllStatistic();
     }
+
+    public PostsStatistics getMyPostStatistics(String email) {
+        Users user = usersDBService.find(email);
+        return postsDBService.findMyStatistic(user, true, ModerationStatus.ACCEPTED);
+    }
+
+    public PostVotesStatistics getMyPostVotesStatistics(String email) {
+        Users user = usersDBService.find(email);
+        return postVotesDBService.findMyStatistic(user, true, ModerationStatus.ACCEPTED);
+    }
 }

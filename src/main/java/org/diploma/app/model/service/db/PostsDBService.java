@@ -107,6 +107,10 @@ public class PostsDBService {
         return postsRepository.findAllStatistic().get();
     }
 
+    public PostsStatistics findMyStatistic(Users user, boolean isActive, ModerationStatus moderationStatus) {
+        return postsRepository.findMyStatistic(user.getId(), isActive ? 1 : 0, moderationStatus.toString()).get();
+    }
+
     public Posts save(boolean isActive, Users user, LocalDateTime time, String title, String text, int viewCount) {
         Posts post = new Posts();
         post.setActive(isActive);

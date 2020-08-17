@@ -66,7 +66,7 @@ public interface PostsRepository extends JpaRepository<Posts, Integer> {
         "(select count(pv.value) from post_votes pv where value = 1) likesCount, " +
         "(select count(pv.value) from post_votes pv where value = -1) dislikesCount, " +
         "sum(p.view_count) viewsCount, " +
-        "unix_timestamp((select p.time from posts p order by p.time limit 1)) firstPublication " +
+        "unix_timestamp(min(p.time)) firstPublication " +
         "from posts p;"
     )
     Optional<PostStatistics> findAllStatistic();

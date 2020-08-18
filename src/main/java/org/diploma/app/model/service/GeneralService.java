@@ -162,4 +162,8 @@ public class GeneralService {
         Files.write(path, bytes);
         return uploadFile;
     }
+
+    public byte[] downloadImage(Path path) throws IOException {
+        return Files.readAllBytes(path);
+    }
 }

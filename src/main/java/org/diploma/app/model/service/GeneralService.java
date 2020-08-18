@@ -19,18 +19,26 @@ import org.diploma.app.model.service.db.TagsDBService;
 import org.diploma.app.model.service.db.UsersDBService;
 import org.diploma.app.model.util.Decision;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Service
 public class GeneralService {
+
+    @Value("${upload.dir}")
+    String uploadDir;
 
     @Autowired
     GlobalSettingsDBService globalSettingsDBService;
@@ -136,5 +144,22 @@ public class GeneralService {
     public PostVotesStatistics getMyPostVotesStatistics(String email) {
         Users user = usersDBService.find(email);
         return postVotesDBService.findMyStatistic(user, true, ModerationStatus.ACCEPTED);
+    }
+
+    public String uploadImage(byte[] bytes, String format) throws IOException {
+        String[] hashes = UUID.randomUUID().toString().split("-");
+        StringBuilder uploadPath = new StringBuilder();
+        uploadPath.append("/upload/");
+        for(int i = 1; i < 4; i++)
+            uploadPath.append(hashes[i]).append("/");
+
+        Files.createDirectories(Path.of(uploadDir + uploadPath.toString()));
+        uploadPath.append(hashes[4]).append(".").append(format.toLowerCase());
+
+        String uploadFile = uploadPath.toString();
+        Path path = Path.of(uploadDir + uploadFile);
+        Files.createFile(path);
+        Files.write(path, bytes);
+        return uploadFile;
     }
 }

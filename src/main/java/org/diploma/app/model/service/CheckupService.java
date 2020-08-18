@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -79,5 +80,18 @@ public class CheckupService {
         } else if (text.length() < 50) {
             errors.put("text", "Текст публикации слишком короткий");
         }
+    }
+
+    public void imageSize(long size) {
+        if (size == 0) {
+            errors.put("image", "Пустой файл");
+        } else if ((size / 1024) > 5120 /*kilobytes*/) {
+            errors.put("image", "Размер файла превышает допустимый размер");
+        }
+    }
+
+    public void imageFormat(String format) {
+        if (!format.equals("JPEG") && !format.equals("PNG"))
+            errors.put("image", "Неверный формат файла");
     }
 }

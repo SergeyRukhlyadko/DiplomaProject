@@ -31,12 +31,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -165,4 +171,30 @@ class ApiGeneralController {
             postsStatistics.getFirstPublication()
         );
     }
+
+    @PostMapping("/image")
+    ResponseEntity<?> image(@RequestParam("image") MultipartFile multipartFile) throws IOException {
+        ImageInputStream iis = ImageIO.createImageInputStream(multipartFile.getInputStream());
+        Iterator<ImageReader> imageReaders = ImageIO.getImageReaders(iis);
+        String format;
+        if (imageReaders.hasNext()) {
+            format = imageReaders.next().getFormatName();
+        } else {
+            return ResponseEntity.status(400).body(new BadRequestBody("Файл не найден"));
+        }
+
+        CheckupService checkupService = context.getBean("checkupService", CheckupService.class);
+        checkupService.imageSize(multipartFile.getSize());
+        checkupService.imageFormat(format);
+        Map<String, String> errors = checkupService.getErrors();
+        if (!errors.isEmpty())
+            return ResponseEntity.ok(new ErrorBody(errors));
+
+        return ResponseEntity.ok(generalService.uploadImage(multipartFile.getBytes(), format));
+    }
+
+    /*@PostMapping("/profile/my")
+    ResponseEntity<?> profileMy(Principal principal) {
+        File.create
+    }*/
 }

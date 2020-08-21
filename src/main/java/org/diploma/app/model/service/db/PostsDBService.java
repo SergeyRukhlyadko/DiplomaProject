@@ -102,6 +102,18 @@ public class PostsDBService {
         );
     }
 
+    public Page<Posts> findActiveAndAccepted(int page, int limit, String desiredSubstring) {
+        return postsRepository.findByIsActiveAndModerationStatusAndTitleContainingOrByTextContaining(
+            PageRequest.of(page, limit), true, ModerationStatus.ACCEPTED, desiredSubstring, desiredSubstring
+        );
+    }
+
+    public Page<Posts> findAllActiveAndAccepted(int page, int limit) {
+        return postsRepository.findByIsActiveAndModerationStatus(
+            PageRequest.of(page, limit), true, ModerationStatus.ACCEPTED
+        );
+    }
+
     public PostsStatistics findAllStatistic() {
         //Протестировать запрос, при отсутствии данных и написать обработку
         return postsRepository.findAllStatistic().get();

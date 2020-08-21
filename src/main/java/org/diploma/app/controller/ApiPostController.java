@@ -129,6 +129,11 @@ class ApiPostController  {
         return new ResponseBodyFactory().createResponsePostBody(postService.findByTag(offset, limit, tag));
     }
 
+    @GetMapping("/search")
+    ResponsePostBody search(@RequestParam int offset, @RequestParam int limit, @RequestParam String query) {
+        return new ResponseBodyFactory().createResponsePostBody(postService.findByTitleOrText(offset, limit, query));
+    }
+
     @PostMapping("/like")
     DefaultBody like(Principal principal, @RequestBody HashMap<String, Integer> requestBody) {
         return new DefaultBody(postService.like(principal.getName(), requestBody.get("post_id")));

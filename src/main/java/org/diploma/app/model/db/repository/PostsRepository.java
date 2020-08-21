@@ -77,4 +77,9 @@ public interface PostsRepository extends JpaRepository<Posts, Integer> {
         "from posts where user_id = ?1 and is_active = ?2 and moderation_status = ?3"
     )
     Optional<PostsStatistics> findMyStatistic(int userId, int isActive, String moderationStatus);
+
+    @Query("select p from Posts p where p.isActive = ?1 and p.moderationStatus = ?2 and (p.title like %?3% or p.text like %?4%)")
+    Page<Posts> findByIsActiveAndModerationStatusAndTitleContainingOrByTextContaining(
+        Pageable pageable, boolean isActive, ModerationStatus moderationStatus, String title, String text
+    );
 }

@@ -267,6 +267,13 @@ public class PostService {
         return postsDBService.findActiveAndAcceptedAndBeforeNow(offset / limit, limit, tagName);
     }
 
+    public Page<Posts> findByTitleOrText(int offset, int limit, String desiredSubstring) {
+        Page<Posts> pages = postsDBService.findActiveAndAccepted(offset / limit, limit, desiredSubstring);
+        if (pages.getTotalElements() == 0)
+            pages = postsDBService.findAllActiveAndAccepted(offset/ limit, limit);
+        return pages;
+    }
+
     public boolean like(String email, int postId) {
         return addPostVote(email, postId, (byte) 1);
     }

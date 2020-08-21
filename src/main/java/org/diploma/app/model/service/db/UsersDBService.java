@@ -6,6 +6,7 @@ import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
@@ -61,5 +62,16 @@ public class UsersDBService {
         Users user = findByCode(code);
         user.setPassword(password);
         return usersRepository.save(user);
+    }
+
+    @Transactional
+    public int updateUser(String email, String name, String newEmail, String password, String photo) {
+        return usersRepository.update(email, name, newEmail, password, photo);
+    }
+
+    public String findPhoto(String email) {
+        return usersRepository.findPhoto(email).orElseThrow(
+            () -> new EntityNotFoundException("Photo with email " + email + " not found")
+        );
     }
 }

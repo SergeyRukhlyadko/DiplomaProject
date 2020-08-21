@@ -109,6 +109,17 @@ public class AuthService {
         SecurityContextHolder.clearContext();
     }
 
+    public void relogin(String email, String sessionId) {
+        logout();
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+            email,
+            "",
+            new ArrayList<>()
+        );
+        authentication.setDetails(sessionId);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
     public boolean restorePassword(String email) {
         if (emailService.check(email) && usersDBService.exists(email)) {
             String code = UUID.randomUUID().toString();

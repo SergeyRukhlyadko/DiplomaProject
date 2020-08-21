@@ -9,12 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Getter
 @Service
 @Scope("prototype")
 public class CheckupService {
@@ -31,29 +30,39 @@ public class CheckupService {
     static final String NAME_REGEX = "([A-Z]{1}[a-z]+)|([А-я]{1}[а-я]+)";
     static final String PASSWORD_REGEX = "[A-Za-z0-9]+";
 
+    @Getter
     Map<String, String> errors = new HashMap<>();
 
-    public void name(String name) {
-        if (!name.matches(NAME_REGEX))
-            errors.put("name", "Имя указано неверно");
+    public CheckupService name(String name) {
+        Optional.ofNullable(name).ifPresent((n) -> {
+            if (!n.matches(NAME_REGEX))
+                errors.put("name", "Имя указано неверно");
+        });
+        return this;
     }
 
-    public void email(String email) {
-        if (emailService.check(email)) {
-            if (usersDBService.exists(email))
-                errors.put("email", "Этот e-mail уже зарегистрирован");
-        } else  {
-            errors.put("email", "Неверный формат e-mail");
-        }
+    public CheckupService email(String email) {
+        Optional.ofNullable(email).ifPresent((e) -> {
+            if (emailService.check(e)) {
+                if (usersDBService.exists(e))
+                    errors.put("email", "Этот e-mail уже зарегистрирован");
+            } else  {
+                errors.put("email", "Неверный формат e-mail");
+            }
+        });
+        return this;
     }
 
-    public void password(String password) {
-        if (password.length() > 5) {
-            if (!password.matches(PASSWORD_REGEX))
-                errors.put("password", "Пароль может содержать только латинские символы и цифры");
-        } else {
-            errors.put("password", "Пароль короче 6-ти символов");
-        }
+    public CheckupService password(String password) {
+        Optional.ofNullable(password).ifPresent((p) -> {
+            if (p.length() > 5) {
+                if (!p.matches(PASSWORD_REGEX))
+                    errors.put("password", "Пароль может содержать только латинские символы и цифры");
+            } else {
+                errors.put("password", "Пароль короче 6-ти символов");
+            }
+        });
+        return this;
     }
 
     public void captcha(String captchaSecret, String captcha) {
@@ -82,16 +91,34 @@ public class CheckupService {
         }
     }
 
-    public void imageSize(long size) {
+    public CheckupService imageSize(long size) {
         if (size == 0) {
             errors.put("image", "Пустой файл");
         } else if ((size / 1024) > 5120 /*kilobytes*/) {
             errors.put("image", "Размер файла превышает допустимый размер");
         }
+        return this;
     }
 
-    public void imageFormat(String format) {
-        if (!format.equals("JPEG") && !format.equals("PNG"))
-            errors.put("image", "Неверный формат файла");
+    public CheckupService imageFormat(String format) {
+        Optional.ofNullable(format).ifPresent((f) -> {
+            if (!f.equals("JPEG") && !f.equals("PNG"))
+                errors.put("image", "Неверный формат файла");
+        });
+        return this;
+    }
+
+    public CheckupService removePhoto(String photo, int removePhoto) {
+        Optional.ofNullable(photo).ifPresent((p) -> {
+            if (!p.isEmpty() && removePhoto != 1)
+                errors.put("photo", "Параметры на удалние фотографии не верны");
+        });
+        return this;
+    }
+
+    public CheckupService changePhoto(int removePhoto) {
+        if (removePhoto != 0)
+            errors.put("photo", "Параметры на изменение фотографии не верны");
+        return this;
     }
 }

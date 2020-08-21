@@ -21,6 +21,7 @@ import org.diploma.app.model.util.Decision;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
@@ -57,6 +58,9 @@ public class GeneralService {
 
     @Autowired
     PostVotesDBService postVotesDBService;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     public Users changeModeratorStatus(String email) {
         Users user = usersDBService.find(email);
@@ -165,5 +169,37 @@ public class GeneralService {
 
     public byte[] downloadImage(Path path) throws IOException {
         return Files.readAllBytes(path);
+    }
+
+    public void deleteImage(Path path) throws IOException {
+        Files.delete(path);
+    }
+
+    public boolean updateProfile(String email, String name, String newEmail, String password, String photo) {
+        String oldPhoto = "";
+        if (photo != null)
+            oldPhoto = usersDBService.findPhoto(email);
+
+        int countUpdated = usersDBService.updateUser(
+            email,
+            name,
+            newEmail,
+            password == null ? null : passwordEncoder.encode(password),
+            photo
+        );
+
+        if (countUpdated == 1) {
+            if (!oldPhoto.isEmpty()) {
+                try {
+                    deleteImage(Path.of(oldPhoto));
+                } catch(IOException e) {
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
+
+        return true;
     }
 }

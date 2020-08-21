@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.controller.request.post.RequestCommentBody;
 import org.diploma.app.controller.request.post.RequestModerationBody;
+import org.diploma.app.controller.request.post.RequestProfileBody;
 import org.diploma.app.controller.response.BadRequestBody;
 import org.diploma.app.controller.response.DefaultBody;
 import org.diploma.app.controller.response.ErrorBody;
@@ -19,6 +20,7 @@ import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
 import org.diploma.app.model.service.AuthService;
 import org.diploma.app.model.service.CheckupService;
 import org.diploma.app.model.service.GeneralService;
+import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +40,8 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpSession;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.ArrayList;
@@ -193,8 +197,75 @@ class ApiGeneralController {
         return ResponseEntity.ok(generalService.uploadImage(multipartFile.getBytes(), format));
     }
 
-    /*@PostMapping("/profile/my")
-    ResponseEntity<?> profileMy(Principal principal) {
-        File.create
-    }*/
+    @PostMapping(value = "/profile/my", consumes = "application/json")
+    ResponseEntity<?> profileMy(HttpSession session, Principal principal, @RequestBody RequestProfileBody requestBody) {
+        CheckupService checkupService = context.getBean("checkupService", CheckupService.class);
+        checkupService.name(requestBody.getName())
+            .password(requestBody.getPassword())
+            .removePhoto(requestBody.getPhoto(), requestBody.getRemovePhoto());
+
+        if (!principal.getName().equals(requestBody.getEmail()))
+            checkupService.email(requestBody.getEmail());
+
+        Map<String, String> errors = checkupService.getErrors();
+        if (!errors.isEmpty())
+            return ResponseEntity.ok(new ErrorBody(errors));
+
+        boolean isUpdated = generalService.updateProfile(
+            principal.getName(),
+            requestBody.getName(),
+            requestBody.getEmail(),
+            requestBody.getPassword(),
+            requestBody.getPhoto()
+        );
+
+        if (isUpdated && requestBody.getEmail() != null)
+            authService.relogin(requestBody.getEmail(), session.getId());
+
+        return ResponseEntity.ok(new DefaultBody(isUpdated));
+    }
+
+    @PostMapping(value = "/profile/my", consumes = "multipart/form-data")
+    ResponseEntity<?> profileMy(HttpSession session, Principal principal,
+                                @RequestParam("photo") MultipartFile multipartFile,
+                                @RequestParam(value = "removePhoto", required = false) int removePhoto,
+                                @RequestParam(value = "name", required = false) String name,
+                                @RequestParam(value = "email", required = false) String email,
+                                @RequestParam(value = "password", required = false) String password) throws IOException {
+        ImageInputStream iis = ImageIO.createImageInputStream(multipartFile.getInputStream());
+        Iterator<ImageReader> imageReaders = ImageIO.getImageReaders(iis);
+        String format;
+        if (imageReaders.hasNext()) {
+            format = imageReaders.next().getFormatName();
+        } else {
+            return ResponseEntity.status(400).body(new BadRequestBody("Файл не найден"));
+        }
+
+        CheckupService checkupService = context.getBean("checkupService", CheckupService.class);
+        checkupService.changePhoto(removePhoto)
+            .imageSize(multipartFile.getSize())
+            .imageFormat(format)
+            .name(name)
+            .password(password);
+
+        if (!principal.getName().equals(email))
+            checkupService.email(email);
+
+        Map<String, String> errors = checkupService.getErrors();
+        if (!errors.isEmpty())
+            return ResponseEntity.ok(new ErrorBody(errors));
+
+        BufferedImage originalImage = ImageIO.read(iis);
+        BufferedImage outputImage = Scalr.resize(originalImage, 36, 36);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(outputImage, format, baos);
+
+        String photoPath = generalService.uploadImage(baos.toByteArray(), format);
+        boolean isUpdated = generalService.updateProfile(principal.getName(), name, email, password, photoPath);
+
+        if (isUpdated && email != null)
+            authService.relogin(email, session.getId());
+
+        return ResponseEntity.ok(new DefaultBody(isUpdated));
+    }
 }

@@ -2,8 +2,9 @@ package org.diploma.app.model.service.db;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
-import org.diploma.app.model.db.entity.PostsStatistics;
 import org.diploma.app.model.db.entity.Posts;
+import org.diploma.app.model.db.entity.PostsCountByDate;
+import org.diploma.app.model.db.entity.PostsStatistics;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
 import org.diploma.app.model.db.repository.PostsRepository;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Service
@@ -121,6 +123,14 @@ public class PostsDBService {
 
     public PostsStatistics findMyStatistic(Users user, boolean isActive, ModerationStatus moderationStatus) {
         return postsRepository.findMyStatistic(user.getId(), isActive ? 1 : 0, moderationStatus.toString()).get();
+    }
+
+    public List<Integer> findAllYears() {
+        return postsRepository.findAllYears();
+    }
+
+    public List<PostsCountByDate> findGroupByYear(int year) {
+        return postsRepository.findByYearGroupByYear(year);
     }
 
     public Posts save(boolean isActive, Users user, LocalDateTime time, String title, String text, int viewCount) {

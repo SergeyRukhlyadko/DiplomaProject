@@ -9,6 +9,7 @@ import org.diploma.app.controller.response.BadRequestBody;
 import org.diploma.app.controller.response.DefaultBody;
 import org.diploma.app.controller.response.ErrorBody;
 import org.diploma.app.controller.response.InitBody;
+import org.diploma.app.controller.response.ResponseCalendarBody;
 import org.diploma.app.controller.response.ResponseStatisticBody;
 import org.diploma.app.controller.response.ResponseTagBody;
 import org.diploma.app.controller.response.dto.TagDto;
@@ -44,11 +45,13 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @RestController
@@ -267,5 +270,13 @@ class ApiGeneralController {
             authService.relogin(email, session.getId());
 
         return ResponseEntity.ok(new DefaultBody(isUpdated));
+    }
+
+    @GetMapping("/calendar")
+    ResponseCalendarBody calendar(@RequestParam(required = false) Integer year) {
+        return new ResponseCalendarBody(
+            generalService.years(),
+            generalService.countByYear(Objects.requireNonNullElseGet(year, () -> LocalDateTime.now().getYear()))
+        );
     }
 }

@@ -1,7 +1,8 @@
 package org.diploma.app.model.db.repository;
 
-import org.diploma.app.model.db.entity.PostsStatistics;
 import org.diploma.app.model.db.entity.Posts;
+import org.diploma.app.model.db.entity.PostsCountByDate;
+import org.diploma.app.model.db.entity.PostsStatistics;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
 import org.springframework.data.domain.Page;
@@ -11,6 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -82,4 +84,10 @@ public interface PostsRepository extends JpaRepository<Posts, Integer> {
     Page<Posts> findByIsActiveAndModerationStatusAndTitleContainingOrByTextContaining(
         Pageable pageable, boolean isActive, ModerationStatus moderationStatus, String title, String text
     );
+
+    @Query("select year(time) from Posts group by year(time) order by time")
+    List<Integer> findAllYears();
+
+    @Query("select date_format(time, '%Y-%m-%d') as date, count(id) as count from Posts where year(time) = ?1 group by year(time), month(time), day(time) order by time")
+    List<PostsCountByDate> findByYearGroupByYear(int year);
 }

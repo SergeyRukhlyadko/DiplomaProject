@@ -6,6 +6,7 @@ import org.diploma.app.model.db.entity.GlobalSettings;
 import org.diploma.app.model.db.entity.PostComments;
 import org.diploma.app.model.db.entity.PostVotesStatistics;
 import org.diploma.app.model.db.entity.Posts;
+import org.diploma.app.model.db.entity.PostsCountByDate;
 import org.diploma.app.model.db.entity.PostsStatistics;
 import org.diploma.app.model.db.entity.Tags;
 import org.diploma.app.model.db.entity.Users;
@@ -201,5 +202,13 @@ public class GeneralService {
         }
 
         return true;
+    }
+
+    public List<Integer> years() {
+        return postsDBService.findAllYears();
+    }
+
+    public Map<String, Integer> countByYear(int year) {
+        return PostsCountByDate.toMap(postsDBService.findGroupByYear(year));
     }
 }

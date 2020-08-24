@@ -98,9 +98,9 @@ class ApiGeneralController {
     }
 
     @PutMapping("/settings")
-    ResponseEntity<?> settings(HttpSession session, @RequestBody HashMap<String, Boolean> settings) {
+    ResponseEntity<?> settings(Principal principal, @RequestBody HashMap<String, Boolean> settings) {
         try {
-            generalService.changeSettings(session.getId(), settings);
+            generalService.changeSettings(principal.getName(), settings);
         } catch(AccessDeniedException ad) {
             return ResponseEntity.status(400).body(new BadRequestBody("Пользователь не модератор"));
         } catch(EntityNotFoundException enf) {

@@ -7,6 +7,7 @@ import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.Tag2post;
 import org.diploma.app.model.db.entity.Tags;
 import org.diploma.app.model.db.entity.Users;
+import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
 import org.diploma.app.model.service.db.PostVotesDBService;
 import org.diploma.app.model.service.db.PostsDBService;
@@ -56,6 +57,9 @@ public class PostService {
     @Autowired
     AuthService authService;
 
+    @Autowired
+    GeneralService generalService;
+
     public Map<String, String> create(String email, boolean isActive, Date timestamp, String title, String text, List<String> tags) {
         Map<String, String> errors = new HashMap<>();
 
@@ -83,7 +87,20 @@ public class PostService {
             if (dateTime.isBefore(dateTimeNow))
                 dateTime = dateTimeNow;
 
-            Posts post = postsDBService.save(isActive, user, dateTime, title, text, 0);
+            Posts post;
+            if (!generalService.isEnabled(GlobalSetting.POST_PREMODERATION) && isActive) {
+                Posts newPost = new Posts();
+                newPost.setActive(isActive);
+                newPost.setModerationStatus(ModerationStatus.ACCEPTED);
+                newPost.setUserId(user);
+                newPost.setTime(dateTime);
+                newPost.setTitle(title);
+                newPost.setText(text);
+                newPost.setViewCount(0);
+                post = postsDBService.save(newPost);
+            } else {
+                post = postsDBService.save(isActive, user, dateTime, title, text, 0);
+            }
 
             if (!tags.isEmpty()) {
                 for(String tagString : tags) {
@@ -155,7 +172,7 @@ public class PostService {
 
     public int moderationCount(Users user) {
         if (user.isModerator())
-            return postsDBService.count(ModerationStatus.NEW);
+            return postsDBService.count(ModerationStatus.NEW); //добавить проверку активности поста
 
         return 0;
     }

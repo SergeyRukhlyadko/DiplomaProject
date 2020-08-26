@@ -105,10 +105,6 @@ public class AuthService {
         return usersDBService.find(String.valueOf(authentication.getPrincipal()));
     }
 
-    public void logout() {
-        SecurityContextHolder.clearContext();
-    }
-
     public void relogin(String email, String sessionId) {
         logout();
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
@@ -146,5 +142,9 @@ public class AuthService {
             usersDBService.updatePasswordByCode(code, passwordEncoder.encode(password));
 
         return errors;
+    }
+
+    public void logout() {
+        SecurityContextHolder.clearContext();
     }
 }

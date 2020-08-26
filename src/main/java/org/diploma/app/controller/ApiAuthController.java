@@ -7,6 +7,7 @@ import org.diploma.app.controller.request.post.RequestPasswordBody;
 import org.diploma.app.controller.response.CaptchaBody;
 import org.diploma.app.controller.response.DefaultBody;
 import org.diploma.app.controller.response.ErrorBody;
+import org.diploma.app.controller.response.ResponseDefaultBody;
 import org.diploma.app.controller.response.ResponseLoginCheckBody;
 import org.diploma.app.controller.response.dto.FullUserDto;
 import org.diploma.app.model.db.entity.Users;
@@ -106,12 +107,6 @@ class ApiAuthController {
         return ResponseEntity.ok().body(new ResponseLoginCheckBody(fullUserDto));
     }
 
-    @GetMapping("/logout")
-    DefaultBody logout() {
-        authService.logout();
-        return new DefaultBody(true);
-    }
-
     @PostMapping("/restore")
     DefaultBody restore(@RequestBody HashMap<String, String> requestBody) {
         return new DefaultBody(authService.restorePassword(requestBody.get("email")));
@@ -130,5 +125,11 @@ class ApiAuthController {
             return ResponseEntity.ok(new ErrorBody(errors));
 
         return ResponseEntity.ok(new DefaultBody(true));
+    }
+
+    @GetMapping("/logout")
+    ResponseDefaultBody logout() {
+        authService.logout();
+        return new ResponseDefaultBody(true);
     }
 }

@@ -1,0 +1,34 @@
+host: localhost
+server:
+  port: 80
+
+spring:
+  jpa:
+    hibernate.ddl-auto: update
+  datasource:
+    initialization-mode: always
+    url: jdbc:mysql://localhost:3306/diploma_project
+    username: root
+    password: root
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: diploma.project.d.p@gmail.com
+    password:
+    properties.mail.smtp:
+      auth: true
+      starttls.enable: true
+
+captcha:
+  length: 9
+  width: 115
+  height: 40
+  fontPath: /static/fonts/OpenSans-Regular.ttf
+  fontSize: 20
+  grid: false
+
+upload.dir: C:/
+
+#logging.level.org.hibernate:
+#    SQL: debug
+#    type: trace

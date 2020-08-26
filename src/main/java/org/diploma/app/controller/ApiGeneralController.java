@@ -8,7 +8,6 @@ import org.diploma.app.controller.request.post.RequestProfileBody;
 import org.diploma.app.controller.response.BadRequestBody;
 import org.diploma.app.controller.response.DefaultBody;
 import org.diploma.app.controller.response.ErrorBody;
-import org.diploma.app.controller.response.InitBody;
 import org.diploma.app.controller.response.ResponseCalendarBody;
 import org.diploma.app.controller.response.ResponseStatisticBody;
 import org.diploma.app.controller.response.ResponseTagBody;
@@ -84,13 +83,13 @@ class ApiGeneralController {
     }
 
     @GetMapping("/init")
-    InitBody init() {
-        return new InitBody("DevPub",
-                "Рассказы разработчиков",
-                "",
-                "",
-                "Рухлядко Сергей",
-                "2020");
+    Map<String, String> init() {
+        Map<String, String> initMap = new HashMap<>();
+        initMap.put("title", "DevPub");
+        initMap.put("subtitle", "Рассказы разработчиков");
+        initMap.put("copyright", "Рухлядко Сергей");
+        initMap.put("copyrightFrom", "2020");
+        return initMap;
     }
 
     @GetMapping("/settings")

@@ -92,15 +92,6 @@ class ApiGeneralController {
         return initMap;
     }
 
-    @GetMapping("/settings")
-    ResponseEntity<?> settings(HttpSession session) {
-        try {
-            return ResponseEntity.ok(generalService.getAllSettings());
-        } catch(EntityNotFoundException e) {
-            return ResponseEntity.status(500).build();
-        }
-    }
-
     @PutMapping("/settings")
     ResponseEntity<?> settings(Principal principal, @RequestBody HashMap<String, Boolean> settings) {
         try {
@@ -307,5 +298,10 @@ class ApiGeneralController {
             generalService.years(),
             generalService.countByYear(Objects.requireNonNullElseGet(year, () -> LocalDateTime.now().getYear()))
         );
+    }
+
+    @GetMapping("/settings")
+    Map<String, Boolean> settings() {
+        return generalService.findAllGlobalSettings();
     }
 }

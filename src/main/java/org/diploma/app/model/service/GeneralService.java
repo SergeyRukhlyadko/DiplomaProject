@@ -2,7 +2,6 @@ package org.diploma.app.model.service;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
-import org.diploma.app.model.db.entity.GlobalSettings;
 import org.diploma.app.model.db.entity.PostComments;
 import org.diploma.app.model.db.entity.PostVotesStatistics;
 import org.diploma.app.model.db.entity.Posts;
@@ -12,6 +11,8 @@ import org.diploma.app.model.db.entity.PostsStatistics;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
+import org.diploma.app.model.db.entity.projection.GlobalSettingCodeAndValue;
+import org.diploma.app.model.db.repository.GlobalSettingsRepository;
 import org.diploma.app.model.db.repository.TagsRepository;
 import org.diploma.app.model.service.db.GlobalSettingsDBService;
 import org.diploma.app.model.service.db.PostCommentsDBService;
@@ -30,8 +31,7 @@ import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -67,22 +67,13 @@ public class GeneralService {
     @Autowired
     TagsRepository tagsRepository;
 
+    @Autowired
+    GlobalSettingsRepository globalSettingsRepository;
+
     public Users changeModeratorStatus(String email) {
         Users user = usersDBService.find(email);
         user.setModerator(!user.isModerator());
         return usersDBService.save(user);
-    }
-
-    public Map<String, Boolean> getAllSettings() {
-        Iterator<GlobalSettings> iterator = globalSettingsDBService.findAll();
-        Map<String, Boolean> settings = new HashMap<>();
-
-        while(iterator.hasNext()) {
-            GlobalSettings gs = iterator.next();
-            settings.put(gs.getCode(), gs.isValue());
-        }
-
-        return settings;
     }
 
     public void changeSettings(String email, Map<String, Boolean> settings) {
@@ -214,5 +205,16 @@ public class GeneralService {
 
     public Map<String, Integer> countByYear(int year) {
         return PostsCountByDate.toMap(postsDBService.findGroupByYear(year));
+    }
+
+    /*
+        throws GlobalSettingNotFoundException
+     */
+    public Map<String, Boolean> findAllGlobalSettings() {
+        Collection<GlobalSettingCodeAndValue> globalSettings = globalSettingsRepository.findBy(GlobalSettingCodeAndValue.class);
+        if (globalSettings.isEmpty())
+            throw new GlobalSettingNotFoundException("Global settings not found");
+
+        return GlobalSettingCodeAndValue.toMap(globalSettings);
     }
 }

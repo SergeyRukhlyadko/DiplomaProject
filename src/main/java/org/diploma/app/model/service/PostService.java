@@ -9,6 +9,7 @@ import org.diploma.app.model.db.entity.Tags;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
+import org.diploma.app.model.db.repository.PostsRepository;
 import org.diploma.app.model.service.db.PostVotesDBService;
 import org.diploma.app.model.service.db.PostsDBService;
 import org.diploma.app.model.service.db.Tag2postDBService;
@@ -59,6 +60,9 @@ public class PostService {
 
     @Autowired
     GeneralService generalService;
+
+    @Autowired
+    PostsRepository postsRepository;
 
     public Map<String, String> create(String email, boolean isActive, Date timestamp, String title, String text, List<String> tags) {
         Map<String, String> errors = new HashMap<>();
@@ -168,6 +172,10 @@ public class PostService {
         }
 
         return true;
+    }
+
+    public long postsCount() {
+        return postsRepository.count();
     }
 
     public int moderationCount(Users user) {

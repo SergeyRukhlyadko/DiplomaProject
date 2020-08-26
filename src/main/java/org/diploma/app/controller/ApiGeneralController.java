@@ -14,13 +14,15 @@ import org.diploma.app.controller.response.ResponseStatisticBody;
 import org.diploma.app.controller.response.ResponseTagBody;
 import org.diploma.app.controller.response.dto.TagDto;
 import org.diploma.app.model.db.entity.PostVotesStatistics;
+import org.diploma.app.model.db.entity.PostsCountByTagName;
 import org.diploma.app.model.db.entity.PostsStatistics;
-import org.diploma.app.model.db.entity.Tags;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
 import org.diploma.app.model.service.AuthService;
 import org.diploma.app.model.service.CheckupService;
 import org.diploma.app.model.service.GeneralService;
+import org.diploma.app.model.service.PostService;
+import org.diploma.app.model.util.NormalizationAlgorithm;
 import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -66,6 +68,9 @@ class ApiGeneralController {
 
     @Autowired
     GeneralService generalService;
+
+    @Autowired
+    PostService postService;
 
     //Метод смены флага модератора для удобства
     @GetMapping("/moderator")
@@ -113,10 +118,35 @@ class ApiGeneralController {
     }
 
     @GetMapping("/tag")
-    ResponseEntity<?> tag() {
+    ResponseEntity<?> tag(@RequestParam(required = false) String query) {
+        List<PostsCountByTagName> postsCountByTagNameList = generalService.getAllTags();
         List<TagDto> tagDtoList = new ArrayList<>();
-        for(Tags tag : generalService.getAllTags())
-            tagDtoList.add(new TagDto(tag.getName()));
+        if (postsCountByTagNameList.size() == 0)
+            return ResponseEntity.ok(new ResponseTagBody(tagDtoList));
+
+        long postsCount = postService.postsCount();
+        double min = (float) postsCountByTagNameList.get(0).getPostsCount() / postsCount;
+        double max = min;
+        Map<String, Double> weights = new HashMap<>();
+        weights.put(postsCountByTagNameList.get(0).getName(), min);
+        for(int i = 1; i < postsCountByTagNameList.size(); i++) {
+            double weight = (float) postsCountByTagNameList.get(i).getPostsCount() / postsCount;
+            if (min > weight) {
+                min = weight;
+            } else if (max < weight) {
+                max = weight;
+            }
+
+            weights.put(postsCountByTagNameList.get(i).getName(), weight);
+        }
+
+        if (query == null || query.isEmpty()) {
+            for(Map.Entry<String, Double> entry : weights.entrySet())
+                tagDtoList.add(new TagDto(entry.getKey(), NormalizationAlgorithm.normalizeMinMax(min, max, entry.getValue())));
+        } else {
+            if (weights.containsKey(query))
+                tagDtoList.add(new TagDto(query, NormalizationAlgorithm.normalizeMinMax(min, max, weights.get(query))));
+        }
 
         return ResponseEntity.ok(new ResponseTagBody(tagDtoList));
     }

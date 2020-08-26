@@ -7,11 +7,12 @@ import org.diploma.app.model.db.entity.PostComments;
 import org.diploma.app.model.db.entity.PostVotesStatistics;
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.PostsCountByDate;
+import org.diploma.app.model.db.entity.PostsCountByTagName;
 import org.diploma.app.model.db.entity.PostsStatistics;
-import org.diploma.app.model.db.entity.Tags;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
+import org.diploma.app.model.db.repository.TagsRepository;
 import org.diploma.app.model.service.db.GlobalSettingsDBService;
 import org.diploma.app.model.service.db.PostCommentsDBService;
 import org.diploma.app.model.service.db.PostVotesDBService;
@@ -63,6 +64,9 @@ public class GeneralService {
     @Autowired
     PasswordEncoder passwordEncoder;
 
+    @Autowired
+    TagsRepository tagsRepository;
+
     public Users changeModeratorStatus(String email) {
         Users user = usersDBService.find(email);
         user.setModerator(!user.isModerator());
@@ -91,8 +95,8 @@ public class GeneralService {
         settings.forEach((k, v) -> globalSettingsDBService.update(k, v));
     }
 
-    public List<Tags> getAllTags() {
-        return tagsDBService.finaAll();
+    public List<PostsCountByTagName> getAllTags() {
+        return tagsRepository.findAllTagNamesAndPostsCountGroupByTagName();
     }
 
     public int addComment(String email, int parentId, int postId, String text) {

@@ -11,4 +11,6 @@ import lombok.experimental.FieldDefaults;
 public class TagDto {
 
     String name;
+
+    float weight;
 }

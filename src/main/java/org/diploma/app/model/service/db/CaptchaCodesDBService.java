@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
-import java.time.LocalDateTime;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Service
@@ -21,13 +20,5 @@ public class CaptchaCodesDBService {
         return captchaCodesRepository.findBySecretCode(secretCode).orElseThrow(
             () -> new EntityNotFoundException("Captcha with secret code " + secretCode + " not found")
         );
-    }
-
-    public CaptchaCodes save(String secretCode, String code) {
-        CaptchaCodes captchaCodes = new CaptchaCodes();
-        captchaCodes.setSecretCode(secretCode);
-        captchaCodes.setCode(code);
-        captchaCodes.setTime(LocalDateTime.now());
-        return captchaCodesRepository.save(captchaCodes);
     }
 }

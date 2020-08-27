@@ -13,13 +13,13 @@ import java.util.Base64;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
-public class CaptchaBody {
+public class ResponseCaptchaBody {
 
     String secret;
     String image = "data:image/jpeg;base64, ";
 
     @SneakyThrows(IOException.class)
-    public CaptchaBody(String secret, BufferedImage captcha) {
+    public ResponseCaptchaBody(String secret, BufferedImage captcha) {
         this.secret = secret;
 
         try(ByteArrayOutputStream os = new ByteArrayOutputStream()) {

@@ -2,9 +2,11 @@ package org.diploma.app.model.service;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
+import org.diploma.app.model.db.entity.CaptchaCodes;
 import org.diploma.app.model.db.entity.GlobalSettings;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
+import org.diploma.app.model.db.repository.CaptchaCodesRepository;
 import org.diploma.app.model.db.repository.UsersRepository;
 import org.diploma.app.model.service.db.CaptchaCodesDBService;
 import org.diploma.app.model.service.db.GlobalSettingsDBService;
@@ -23,6 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
@@ -31,14 +34,17 @@ import java.util.UUID;
 @Service
 public class AuthService {
 
-    @Autowired
-    ApplicationContext context;
-
     @Value("${spring.mail.username}")
     String from;
 
     @Value("${host}")
     String host;
+
+    @Value("${captcha.outdated}")
+    int captchaOutdated;
+
+    @Autowired
+    ApplicationContext context;
 
     @Autowired
     CaptchaCodesDBService captchaCodesDBService;
@@ -58,12 +64,8 @@ public class AuthService {
     @Autowired
     UsersRepository usersRepository;
 
-
-    public Captcha createCaptcha() {
-        Captcha captcha = context.getBean("captcha" , Captcha.class);
-        captchaCodesDBService.save(captcha.getSecret(), captcha.getCode());
-        return captcha;
-    }
+    @Autowired
+    CaptchaCodesRepository captchaCodesRepository;
 
     public Map<String, String> register(String name, String email, String password, String captcha, String captchaSecret) throws RegistrationIsClosedException {
         GlobalSettings globalSetting = globalSettingsDBService.find(GlobalSetting.MULTIUSER_MODE.toString());
@@ -147,6 +149,18 @@ public class AuthService {
             usersDBService.updatePasswordByCode(code, passwordEncoder.encode(password));
 
         return errors;
+    }
+
+    public Captcha createCaptcha() {
+        Captcha captcha = context.getBean("captcha" , Captcha.class);
+
+        LocalDateTime now = LocalDateTime.now();
+        captchaCodesRepository.deleteByTimeLessThen(now.minusHours(1));
+
+        CaptchaCodes captchaCodes = new CaptchaCodes(now, captcha.getCode(), captcha.getSecret());
+        captchaCodesRepository.save(captchaCodes);
+
+        return captcha;
     }
 
     public void logout() {

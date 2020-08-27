@@ -32,4 +32,10 @@ public class CaptchaCodes {
 
     @Column(name = "secret_code", nullable = false)
     String secretCode;
+
+    public CaptchaCodes(LocalDateTime time, String code, String secretCode) {
+        this.time = time;
+        this.code = code;
+        this.secretCode = secretCode;
+    }
 }

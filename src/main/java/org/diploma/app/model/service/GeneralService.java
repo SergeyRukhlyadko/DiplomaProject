@@ -23,14 +23,15 @@ import org.diploma.app.model.service.db.UsersDBService;
 import org.diploma.app.model.util.Decision;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -74,16 +75,6 @@ public class GeneralService {
         Users user = usersDBService.find(email);
         user.setModerator(!user.isModerator());
         return usersDBService.save(user);
-    }
-
-    public void changeSettings(String email, Map<String, Boolean> settings) {
-        Users user = usersDBService.find(email);
-
-        if (!user.isModerator())
-            throw new AccessDeniedException("User is not a moderator");
-
-        //сделать установку настроек транзакционной
-        settings.forEach((k, v) -> globalSettingsDBService.update(k, v));
     }
 
     public List<PostsCountByTagName> getAllTags() {
@@ -216,5 +207,24 @@ public class GeneralService {
             throw new GlobalSettingNotFoundException("Global settings not found");
 
         return GlobalSettingCodeAndValue.toMap(globalSettings);
+    }
+
+    @Transactional
+    public void updateGlobalSettings(Map<String, Boolean> settings) {
+        List<String> trueSettings = new ArrayList<>();
+        List<String> falseSettings = new ArrayList<>();
+        settings.forEach((k, v) -> {
+            if (v) {
+                trueSettings.add(k);
+            } else {
+                falseSettings.add(k);
+            }
+        });
+
+        if (!trueSettings.isEmpty())
+            globalSettingsRepository.updateValueByCodeIn(true, trueSettings);
+
+        if (!falseSettings.isEmpty())
+            globalSettingsRepository.updateValueByCodeIn(false, falseSettings);
     }
 }

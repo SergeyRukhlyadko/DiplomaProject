@@ -5,6 +5,7 @@ import lombok.experimental.FieldDefaults;
 import org.diploma.app.model.db.entity.GlobalSettings;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
+import org.diploma.app.model.db.repository.UsersRepository;
 import org.diploma.app.model.service.db.CaptchaCodesDBService;
 import org.diploma.app.model.service.db.GlobalSettingsDBService;
 import org.diploma.app.model.service.db.UsersDBService;
@@ -53,6 +54,10 @@ public class AuthService {
 
     @Autowired
     EmailService emailService;
+
+    @Autowired
+    UsersRepository usersRepository;
+
 
     public Captcha createCaptcha() {
         Captcha captcha = context.getBean("captcha" , Captcha.class);
@@ -146,5 +151,14 @@ public class AuthService {
 
     public void logout() {
         SecurityContextHolder.clearContext();
+    }
+
+    /*
+        throws UserNotFoundException
+     */
+    public boolean isModerator(String email) {
+        return usersRepository.isModeratorByEmail(email).orElseThrow(
+            () -> new UserNotFoundException("User with email " + email + " not found")
+        );
     }
 }

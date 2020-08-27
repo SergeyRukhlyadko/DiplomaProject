@@ -8,6 +8,7 @@ import org.diploma.app.controller.request.post.RequestProfileBody;
 import org.diploma.app.controller.response.BadRequestBody;
 import org.diploma.app.controller.response.DefaultBody;
 import org.diploma.app.controller.response.ErrorBody;
+import org.diploma.app.controller.response.ResponseBadRequestBody;
 import org.diploma.app.controller.response.ResponseCalendarBody;
 import org.diploma.app.controller.response.ResponseStatisticBody;
 import org.diploma.app.controller.response.ResponseTagBody;
@@ -22,12 +23,11 @@ import org.diploma.app.model.service.CheckupService;
 import org.diploma.app.model.service.GeneralService;
 import org.diploma.app.model.service.PostService;
 import org.diploma.app.model.util.NormalizationAlgorithm;
+import org.diploma.app.model.util.NullRemover;
 import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -90,21 +90,6 @@ class ApiGeneralController {
         initMap.put("copyright", "Рухлядко Сергей");
         initMap.put("copyrightFrom", "2020");
         return initMap;
-    }
-
-    @PutMapping("/settings")
-    ResponseEntity<?> settings(Principal principal, @RequestBody HashMap<String, Boolean> settings) {
-        try {
-            generalService.changeSettings(principal.getName(), settings);
-        } catch(AccessDeniedException ad) {
-            return ResponseEntity.status(400).body(new BadRequestBody("Пользователь не модератор"));
-        } catch(EntityNotFoundException enf) {
-            return ResponseEntity.status(400).body(new BadRequestBody(enf.getMessage()));
-        } catch(AuthenticationCredentialsNotFoundException acnf) {
-            return ResponseEntity.status(401).build();
-        }
-
-        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/tag")
@@ -303,5 +288,19 @@ class ApiGeneralController {
     @GetMapping("/settings")
     Map<String, Boolean> settings() {
         return generalService.findAllGlobalSettings();
+    }
+
+    @PutMapping("/settings")
+    ResponseEntity<?> settings(Principal principal, @RequestBody HashMap<String, Boolean> settings) {
+        boolean isModerator = authService.isModerator(principal.getName());
+        if (!isModerator)
+            return ResponseEntity.status(400).body(new ResponseBadRequestBody("Пользователь не модератор"));
+
+        NullRemover.remove(settings);
+        if (settings.isEmpty())
+            return ResponseEntity.ok().build();
+
+        generalService.updateGlobalSettings(settings);
+        return ResponseEntity.ok().build();
     }
 }

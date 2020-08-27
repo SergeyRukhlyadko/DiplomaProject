@@ -21,13 +21,4 @@ public class GlobalSettingsDBService {
             () -> new EntityNotFoundException("Global setting " + code + " not found")
         );
     }
-
-    public void update(String code, boolean value) {
-        GlobalSettings setting = globalSettingsRepository.findByCode(code).orElseThrow(
-            () -> new EntityNotFoundException("Global setting " + code + " not found")
-        );
-
-        setting.setValue(value);
-        globalSettingsRepository.save(setting);
-    }
 }

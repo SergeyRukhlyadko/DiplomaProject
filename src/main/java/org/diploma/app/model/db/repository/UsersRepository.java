@@ -18,6 +18,9 @@ public interface UsersRepository extends JpaRepository<Users, Integer> {
 
     boolean existsUsersByEmail(String email);
 
+    @Query("select isModerator from Users where email = ?1")
+    Optional<Boolean> isModeratorByEmail(String email);
+
     @Modifying
     @Query(nativeQuery = true, value = "update users u set " +
         "u.name = if (:name is null, u.name, :name), " +

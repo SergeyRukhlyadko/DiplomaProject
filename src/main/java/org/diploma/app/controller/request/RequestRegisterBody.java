@@ -7,7 +7,7 @@ import lombok.experimental.FieldDefaults;
 import org.diploma.app.model.service.CheckupService;
 
 import javax.validation.constraints.Email;
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
@@ -16,8 +16,7 @@ import javax.validation.constraints.Size;
 @Getter
 public class RequestRegisterBody {
 
-    @NotNull
-    @NotEmpty
+    @NotBlank
     @Email(message = "Неверный формат e-mail")
     @JsonProperty("e_mail")
     String email;
@@ -36,8 +35,7 @@ public class RequestRegisterBody {
     @Size(min = 8, max = 8, message = "Длинна каптчи должна быть {min} символов")
     String captcha;
 
-    @NotNull
-    @NotEmpty
+    @NotBlank
     @JsonProperty("captcha_secret")
     String captchaSecret;
 }

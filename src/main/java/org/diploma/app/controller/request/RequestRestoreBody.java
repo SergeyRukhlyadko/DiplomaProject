@@ -5,15 +5,13 @@ import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 
 import javax.validation.constraints.Email;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
 public class RequestRestoreBody {
 
-    @NotNull
-    @NotEmpty
+    @NotBlank
     @Email(message = "Неверный формат e-mail")
     String email;
 }

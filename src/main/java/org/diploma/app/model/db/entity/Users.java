@@ -2,6 +2,7 @@ package org.diploma.app.model.db.entity;
 
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@NoArgsConstructor
 @Setter
 @Getter
 @Entity
@@ -55,4 +57,15 @@ public class Users {
 
     @OneToMany(mappedBy = "userId")
     List<PostComments> postComments;
+
+    /*
+        Default regTime is time now
+     */
+    public Users(boolean isModerator, String name, String email, String password) {
+        this.isModerator = isModerator;
+        this.regTime = LocalDateTime.now();
+        this.name = name;
+        this.email = email;
+        this.password = password;
+    }
 }

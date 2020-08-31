@@ -14,7 +14,8 @@ public interface GlobalSettingsRepository extends JpaRepository<GlobalSettings, 
 
     <T> Collection<T> findBy(Class<T> type);
 
-    Optional<GlobalSettings> findByCode(String code);
+    @Query("select value from GlobalSettings where code = ?1")
+    Optional<Boolean> valueByCode(String code);
 
     @Modifying
     @Query("update GlobalSettings set value = ?1 where code in ?2")

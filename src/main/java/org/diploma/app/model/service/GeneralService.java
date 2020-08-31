@@ -14,7 +14,6 @@ import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
 import org.diploma.app.model.db.entity.projection.GlobalSettingCodeAndValue;
 import org.diploma.app.model.db.repository.GlobalSettingsRepository;
 import org.diploma.app.model.db.repository.TagsRepository;
-import org.diploma.app.model.service.db.GlobalSettingsDBService;
 import org.diploma.app.model.service.db.PostCommentsDBService;
 import org.diploma.app.model.service.db.PostVotesDBService;
 import org.diploma.app.model.service.db.PostsDBService;
@@ -43,9 +42,6 @@ public class GeneralService {
 
     @Value("${upload.dir}")
     String uploadDir;
-
-    @Autowired
-    GlobalSettingsDBService globalSettingsDBService;
 
     @Autowired
     TagsDBService tagsDBService;
@@ -113,10 +109,6 @@ public class GeneralService {
         }
 
         return true;
-    }
-
-    public boolean isEnabled(GlobalSetting globalSetting) {
-        return globalSettingsDBService.find(globalSetting.toString()).isValue();
     }
 
     public PostsStatistics getAllPostStatistics() {
@@ -226,5 +218,11 @@ public class GeneralService {
 
         if (!falseSettings.isEmpty())
             globalSettingsRepository.updateValueByCodeIn(false, falseSettings);
+    }
+
+    public boolean isEnabled(GlobalSetting globalSetting) {
+        return globalSettingsRepository.valueByCode(globalSetting.toString()).orElseThrow(
+            () -> new GlobalSettingNotFoundException("Global setting: " + globalSetting.toString() + " not found")
+        );
     }
 }

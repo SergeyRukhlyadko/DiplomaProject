@@ -3,13 +3,11 @@ package org.diploma.app.model.service;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.model.db.entity.CaptchaCodes;
-import org.diploma.app.model.db.entity.GlobalSettings;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
 import org.diploma.app.model.db.repository.CaptchaCodesRepository;
 import org.diploma.app.model.db.repository.UsersRepository;
 import org.diploma.app.model.service.db.CaptchaCodesDBService;
-import org.diploma.app.model.service.db.GlobalSettingsDBService;
 import org.diploma.app.model.service.db.UsersDBService;
 import org.diploma.app.model.util.Captcha;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,13 +45,13 @@ public class AuthService {
     ApplicationContext context;
 
     @Autowired
+    GeneralService generalService;
+
+    @Autowired
     CaptchaCodesDBService captchaCodesDBService;
 
     @Autowired
     UsersDBService usersDBService;
-
-    @Autowired
-    GlobalSettingsDBService globalSettingsDBService;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -66,24 +64,6 @@ public class AuthService {
 
     @Autowired
     CaptchaCodesRepository captchaCodesRepository;
-
-    public Map<String, String> register(String name, String email, String password, String captcha, String captchaSecret) throws RegistrationIsClosedException {
-        GlobalSettings globalSetting = globalSettingsDBService.find(GlobalSetting.MULTIUSER_MODE.toString());
-        if (!globalSetting.isValue())
-            throw new RegistrationIsClosedException();
-
-        CheckupService checkupService = context.getBean("checkupService", CheckupService.class);
-        checkupService.name(name);
-        checkupService.email(email);
-        checkupService.password(password);
-        checkupService.captcha(captchaSecret, captcha);
-        Map<String, String> errors = checkupService.getErrors();
-
-        if (errors.isEmpty())
-            usersDBService.save(false, name, email, passwordEncoder.encode(password));
-
-        return errors;
-    }
 
     public Users login(String email, String password, String sessionId) {
         Users user = usersDBService.find(email);
@@ -149,6 +129,16 @@ public class AuthService {
             usersDBService.updatePasswordByCode(code, passwordEncoder.encode(password));
 
         return errors;
+    }
+
+    /*
+        throws RegistrationIsClosedException
+     */
+    public Users register(String name, String email, String password) throws RegistrationIsClosedException {
+        if (generalService.isEnabled(GlobalSetting.MULTIUSER_MODE))
+            return usersRepository.save(new Users(false, name, email, passwordEncoder.encode(password)));
+
+        throw new RegistrationIsClosedException();
     }
 
     public Captcha createCaptcha() {

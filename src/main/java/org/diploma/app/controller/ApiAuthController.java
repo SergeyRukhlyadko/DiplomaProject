@@ -3,7 +3,7 @@ package org.diploma.app.controller;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.controller.request.post.RequestPasswordBody;
-import org.diploma.app.controller.request.post.RequestRegisterBody;
+import org.diploma.app.controller.request.RequestRegisterBody;
 import org.diploma.app.controller.response.DefaultBody;
 import org.diploma.app.controller.response.ErrorBody;
 import org.diploma.app.controller.response.ResponseCaptchaBody;
@@ -12,10 +12,12 @@ import org.diploma.app.controller.response.ResponseLoginCheckBody;
 import org.diploma.app.controller.response.dto.FullUserDto;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.service.AuthService;
+import org.diploma.app.model.service.CheckupService;
 import org.diploma.app.model.service.PostService;
 import org.diploma.app.model.service.RegistrationIsClosedException;
 import org.diploma.app.model.util.Captcha;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,30 +39,13 @@ import java.util.Map;
 class ApiAuthController {
 
     @Autowired
+    ApplicationContext context;
+
+    @Autowired
     AuthService authService;
 
     @Autowired
     PostService postService;
-
-    @PostMapping("/register")
-    ResponseEntity<?> register(@RequestBody RequestRegisterBody requestBody) {
-        try {
-            Map<String, String> errors = authService.register(
-                requestBody.getName(),
-                requestBody.getEmail(),
-                requestBody.getPassword(),
-                requestBody.getCaptcha(),
-                requestBody.getCaptchaSecret()
-            );
-
-            if (!errors.isEmpty())
-                return ResponseEntity.ok(new ErrorBody(errors));
-        } catch(RegistrationIsClosedException e) {
-            return ResponseEntity.status(404).build();
-        }
-
-        return ResponseEntity.ok(new DefaultBody(true));
-    }
 
     @PostMapping("/login")
     ResponseEntity<?> login(HttpSession session, @RequestBody HashMap<String ,String> loginBody) {
@@ -119,6 +105,24 @@ class ApiAuthController {
             return ResponseEntity.ok(new ErrorBody(errors));
 
         return ResponseEntity.ok(new DefaultBody(true));
+    }
+
+    @PostMapping("/register")
+    ResponseEntity<?> register(@Valid @RequestBody RequestRegisterBody requestBody) {
+        CheckupService checkupService = context.getBean("checkupService", CheckupService.class);
+        checkupService.existsUser(requestBody.getEmail())
+            .checkCaptcha(requestBody.getCaptcha(), requestBody.getCaptchaSecret());
+
+        if (checkupService.containsErrors())
+            return ResponseEntity.ok(new ErrorBody(checkupService.getErrors()));
+
+        try {
+            authService.register(requestBody.getName(), requestBody.getEmail(), requestBody.getPassword());
+        } catch(RegistrationIsClosedException e) {
+            return ResponseEntity.status(404).build();
+        }
+
+        return ResponseEntity.ok(new ResponseDefaultBody(true));
     }
 
     @GetMapping("/captcha")

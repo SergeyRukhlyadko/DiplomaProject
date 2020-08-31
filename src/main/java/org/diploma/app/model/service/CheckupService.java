@@ -3,6 +3,8 @@ package org.diploma.app.model.service;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
+import org.diploma.app.model.db.repository.CaptchaCodesRepository;
+import org.diploma.app.model.db.repository.UsersRepository;
 import org.diploma.app.model.service.db.CaptchaCodesDBService;
 import org.diploma.app.model.service.db.UsersDBService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,11 +29,21 @@ public class CheckupService {
     @Autowired
     EmailService emailService;
 
-    static final String NAME_REGEX = "([A-Z]{1}[a-z]+)|([А-я]{1}[а-я]+)";
-    static final String PASSWORD_REGEX = "[A-Za-z0-9]+";
+    @Autowired
+    UsersRepository usersRepository;
+
+    @Autowired
+    CaptchaCodesRepository captchaCodesRepository;
+
+    public static final String NAME_REGEX = "([A-Z]{1}[a-z]+)|([А-я]{1}[а-я]+)";
+    public static final String PASSWORD_REGEX = "[A-Za-z0-9]+";
 
     @Getter
     Map<String, String> errors = new HashMap<>();
+
+    public boolean containsErrors() {
+        return !errors.isEmpty();
+    }
 
     public CheckupService name(String name) {
         Optional.ofNullable(name).ifPresent((n) -> {
@@ -119,6 +131,18 @@ public class CheckupService {
     public CheckupService changePhoto(int removePhoto) {
         if (removePhoto != 0)
             errors.put("photo", "Параметры на изменение фотографии не верны");
+        return this;
+    }
+
+    public CheckupService existsUser(String email) {
+        if (usersRepository.existsUsersByEmail(email))
+            errors.put("email", "Этот e-mail уже зарегистрирован");
+        return this;
+    }
+
+    public CheckupService checkCaptcha(String code, String secretCode) {
+        if (!captchaCodesRepository.existsByCodeAndSecretCode(code, secretCode))
+            errors.put("captcha", "Код с картинки введён неверно");
         return this;
     }
 }

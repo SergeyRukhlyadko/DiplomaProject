@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
-import java.time.LocalDateTime;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Service
@@ -36,16 +35,6 @@ public class UsersDBService {
 
     public boolean exists(String email) {
         return usersRepository.existsUsersByEmail(email);
-    }
-
-    public Users save(boolean moderator, String name, String email, String password) {
-        Users user = new Users();
-        user.setModerator(moderator);
-        user.setRegTime(LocalDateTime.now());
-        user.setName(name);
-        user.setEmail(email);
-        user.setPassword(password);
-        return usersRepository.save(user);
     }
 
     public Users save(Users user) {

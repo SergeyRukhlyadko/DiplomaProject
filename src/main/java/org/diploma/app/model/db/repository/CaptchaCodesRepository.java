@@ -15,6 +15,8 @@ public interface CaptchaCodesRepository extends JpaRepository<CaptchaCodes, Inte
 
     Optional<CaptchaCodes> findBySecretCode(String secretCode);
 
+    boolean existsByCodeAndSecretCode(String code, String secretCode);
+
     @Transactional
     @Modifying
     @Query("delete from CaptchaCodes where time < ?1")

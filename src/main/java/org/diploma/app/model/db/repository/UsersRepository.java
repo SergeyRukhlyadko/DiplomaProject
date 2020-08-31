@@ -26,6 +26,10 @@ public interface UsersRepository extends JpaRepository<Users, Integer> {
     int updateCodeByEmail(String code, String email);
 
     @Modifying
+    @Query("update Users set password = ?1 where code = ?2")
+    int updatePasswordByCode(String password, String code);
+
+    @Modifying
     @Query(nativeQuery = true, value = "update users u set " +
         "u.name = if (:name is null, u.name, :name), " +
         "u.email = if (:newEmail is null, u.email , :newEmail), " +

@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.model.db.repository.CaptchaCodesRepository;
 import org.diploma.app.model.db.repository.UsersRepository;
-import org.diploma.app.model.service.db.CaptchaCodesDBService;
 import org.diploma.app.model.service.db.UsersDBService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -22,9 +21,6 @@ public class CheckupService {
 
     @Autowired
     UsersDBService usersDBService;
-
-    @Autowired
-    CaptchaCodesDBService captchaCodesDBService;
 
     @Autowired
     EmailService emailService;
@@ -75,11 +71,6 @@ public class CheckupService {
             }
         });
         return this;
-    }
-
-    public void captcha(String captchaSecret, String captcha) {
-        if (!captchaCodesDBService.find(captchaSecret).getCode().equals(captcha))
-            errors.put("captcha", "Код с картинки введён неверно");
     }
 
     public void comment(String text) {

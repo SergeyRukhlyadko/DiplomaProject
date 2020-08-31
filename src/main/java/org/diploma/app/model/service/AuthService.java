@@ -23,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.UUID;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -115,16 +114,15 @@ public class AuthService {
         return false;
     }
 
-    public Map<String, String> changePassword(String code, String password, String captcha, String captchaSecret) {
-        CheckupService checkupService = context.getBean("checkupService", CheckupService.class);
-        checkupService.password(password);
-        checkupService.captcha(captchaSecret, captcha);
-        Map<String, String> errors = checkupService.getErrors();
+    /*
+        throws SQLQueryException
+     */
+    @Transactional
+    public boolean changePassword(String code, String password) {
+        if (usersRepository.updatePasswordByCode(passwordEncoder.encode(password), code) != 1)
+            throw new SQLQueryException("More than one row has been updated in the Users table with code: " + code);
 
-        if (errors.isEmpty())
-            usersDBService.updatePasswordByCode(code, passwordEncoder.encode(password));
-
-        return errors;
+        return true;
     }
 
     /*

@@ -8,12 +8,9 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Repository
 public interface CaptchaCodesRepository extends JpaRepository<CaptchaCodes, Integer> {
-
-    Optional<CaptchaCodes> findBySecretCode(String secretCode);
 
     boolean existsByCodeAndSecretCode(String code, String secretCode);
 

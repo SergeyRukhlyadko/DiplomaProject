@@ -2,13 +2,13 @@ package org.diploma.app.controller;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
-import org.diploma.app.controller.request.RequestRestoreBody;
-import org.diploma.app.controller.request.post.RequestPasswordBody;
+import org.diploma.app.controller.request.RequestPasswordBody;
 import org.diploma.app.controller.request.RequestRegisterBody;
+import org.diploma.app.controller.request.RequestRestoreBody;
 import org.diploma.app.controller.response.DefaultBody;
-import org.diploma.app.controller.response.ErrorBody;
 import org.diploma.app.controller.response.ResponseCaptchaBody;
 import org.diploma.app.controller.response.ResponseDefaultBody;
+import org.diploma.app.controller.response.ResponseErrorBody;
 import org.diploma.app.controller.response.ResponseLoginCheckBody;
 import org.diploma.app.controller.response.dto.FullUserDto;
 import org.diploma.app.model.db.entity.Users;
@@ -32,7 +32,6 @@ import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.HashMap;
-import java.util.Map;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @RestController
@@ -94,18 +93,15 @@ class ApiAuthController {
     }
 
     @PostMapping("/password")
-    ResponseEntity<?> password(@RequestBody RequestPasswordBody requestBody) {
-        Map<String, String> errors = authService.changePassword(
-            requestBody.getCode(),
-            requestBody.getPassword(),
-            requestBody.getCaptcha(),
-            requestBody.getCaptchaSecret()
+    ResponseEntity<?> password(@Valid @RequestBody RequestPasswordBody requestBody) {
+        CheckupService checkupService = context.getBean("checkupService", CheckupService.class);
+        checkupService.checkCaptcha(requestBody.getCaptcha(), requestBody.getCaptchaSecret());
+        if (checkupService.containsErrors())
+            return ResponseEntity.ok(new ResponseErrorBody(checkupService.getErrors()));
+
+        return ResponseEntity.ok(new ResponseDefaultBody(
+            authService.changePassword(requestBody.getCode(), requestBody.getPassword()))
         );
-
-        if (!errors.isEmpty())
-            return ResponseEntity.ok(new ErrorBody(errors));
-
-        return ResponseEntity.ok(new DefaultBody(true));
     }
 
     @PostMapping("/register")
@@ -116,7 +112,7 @@ class ApiAuthController {
             .checkCaptcha(requestBody.getCaptcha(), requestBody.getCaptchaSecret());
 
         if (checkupService.containsErrors())
-            return ResponseEntity.ok(new ErrorBody(checkupService.getErrors()));
+            return ResponseEntity.ok(new ResponseErrorBody(checkupService.getErrors()));
 
         try {
             authService.register(requestBody.getName(), requestBody.getEmail(), requestBody.getPassword());

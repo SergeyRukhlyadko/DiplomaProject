@@ -2,22 +2,22 @@ package org.diploma.app.controller.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.model.service.CheckupService;
 
 import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@AllArgsConstructor
 @Getter
 public class RequestRegisterBody {
 
     @NotNull
+    @NotEmpty
     @Email(message = "Неверный формат e-mail")
     @JsonProperty("e_mail")
     String email;

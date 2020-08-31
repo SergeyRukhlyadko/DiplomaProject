@@ -7,13 +7,11 @@ import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
 import org.diploma.app.model.db.repository.CaptchaCodesRepository;
 import org.diploma.app.model.db.repository.UsersRepository;
-import org.diploma.app.model.service.db.CaptchaCodesDBService;
 import org.diploma.app.model.service.db.UsersDBService;
 import org.diploma.app.model.util.Captcha;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
-import org.springframework.mail.MailException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,8 +19,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Map;
@@ -46,9 +44,6 @@ public class AuthService {
 
     @Autowired
     GeneralService generalService;
-
-    @Autowired
-    CaptchaCodesDBService captchaCodesDBService;
 
     @Autowired
     UsersDBService usersDBService;
@@ -103,16 +98,17 @@ public class AuthService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
+    /*
+        throws SQLQueryException
+     */
+    @Transactional
     public boolean restorePassword(String email) {
-        if (emailService.check(email) && usersDBService.exists(email)) {
+        if (usersRepository.existsUsersByEmail(email)) {
             String code = UUID.randomUUID().toString();
-            try {
-                usersDBService.updateCodeByEmail(email, code);
-                emailService.send(from, email, "Restore password", "http://" + host + "/login/change-password/" + code);
-            } catch(EntityNotFoundException | MailException e) {
-                return false;
-            }
+            if (usersRepository.updateCodeByEmail(code, email) != 1)
+                throw new SQLQueryException("More than one row has been updated in the Users table with email: " + email);
 
+            emailService.send(from, email, "Restore password", "http://" + host + "/login/change-password/" + code);
             return true;
         }
 

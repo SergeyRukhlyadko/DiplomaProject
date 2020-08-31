@@ -134,7 +134,7 @@ public class CheckupService {
         return this;
     }
 
-    public CheckupService existsUser(String email) {
+    public CheckupService existsEmail(String email) {
         if (usersRepository.existsUsersByEmail(email))
             errors.put("email", "Этот e-mail уже зарегистрирован");
         return this;

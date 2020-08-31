@@ -2,6 +2,7 @@ package org.diploma.app.controller;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
+import org.diploma.app.controller.request.RequestRestoreBody;
 import org.diploma.app.controller.request.post.RequestPasswordBody;
 import org.diploma.app.controller.request.RequestRegisterBody;
 import org.diploma.app.controller.response.DefaultBody;
@@ -88,8 +89,8 @@ class ApiAuthController {
     }
 
     @PostMapping("/restore")
-    DefaultBody restore(@RequestBody HashMap<String, String> requestBody) {
-        return new DefaultBody(authService.restorePassword(requestBody.get("email")));
+    ResponseDefaultBody restore(@Valid @RequestBody RequestRestoreBody requestBody) {
+        return new ResponseDefaultBody(authService.restorePassword(requestBody.getEmail()));
     }
 
     @PostMapping("/password")
@@ -110,7 +111,8 @@ class ApiAuthController {
     @PostMapping("/register")
     ResponseEntity<?> register(@Valid @RequestBody RequestRegisterBody requestBody) {
         CheckupService checkupService = context.getBean("checkupService", CheckupService.class);
-        checkupService.existsUser(requestBody.getEmail())
+        checkupService
+            .existsEmail(requestBody.getEmail())
             .checkCaptcha(requestBody.getCaptcha(), requestBody.getCaptchaSecret());
 
         if (checkupService.containsErrors())

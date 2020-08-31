@@ -37,6 +37,7 @@ public class RequestRegisterBody {
     String captcha;
 
     @NotNull
+    @NotEmpty
     @JsonProperty("captcha_secret")
     String captchaSecret;
 }

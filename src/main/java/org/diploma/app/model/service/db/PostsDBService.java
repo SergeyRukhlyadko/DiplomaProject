@@ -164,8 +164,4 @@ public class PostsDBService {
         post.setText(text);
         return postsRepository.save(post);
     }
-
-    public int count(ModerationStatus moderationStatus) {
-        return postsRepository.countByModerationStatus(moderationStatus);
-    }
 }

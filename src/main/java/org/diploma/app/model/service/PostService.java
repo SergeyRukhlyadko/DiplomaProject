@@ -178,13 +178,6 @@ public class PostService {
         return postsRepository.count();
     }
 
-    public int moderationCount(Users user) {
-        if (user.isModerator())
-            return postsDBService.count(ModerationStatus.NEW); //добавить проверку активности поста
-
-        return 0;
-    }
-
     public Posts find(String sessionId, int id) {
         Posts post = postsDBService.find(id);
 
@@ -334,5 +327,9 @@ public class PostService {
         }
 
         return true;
+    }
+
+    public int moderationCount() {
+        return postsRepository.countByIsActiveAndModerationStatus(true, ModerationStatus.NEW);
     }
 }

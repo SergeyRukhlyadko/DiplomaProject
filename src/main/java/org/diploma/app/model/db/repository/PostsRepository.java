@@ -18,7 +18,7 @@ import java.util.Optional;
 @Repository
 public interface PostsRepository extends JpaRepository<Posts, Integer> {
 
-    int countByModerationStatus(ModerationStatus moderationStatus);
+    int countByIsActiveAndModerationStatus(boolean isActive, ModerationStatus moderationStatus);
 
     Page<Posts> findByIsActiveAndModerationStatusAndTimeGreaterThanEqualAndTimeLessThan(
         Pageable pageable, boolean isActive, ModerationStatus moderationStatus, LocalDateTime timeGte, LocalDateTime timeLt

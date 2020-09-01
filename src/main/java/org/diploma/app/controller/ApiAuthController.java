@@ -2,6 +2,7 @@ package org.diploma.app.controller;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
+import org.diploma.app.controller.request.RequestLoginBody;
 import org.diploma.app.controller.request.RequestPasswordBody;
 import org.diploma.app.controller.request.RequestRegisterBody;
 import org.diploma.app.controller.request.RequestRestoreBody;
@@ -10,12 +11,12 @@ import org.diploma.app.controller.response.ResponseCaptchaBody;
 import org.diploma.app.controller.response.ResponseDefaultBody;
 import org.diploma.app.controller.response.ResponseErrorBody;
 import org.diploma.app.controller.response.ResponseLoginCheckBody;
-import org.diploma.app.controller.response.dto.FullUserDto;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.service.AuthService;
 import org.diploma.app.model.service.CheckupService;
 import org.diploma.app.model.service.PostService;
 import org.diploma.app.model.service.RegistrationIsClosedException;
+import org.diploma.app.model.service.UserNotFoundException;
 import org.diploma.app.model.util.Captcha;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -28,10 +29,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import java.util.HashMap;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @RestController
@@ -48,23 +47,24 @@ class ApiAuthController {
     PostService postService;
 
     @PostMapping("/login")
-    ResponseEntity<?> login(HttpSession session, @RequestBody HashMap<String ,String> loginBody) {
+    ResponseEntity<?> login(HttpSession session, @Valid @RequestBody RequestLoginBody requestBody) {
         Users user;
         try {
-            user = authService.login(loginBody.get("e_mail"), loginBody.get("password"), session.getId());
-        } catch(BadCredentialsException | EntityNotFoundException e) {
+            user = authService.login(requestBody.getEmail(), requestBody.getPassword(), session.getId());
+        } catch(UserNotFoundException | BadCredentialsException e) {
+            //e.printStackTrace();
             return ResponseEntity.ok().body(new DefaultBody());
         }
 
-        FullUserDto fullUserDto = new FullUserDto(
+        return ResponseEntity.ok(new ResponseLoginCheckBody(
             user.getId(),
             user.getName(),
             user.getPhoto(),
             user.getEmail(),
             user.isModerator(),
-            postService.moderationCount(user),
-            user.isModerator());
-        return ResponseEntity.ok(new ResponseLoginCheckBody(fullUserDto));
+            user.isModerator() ? postService.moderationCount() : 0,
+            user.isModerator()
+        ));
     }
 
     @GetMapping("/check")
@@ -72,19 +72,19 @@ class ApiAuthController {
         Users user;
         try {
             user = authService.checkAuthentication(session.getId());
-        } catch(EntityNotFoundException | AuthenticationCredentialsNotFoundException e) {
+        } catch(UserNotFoundException | AuthenticationCredentialsNotFoundException e) {
             return ResponseEntity.ok().body(new DefaultBody());
         }
 
-        FullUserDto fullUserDto = new FullUserDto(
+        return ResponseEntity.ok(new ResponseLoginCheckBody(
             user.getId(),
             user.getName(),
             user.getPhoto(),
             user.getEmail(),
             user.isModerator(),
-            postService.moderationCount(user),
-            user.isModerator());
-        return ResponseEntity.ok().body(new ResponseLoginCheckBody(fullUserDto));
+            user.isModerator() ? postService.moderationCount() : 0,
+            user.isModerator()
+        ));
     }
 
     @PostMapping("/restore")

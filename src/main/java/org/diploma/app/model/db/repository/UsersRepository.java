@@ -14,8 +14,6 @@ public interface UsersRepository extends JpaRepository<Users, Integer> {
 
     Optional<Users> findByEmail(String email);
 
-    Optional<Users> findByCode(String code);
-
     boolean existsUsersByEmail(String email);
 
     @Query("select isModerator from Users where email = ?1")

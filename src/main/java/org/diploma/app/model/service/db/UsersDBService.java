@@ -23,12 +23,6 @@ public class UsersDBService {
         );
     }
 
-    public Users findByCode(String code) {
-        return usersRepository.findByCode(code).orElseThrow(
-            () -> new EntityNotFoundException("User with code " + code + " not found")
-        );
-    }
-
     public boolean exists(int id) {
         return usersRepository.existsById(id);
     }
@@ -38,18 +32,6 @@ public class UsersDBService {
     }
 
     public Users save(Users user) {
-        return usersRepository.save(user);
-    }
-
-    public Users updateCodeByEmail(String email, String code) {
-        Users user = find(email);
-        user.setCode(code);
-        return usersRepository.save(user);
-    }
-
-    public Users updatePasswordByCode(String code, String password) {
-        Users user = findByCode(code);
-        user.setPassword(password);
         return usersRepository.save(user);
     }
 

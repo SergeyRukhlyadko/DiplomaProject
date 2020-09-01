@@ -7,7 +7,6 @@ import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
 import org.diploma.app.model.db.repository.CaptchaCodesRepository;
 import org.diploma.app.model.db.repository.UsersRepository;
-import org.diploma.app.model.service.db.UsersDBService;
 import org.diploma.app.model.util.Captcha;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,13 +44,10 @@ public class AuthService {
     GeneralService generalService;
 
     @Autowired
-    UsersDBService usersDBService;
+    EmailService emailService;
 
     @Autowired
     PasswordEncoder passwordEncoder;
-
-    @Autowired
-    EmailService emailService;
 
     @Autowired
     UsersRepository usersRepository;
@@ -59,23 +55,24 @@ public class AuthService {
     @Autowired
     CaptchaCodesRepository captchaCodesRepository;
 
+    /*
+        throws UserNotFoundException, BadCredentialsException
+     */
     public Users login(String email, String password, String sessionId) {
-        Users user = usersDBService.find(email);
+        Users user = usersRepository.findByEmail(email).orElseThrow(
+            () -> new UserNotFoundException("User with email " + email + " not found")
+        );
 
         if (!passwordEncoder.matches(password, user.getPassword()))
             throw new BadCredentialsException("Wrong password");
 
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-            email,
-            password,
-            new ArrayList<>()
-        );
-        authentication.setDetails(sessionId);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
+        authenticate(email, sessionId);
         return user;
     }
 
+    /*
+        throws AuthenticationCredentialsNotFoundException, UserNotFoundException
+     */
     public Users checkAuthentication(String sessionId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String details = String.valueOf(authentication.getDetails());
@@ -83,7 +80,10 @@ public class AuthService {
         if (!authentication.isAuthenticated() || !details.equals(sessionId))
             throw new AuthenticationCredentialsNotFoundException("User with session " + sessionId + " is not authorized");
 
-        return usersDBService.find(String.valueOf(authentication.getPrincipal()));
+        String email = String.valueOf(authentication.getPrincipal());
+        return usersRepository.findByEmail(email).orElseThrow(
+            () -> new UserNotFoundException("User with email " + email + " not found")
+        );
     }
 
     public void relogin(String email, String sessionId) {
@@ -158,5 +158,15 @@ public class AuthService {
         return usersRepository.isModeratorByEmail(email).orElseThrow(
             () -> new UserNotFoundException("User with email " + email + " not found")
         );
+    }
+
+    private void authenticate(String email, String sessionId) {
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+            email,
+            "",
+            new ArrayList<>()
+        );
+        authentication.setDetails(sessionId);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 }

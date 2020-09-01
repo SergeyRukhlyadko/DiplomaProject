@@ -6,7 +6,6 @@ import org.diploma.app.controller.request.RequestLoginBody;
 import org.diploma.app.controller.request.RequestPasswordBody;
 import org.diploma.app.controller.request.RequestRegisterBody;
 import org.diploma.app.controller.request.RequestRestoreBody;
-import org.diploma.app.controller.response.DefaultBody;
 import org.diploma.app.controller.response.ResponseCaptchaBody;
 import org.diploma.app.controller.response.ResponseDefaultBody;
 import org.diploma.app.controller.response.ResponseErrorBody;
@@ -53,7 +52,7 @@ class ApiAuthController {
             user = authService.login(requestBody.getEmail(), requestBody.getPassword(), session.getId());
         } catch(UserNotFoundException | BadCredentialsException e) {
             //e.printStackTrace();
-            return ResponseEntity.ok().body(new DefaultBody());
+            return ResponseEntity.ok().body(new ResponseDefaultBody());
         }
 
         return ResponseEntity.ok(new ResponseLoginCheckBody(
@@ -72,8 +71,8 @@ class ApiAuthController {
         Users user;
         try {
             user = authService.checkAuthentication(session.getId());
-        } catch(UserNotFoundException | AuthenticationCredentialsNotFoundException e) {
-            return ResponseEntity.ok().body(new DefaultBody());
+        } catch(AuthenticationCredentialsNotFoundException e) {
+            return ResponseEntity.ok().body(new ResponseDefaultBody());
         }
 
         return ResponseEntity.ok(new ResponseLoginCheckBody(

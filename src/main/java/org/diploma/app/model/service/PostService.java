@@ -100,6 +100,14 @@ public class PostService {
         );
     }
 
+    public Page<Posts> findPostsByDate(int offset, int limit, LocalDate date) {
+        LocalDateTime timeStart = date.atStartOfDay();
+        LocalDateTime timeEnd = timeStart.plusDays(1);
+        return postsRepository.findByIsActiveAndModerationStatusAndTimeGreaterThanEqualAndTimeLessThan(
+            PageRequest.of(offset / limit, limit), true, ModerationStatus.ACCEPTED, timeStart, timeEnd
+        );
+    }
+
     public Map<String, String> create(String email, boolean isActive, Date timestamp, String title, String text, List<String> tags) {
         Map<String, String> errors = new HashMap<>();
 
@@ -286,10 +294,6 @@ public class PostService {
 
                 throw new IllegalArgumentException(sb.toString());
         }
-    }
-
-    public Page<Posts> findByDate(int offset, int limit, String date) {
-        return postsDBService.findActiveAndAcceptedAndEqualsDate(offset / limit, limit, LocalDate.parse(date));
     }
 
     public Page<Posts> findByTag(int offset, int limit, String tagName) {

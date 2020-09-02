@@ -36,6 +36,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.security.Principal;
+import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,8 +61,8 @@ class ApiPostController  {
     }
 
     @GetMapping("/search")
-    ResponsePostBody search(@RequestParam @Min(0) Integer offset,
-                            @RequestParam @Min(1) @Max(20) Integer limit,
+    ResponsePostBody search(@RequestParam @NotNull @Min(0) Integer offset,
+                            @RequestParam @NotNull @Min(1) @Max(20) Integer limit,
                             @RequestParam String query) {
         Page<Posts> posts;
         if (query.trim().length() == 0) {
@@ -73,6 +74,17 @@ class ApiPostController  {
         }
 
         return new ResponsePostBody(posts);
+    }
+
+    @GetMapping("/byDate")
+    ResponseEntity<?> byDate(@RequestParam @NotNull @Min(0) Integer offset,
+                             @RequestParam @NotNull @Min(1) @Max(20) Integer limit,
+                             @RequestParam String date) {
+        try {
+            return ResponseEntity.ok(new ResponsePostBody(postService.findPostsByDate(offset, limit, LocalDate.parse(date))));
+        } catch(DateTimeParseException e) {
+            return ResponseEntity.status(400).body(new BadRequestBody("Неверный формат даты"));
+        }
     }
 
     @PutMapping("/{id}")
@@ -135,15 +147,6 @@ class ApiPostController  {
     @GetMapping("/my")
     ResponsePostBody postMy(Principal principal, @RequestParam int offset, @RequestParam int limit, @RequestParam PostStatus status) {
         return new ResponseBodyFactory().createResponsePostBody(postService.findMy(principal.getName(), offset, limit, status));
-    }
-
-    @GetMapping("/byDate")
-    ResponseEntity<?> postByDate(@RequestParam int offset, @RequestParam int limit, @RequestParam String date) {
-        try {
-            return ResponseEntity.ok(new ResponseBodyFactory().createResponsePostBody(postService.findByDate(offset, limit, date)));
-        } catch(DateTimeParseException e) {
-            return ResponseEntity.status(400).body(new BadRequestBody("Неверный формат даты"));
-        }
     }
 
     @GetMapping("/byTag")

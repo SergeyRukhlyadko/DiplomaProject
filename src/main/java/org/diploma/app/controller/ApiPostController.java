@@ -87,6 +87,13 @@ class ApiPostController  {
         }
     }
 
+    @GetMapping("/byTag")
+    ResponsePostBody byTag(@RequestParam @NotNull @Min(0) int offset,
+                           @RequestParam @NotNull @Min(1) @Max(20) int limit,
+                           @RequestParam String tag) {
+        return new ResponsePostBody(postService.findPostsByTag(offset, limit, tag));
+    }
+
     @PutMapping("/{id}")
     ResponseEntity<?> post(Principal principal, @PathVariable int id, @RequestBody RequestPostBody requestBody) {
         CheckupService checkupService = context.getBean("checkupService", CheckupService.class);
@@ -147,11 +154,6 @@ class ApiPostController  {
     @GetMapping("/my")
     ResponsePostBody postMy(Principal principal, @RequestParam int offset, @RequestParam int limit, @RequestParam PostStatus status) {
         return new ResponseBodyFactory().createResponsePostBody(postService.findMy(principal.getName(), offset, limit, status));
-    }
-
-    @GetMapping("/byTag")
-    ResponsePostBody postByTag(@RequestParam int offset, @RequestParam int limit, @RequestParam String tag) {
-        return new ResponseBodyFactory().createResponsePostBody(postService.findByTag(offset, limit, tag));
     }
 
     @PostMapping("/like")

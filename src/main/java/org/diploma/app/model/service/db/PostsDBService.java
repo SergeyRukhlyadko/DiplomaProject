@@ -48,12 +48,6 @@ public class PostsDBService {
         );
     }
 
-    public Page<Posts> findActiveAndAcceptedAndBeforeNow(int page, int limit, String tagName) {
-        return postsRepository.findByIsActiveAndModerationStatusAndTimeBeforeAndTagName(
-            PageRequest.of(page, limit), true, ModerationStatus.ACCEPTED, LocalDateTime.now(), tagName
-        );
-    }
-
     public Page<Posts> findInactive(int page, int limit, Users user) {
         return postsRepository.findByIsActiveAndUserId(PageRequest.of(page, limit), false, user);
     }

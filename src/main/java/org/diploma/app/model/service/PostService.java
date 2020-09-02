@@ -108,6 +108,12 @@ public class PostService {
         );
     }
 
+    public Page<Posts> findPostsByTag(int offset, int limit, String tagName) {
+        return postsRepository.findByIsActiveAndModerationStatusAndTimeBeforeAndTagName(
+            PageRequest.of(offset / limit, limit), true, ModerationStatus.ACCEPTED, LocalDateTime.now(), tagName
+        );
+    }
+
     public Map<String, String> create(String email, boolean isActive, Date timestamp, String title, String text, List<String> tags) {
         Map<String, String> errors = new HashMap<>();
 
@@ -294,10 +300,6 @@ public class PostService {
 
                 throw new IllegalArgumentException(sb.toString());
         }
-    }
-
-    public Page<Posts> findByTag(int offset, int limit, String tagName) {
-        return postsDBService.findActiveAndAcceptedAndBeforeNow(offset / limit, limit, tagName);
     }
 
     public boolean like(String email, int postId) {

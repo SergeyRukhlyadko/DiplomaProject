@@ -88,6 +88,18 @@ public class PostService {
         }
     }
 
+    public Page<Posts> findPosts(int offset, int limit) {
+        return postsRepository.findByIsActiveAndModerationStatusAndTimeBefore(
+            PageRequest.of(offset / limit, limit), true, ModerationStatus.ACCEPTED, LocalDateTime.now()
+        );
+    }
+
+    public Page<Posts> findPostsByTitleOrText(int offset, int limit, String titleOrText) {
+        return postsRepository.findByIsActiveAndModerationStatusAndTimeBeforeAndTitleContainingOrTextContaining(
+            PageRequest.of(offset / limit, limit), true, ModerationStatus.ACCEPTED, LocalDateTime.now(), titleOrText, titleOrText
+        );
+    }
+
     public Map<String, String> create(String email, boolean isActive, Date timestamp, String title, String text, List<String> tags) {
         Map<String, String> errors = new HashMap<>();
 
@@ -282,13 +294,6 @@ public class PostService {
 
     public Page<Posts> findByTag(int offset, int limit, String tagName) {
         return postsDBService.findActiveAndAcceptedAndBeforeNow(offset / limit, limit, tagName);
-    }
-
-    public Page<Posts> findByTitleOrText(int offset, int limit, String desiredSubstring) {
-        Page<Posts> pages = postsDBService.findActiveAndAccepted(offset / limit, limit, desiredSubstring);
-        if (pages.getTotalElements() == 0)
-            pages = postsDBService.findAllActiveAndAccepted(offset/ limit, limit);
-        return pages;
     }
 
     public boolean like(String email, int postId) {

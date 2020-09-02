@@ -18,12 +18,6 @@ import java.util.Optional;
 @Repository
 public interface PostsRepository extends JpaRepository<Posts, Integer> {
 
-    int countByIsActiveAndModerationStatus(boolean isActive, ModerationStatus moderationStatus);
-
-    Page<Posts> findByIsActiveAndModerationStatusAndTimeGreaterThanEqualAndTimeLessThan(
-        Pageable pageable, boolean isActive, ModerationStatus moderationStatus, LocalDateTime timeGte, LocalDateTime timeLt
-    );
-
     Page<Posts> findByIsActiveAndModerationStatusAndTimeBefore(
         Pageable pageable, boolean isActive, ModerationStatus moderationStatus, LocalDateTime time
     );
@@ -40,6 +34,15 @@ public interface PostsRepository extends JpaRepository<Posts, Integer> {
         "group by p.id order by count(p) desc")
     Page<Posts> findByIsActiveAndModerationStatusAndTimeBeforeOrderByLikeCountDesc(
         Pageable pageable, boolean isActive, ModerationStatus moderationStatus, LocalDateTime time
+    );
+
+    @Query("select p from Posts p where p.isActive = ?1 and p.moderationStatus = ?2 and p.time < ?3 and (p.title like %?4% or p.text like %?5%)")
+    Page<Posts> findByIsActiveAndModerationStatusAndTimeBeforeAndTitleContainingOrTextContaining(
+        Pageable pageable, boolean isActive, ModerationStatus moderationStatus, LocalDateTime time, String title, String text
+    );
+
+    Page<Posts> findByIsActiveAndModerationStatusAndTimeGreaterThanEqualAndTimeLessThan(
+        Pageable pageable, boolean isActive, ModerationStatus moderationStatus, LocalDateTime timeGte, LocalDateTime timeLt
     );
 
     @Query("select p from Posts p " +
@@ -80,14 +83,11 @@ public interface PostsRepository extends JpaRepository<Posts, Integer> {
     )
     Optional<PostsStatistics> findMyStatistic(int userId, int isActive, String moderationStatus);
 
-    @Query("select p from Posts p where p.isActive = ?1 and p.moderationStatus = ?2 and (p.title like %?3% or p.text like %?4%)")
-    Page<Posts> findByIsActiveAndModerationStatusAndTitleContainingOrByTextContaining(
-        Pageable pageable, boolean isActive, ModerationStatus moderationStatus, String title, String text
-    );
-
     @Query("select year(time) from Posts group by year(time) order by time")
     List<Integer> findAllYears();
 
     @Query("select date_format(time, '%Y-%m-%d') as date, count(id) as count from Posts where year(time) = ?1 group by year(time), month(time), day(time) order by time")
     List<PostsCountByDate> findByYearGroupByYear(int year);
+
+    int countByIsActiveAndModerationStatus(boolean isActive, ModerationStatus moderationStatus);
 }

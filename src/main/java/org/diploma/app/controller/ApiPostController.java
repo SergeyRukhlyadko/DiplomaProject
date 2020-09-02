@@ -59,6 +59,22 @@ class ApiPostController  {
         return new ResponsePostBody(postService.findPosts(offset, limit, mode));
     }
 
+    @GetMapping("/search")
+    ResponsePostBody search(@RequestParam @Min(0) Integer offset,
+                            @RequestParam @Min(1) @Max(20) Integer limit,
+                            @RequestParam String query) {
+        Page<Posts> posts;
+        if (query.trim().length() == 0) {
+            posts = postService.findPosts(offset, limit);
+        } else {
+            posts = postService.findPostsByTitleOrText(offset, limit, query);
+            if (posts.getTotalElements() == 0)
+                posts = postService.findPosts(offset, limit);
+        }
+
+        return new ResponsePostBody(posts);
+    }
+
     @PutMapping("/{id}")
     ResponseEntity<?> post(Principal principal, @PathVariable int id, @RequestBody RequestPostBody requestBody) {
         CheckupService checkupService = context.getBean("checkupService", CheckupService.class);
@@ -133,11 +149,6 @@ class ApiPostController  {
     @GetMapping("/byTag")
     ResponsePostBody postByTag(@RequestParam int offset, @RequestParam int limit, @RequestParam String tag) {
         return new ResponseBodyFactory().createResponsePostBody(postService.findByTag(offset, limit, tag));
-    }
-
-    @GetMapping("/search")
-    ResponsePostBody search(@RequestParam int offset, @RequestParam int limit, @RequestParam String query) {
-        return new ResponseBodyFactory().createResponsePostBody(postService.findByTitleOrText(offset, limit, query));
     }
 
     @PostMapping("/like")

@@ -5,7 +5,6 @@ import org.springframework.core.convert.converter.Converter;
 
 public class SortModeConverter implements Converter<String, SortMode> {
 
-    //Обработать ConversionFailedException
     @Override
     public SortMode convert(String s) {
         return SortMode.valueOf(s.toUpperCase());

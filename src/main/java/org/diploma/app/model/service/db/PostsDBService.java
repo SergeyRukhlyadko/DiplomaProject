@@ -58,24 +58,6 @@ public class PostsDBService {
         );
     }
 
-    public Page<Posts> findActiveAndAcceptedAndBeforeNow(int page, int limit, Sort sort) {
-        return postsRepository.findByIsActiveAndModerationStatusAndTimeBefore(
-            PageRequest.of(page, limit, sort), true, ModerationStatus.ACCEPTED, LocalDateTime.now()
-        );
-    }
-
-    public Page<Posts> findActiveAndAcceptedAndBeforeNowOrderByCommentCountDesc(int page, int limit) {
-        return postsRepository.findByIsActiveAndModerationStatusAndTimeBeforeOrderByCommentCountDesc(
-            PageRequest.of(page, limit), true, ModerationStatus.ACCEPTED, LocalDateTime.now()
-        );
-    }
-
-    public Page<Posts> findActiveAndAcceptedAndBeforeNowOrderByLikeCountDesc(int page, int limit) {
-        return postsRepository.findByIsActiveAndModerationStatusAndTimeBeforeOrderByLikeCountDesc(
-            PageRequest.of(page, limit), true, ModerationStatus.ACCEPTED, LocalDateTime.now()
-        );
-    }
-
     public Page<Posts> findActiveAndAcceptedAndBeforeNow(int page, int limit, String tagName) {
         return postsRepository.findByIsActiveAndModerationStatusAndTimeBeforeAndTagName(
             PageRequest.of(page, limit), true, ModerationStatus.ACCEPTED, LocalDateTime.now(), tagName

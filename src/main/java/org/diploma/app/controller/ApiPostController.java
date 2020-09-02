@@ -20,6 +20,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,6 +32,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpSession;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import java.security.Principal;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
@@ -39,6 +43,7 @@ import java.util.Map;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @RestController
 @RequestMapping("/api/post")
+@Validated
 class ApiPostController  {
 
     @Autowired
@@ -48,9 +53,10 @@ class ApiPostController  {
     PostService postService;
 
     @GetMapping
-    ResponseEntity<?> post(@RequestParam int offset, @RequestParam int limit, @RequestParam SortMode mode) {
-        Page<Posts> posts = postService.find(offset, limit, mode);
-        return ResponseEntity.ok(new ResponseBodyFactory().createResponsePostBody(posts));
+    ResponsePostBody post(@RequestParam @NotNull @Min(0) Integer offset,
+                          @RequestParam @NotNull @Min(1) @Max(20) Integer limit,
+                          @RequestParam @NotNull SortMode mode) {
+        return new ResponsePostBody(postService.findPosts(offset, limit, mode));
     }
 
     @PutMapping("/{id}")

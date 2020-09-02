@@ -19,6 +19,7 @@ import org.diploma.app.model.util.PostStatus;
 import org.diploma.app.model.util.SortMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
@@ -63,6 +64,29 @@ public class PostService {
 
     @Autowired
     PostsRepository postsRepository;
+
+    public Page<Posts> findPosts(int offset, int limit, SortMode mode) {
+        switch(mode) {
+            case RECENT:
+                return postsRepository.findByIsActiveAndModerationStatusAndTimeBefore(
+                    PageRequest.of(offset / limit, limit, Sort.by("time").ascending()), true, ModerationStatus.ACCEPTED, LocalDateTime.now()
+                );
+            case POPULAR:
+                return postsRepository.findByIsActiveAndModerationStatusAndTimeBeforeOrderByCommentCountDesc(
+                    PageRequest.of(offset / limit, limit), true, ModerationStatus.ACCEPTED, LocalDateTime.now()
+                );
+            case BEST:
+                return postsRepository.findByIsActiveAndModerationStatusAndTimeBeforeOrderByLikeCountDesc(
+                    PageRequest.of(offset / limit, limit), true, ModerationStatus.ACCEPTED, LocalDateTime.now()
+                );
+            case EARLY:
+                return postsRepository.findByIsActiveAndModerationStatusAndTimeBefore(
+                    PageRequest.of(offset / limit, limit, Sort.by("time").descending()), true, ModerationStatus.ACCEPTED, LocalDateTime.now()
+                );
+            default:
+                throw new IllegalArgumentException(enumValues(SortMode.class));
+        }
+    }
 
     public Map<String, String> create(String email, boolean isActive, Date timestamp, String title, String text, List<String> tags) {
         Map<String, String> errors = new HashMap<>();
@@ -196,31 +220,6 @@ public class PostService {
         }
     }
 
-    public Page<Posts> find(int offset, int limit, SortMode mode) {
-        switch(mode) {
-            case RECENT:
-                return postsDBService.findActiveAndAcceptedAndBeforeNow(offset / limit, limit, Sort.by("time").ascending());
-            case EARLY:
-                return postsDBService.findActiveAndAcceptedAndBeforeNow(offset / limit, limit, Sort.by("time").descending());
-            case POPULAR:
-                return  postsDBService.findActiveAndAcceptedAndBeforeNowOrderByCommentCountDesc(offset / limit, limit);
-            case BEST:
-                return postsDBService.findActiveAndAcceptedAndBeforeNowOrderByLikeCountDesc(offset / limit, limit);
-            default:
-                StringBuilder sb = new StringBuilder();
-                sb.append("Supported statuses: ");
-
-                SortMode[] sortModes = SortMode.values();
-                for(int i = 0; i < sortModes.length; i++ ) {
-                    sb.append(sortModes[i]);
-                    if (i != sortModes.length - 1)
-                        sb.append(", ");
-                }
-
-                throw new IllegalArgumentException(sb.toString());
-        }
-    }
-
     public Page<Posts> find(String email, int offset, int limit, ModerationStatus status) {
         Users user = usersDBService.find(email);
 
@@ -331,5 +330,19 @@ public class PostService {
 
     public int moderationCount() {
         return postsRepository.countByIsActiveAndModerationStatus(true, ModerationStatus.NEW);
+    }
+
+    private <E extends Enum<E>> String enumValues(Class<E> enumClass) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Supported statuses: ");
+
+        E[] values = enumClass.getEnumConstants();
+        for(int i = 0; i < values.length; i++ ) {
+            sb.append(values[i]);
+            if (i != values.length - 1)
+                sb.append(", ");
+        }
+
+        return sb.toString();
     }
 }

@@ -21,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -112,6 +111,23 @@ public class PostService {
         return postsRepository.findByIsActiveAndModerationStatusAndTimeBeforeAndTagName(
             PageRequest.of(offset / limit, limit), true, ModerationStatus.ACCEPTED, LocalDateTime.now(), tagName
         );
+    }
+
+    public Page<Posts> findPostsForModeration(String email, int offset, int limit, ModerationStatus status) {
+        switch(status) {
+            case NEW:
+                return postsRepository.findByIsActiveAndModerationStatus(PageRequest.of(offset / limit, limit), true, ModerationStatus.NEW);
+            case ACCEPTED:
+                return postsRepository.findByIsActiveAndModerationStatusAndModeratorEmail(
+                    PageRequest.of(offset / limit, limit), true, ModerationStatus.ACCEPTED, email
+                );
+            case DECLINED:
+                return postsRepository.findByIsActiveAndModerationStatusAndModeratorEmail(
+                    PageRequest.of(offset / limit, limit), true, ModerationStatus.DECLINED, email
+                );
+            default:
+                throw new IllegalArgumentException(enumValues(ModerationStatus.class));
+        }
     }
 
     public Map<String, String> create(String email, boolean isActive, Date timestamp, String title, String text, List<String> tags) {
@@ -243,34 +259,6 @@ public class PostService {
             post.setViewCount(post.getViewCount() + 1);
             postsDBService.save(post);
             return post;
-        }
-    }
-
-    public Page<Posts> find(String email, int offset, int limit, ModerationStatus status) {
-        Users user = usersDBService.find(email);
-
-        if (!user.isModerator())
-            throw new AccessDeniedException("User is not a moderator");
-
-        switch(status) {
-            case NEW:
-                return postsDBService.findActiveAndNew(offset / limit, limit);
-            case ACCEPTED:
-                return postsDBService.findActiveAndAcceptedAndModeratorId(user, offset / limit, limit);
-            case DECLINED:
-                return postsDBService.findActiveAndDeclinedAndModeratorId(user, offset / limit, limit);
-            default:
-                StringBuilder sb = new StringBuilder();
-                sb.append("Supported statuses: ");
-
-                ModerationStatus[] moderationStatuses = ModerationStatus.values();
-                for(int i = 0; i < moderationStatuses.length; i++ ) {
-                    sb.append(moderationStatuses[i]);
-                    if (i != moderationStatuses.length - 1)
-                        sb.append(", ");
-                }
-
-                throw new IllegalArgumentException(sb.toString());
         }
     }
 

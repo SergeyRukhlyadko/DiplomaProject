@@ -11,6 +11,7 @@ import org.diploma.app.controller.response.ResponsePostBody;
 import org.diploma.app.controller.response.ResponsePostByIdBody;
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
+import org.diploma.app.model.service.AuthService;
 import org.diploma.app.model.service.CheckupService;
 import org.diploma.app.model.service.PostService;
 import org.diploma.app.model.util.PostStatus;
@@ -51,6 +52,9 @@ class ApiPostController  {
     ApplicationContext context;
 
     @Autowired
+    AuthService authService;
+
+    @Autowired
     PostService postService;
 
     @GetMapping
@@ -88,10 +92,24 @@ class ApiPostController  {
     }
 
     @GetMapping("/byTag")
-    ResponsePostBody byTag(@RequestParam @NotNull @Min(0) int offset,
-                           @RequestParam @NotNull @Min(1) @Max(20) int limit,
+    ResponsePostBody byTag(@RequestParam @NotNull @Min(0) Integer offset,
+                           @RequestParam @NotNull @Min(1) @Max(20) Integer limit,
                            @RequestParam String tag) {
         return new ResponsePostBody(postService.findPostsByTag(offset, limit, tag));
+    }
+
+    @GetMapping("/moderation")
+    ResponseEntity<?> moderation(Principal principal,
+                                 @RequestParam @NotNull @Min(0) Integer offset,
+                                 @RequestParam @NotNull @Min(1) @Max(20) Integer limit,
+                                 @RequestParam @NotNull ModerationStatus status) {
+        if (authService.isModerator(principal.getName())) {
+            return ResponseEntity.ok(new ResponsePostBody(
+                postService.findPostsForModeration(principal.getName(), offset, limit, status)
+            ));
+        }
+
+        return ResponseEntity.status(400).body(new BadRequestBody("Пользователь не модератор"));
     }
 
     @PutMapping("/{id}")
@@ -164,17 +182,5 @@ class ApiPostController  {
     @PostMapping("/dislike")
     DefaultBody dislike(Principal principal, @RequestBody HashMap<String, Integer> requestBody) {
         return new DefaultBody(postService.dislike(principal.getName(), requestBody.get("post_id")));
-    }
-
-    @GetMapping("/moderation")
-    ResponseEntity<?> moderation(Principal principal, @RequestParam int offset, @RequestParam int limit, @RequestParam ModerationStatus status) {
-        Page<Posts> posts;
-        try {
-            posts = postService.find(principal.getName(), offset, limit, status);
-        } catch(AccessDeniedException e) {
-            return ResponseEntity.status(400).body(new BadRequestBody("Пользователь не модератор"));
-        }
-
-        return ResponseEntity.ok(new ResponseBodyFactory().createResponsePostBody(posts));
     }
 }

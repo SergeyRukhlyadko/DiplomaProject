@@ -30,24 +30,6 @@ public class PostsDBService {
         );
     }
 
-    public Page<Posts> findActiveAndNew(int page, int size) {
-        return postsRepository.findByIsActiveAndModerationStatus(
-            PageRequest.of(page, size), true, ModerationStatus.NEW
-        );
-    }
-
-    public Page<Posts> findActiveAndAcceptedAndModeratorId(Users user, int page, int size) {
-        return postsRepository.findByIsActiveAndModerationStatusAndModeratorId(
-            PageRequest.of(page, size), true, ModerationStatus.ACCEPTED, user
-        );
-    }
-
-    public Page<Posts> findActiveAndDeclinedAndModeratorId(Users user, int page, int size) {
-        return postsRepository.findByIsActiveAndModerationStatusAndModeratorId(
-            PageRequest.of(page, size), true, ModerationStatus.DECLINED, user
-        );
-    }
-
     public Page<Posts> findInactive(int page, int limit, Users user) {
         return postsRepository.findByIsActiveAndUserId(PageRequest.of(page, limit), false, user);
     }

@@ -9,16 +9,19 @@ import org.diploma.app.controller.response.ErrorBody;
 import org.diploma.app.controller.response.ResponsePostBody;
 import org.diploma.app.controller.response.ResponsePostByIdBody;
 import org.diploma.app.model.db.entity.Posts;
+import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
 import org.diploma.app.model.service.AuthService;
 import org.diploma.app.model.service.CheckupService;
 import org.diploma.app.model.service.PostService;
+import org.diploma.app.model.service.UserNotFoundException;
 import org.diploma.app.model.util.PostStatus;
 import org.diploma.app.model.util.SortMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,11 +37,13 @@ import javax.servlet.http.HttpSession;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @RestController
@@ -118,6 +123,30 @@ class ApiPostController  {
         return new ResponsePostBody(postService.findMyPosts(principal.getName(), offset, limit, status));
     }
 
+    @GetMapping("{id}")
+    ResponseEntity<?> postId(HttpSession session, @PathVariable @NotNull @Positive Integer id) {
+        Optional<Posts> postOptional = postService.findPostById(id);
+        if (postOptional.isPresent()) {
+            Users user = null;
+            try {
+                user = authService.checkAuthentication(session.getId());
+            } catch(AuthenticationCredentialsNotFoundException | UserNotFoundException ignored) {}
+
+            Posts post = postOptional.get();
+            if (user != null) {
+                //Если авторизованный пользователь не модератор и не является автором поста, добавить счетчик просмотров
+                if (!user.isModerator() && user.getId() != post.getUserId().getId())
+                    postService.incrementPostView(id);
+            } else {
+                postService.incrementPostView(id);
+            }
+
+            return ResponseEntity.ok(new ResponsePostByIdBody(post));
+        }
+
+        return ResponseEntity.status(404).build();
+    }
+
     @PutMapping("/{id}")
     ResponseEntity<?> post(Principal principal, @PathVariable int id, @RequestBody RequestPostBody requestBody) {
         CheckupService checkupService = context.getBean("checkupService", CheckupService.class);
@@ -164,15 +193,6 @@ class ApiPostController  {
         }
 
         return ResponseEntity.ok(new DefaultBody(true));
-    }
-
-    @GetMapping("{id}")
-    ResponseEntity<?> postId(HttpSession session, @PathVariable int id) {
-        try {
-            return ResponseEntity.ok(new ResponsePostByIdBody(postService.find(session.getId(), id)));
-        } catch(EntityNotFoundException e) {
-            return ResponseEntity.status(404).build();
-        }
     }
 
     @PostMapping("/like")

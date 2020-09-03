@@ -21,8 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDate;
@@ -54,9 +54,6 @@ public class PostService {
 
     @Autowired
     PostVotesDBService postVotesDBService;
-
-    @Autowired
-    AuthService authService;
 
     @Autowired
     GeneralService generalService;
@@ -150,6 +147,10 @@ public class PostService {
             default:
                 throw new IllegalArgumentException(enumValues(PostStatus.class));
         }
+    }
+
+    public Optional<Posts> findPostById(int id) {
+        return postsRepository.findById(id);
     }
 
     public Map<String, String> create(String email, boolean isActive, Date timestamp, String title, String text, List<String> tags) {
@@ -266,24 +267,6 @@ public class PostService {
         return postsRepository.count();
     }
 
-    public Posts find(String sessionId, int id) {
-        Posts post = postsDBService.find(id);
-
-        try {
-            Users user = authService.checkAuthentication(sessionId);
-            //Если авторизованный пользователь не модератор и не является автором поста, добавить счетчик просмотров
-            if (!user.isModerator() && user.getId() != post.getUserId().getId()) {
-                post.setViewCount(post.getViewCount() + 1);
-                postsDBService.save(post);
-            }
-            return post;
-        } catch(EntityNotFoundException | AuthenticationCredentialsNotFoundException e) {
-            post.setViewCount(post.getViewCount() + 1);
-            postsDBService.save(post);
-            return post;
-        }
-    }
-
     public boolean like(String email, int postId) {
         return addPostVote(email, postId, (byte) 1);
     }
@@ -323,6 +306,15 @@ public class PostService {
 
     public int moderationCount() {
         return postsRepository.countByIsActiveAndModerationStatus(true, ModerationStatus.NEW);
+    }
+
+    /*
+        throws SQLQueryException
+     */
+    @Transactional
+    public void incrementPostView(int postId) {
+        if (postsRepository.incrementViewCountById(postId) != 1)
+            throw new SQLQueryException("More than one row has been updated in the Posts table with id: " + postId);
     }
 
     private <E extends Enum<E>> String enumValues(Class<E> enumClass) {

@@ -10,6 +10,7 @@ import org.diploma.app.controller.response.dto.UserDtoWithPhoto;
 import org.diploma.app.model.db.entity.PostVotes;
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.Users;
+import org.diploma.app.model.util.DateTimeUtil;
 
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ public class ResponsePostByIdBody {
 
     public ResponsePostByIdBody(Posts post) {
         this.id = post.getId();
-        this.timestamp = post.getTime().atZone(ZoneId.systemDefault()).toEpochSecond();
+        this.timestamp = DateTimeUtil.toTimestamp(post.getTime());
         this.active = post.isActive();
 
         Users user = post.getUserId();

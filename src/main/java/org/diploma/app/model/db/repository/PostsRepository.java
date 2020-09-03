@@ -7,6 +7,7 @@ import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -94,4 +95,8 @@ public interface PostsRepository extends JpaRepository<Posts, Integer> {
     List<PostsCountByDate> findByYearGroupByYear(int year);
 
     int countByIsActiveAndModerationStatus(boolean isActive, ModerationStatus moderationStatus);
+
+    @Modifying
+    @Query("update Posts set viewCount = viewCount + 1 where id = ?1")
+    int incrementViewCountById(int id);
 }

@@ -9,8 +9,6 @@ import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
 import org.diploma.app.model.db.repository.PostsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
@@ -27,28 +25,6 @@ public class PostsDBService {
     public Posts find(int id) {
         return postsRepository.findById(id).orElseThrow(
             () -> new EntityNotFoundException("Post with id " + id + " not found")
-        );
-    }
-
-    public Page<Posts> findInactive(int page, int limit, Users user) {
-        return postsRepository.findByIsActiveAndUserId(PageRequest.of(page, limit), false, user);
-    }
-
-    public Page<Posts> findActiveAndNew(int page, int limit, Users user) {
-        return postsRepository.findByIsActiveAndModerationStatusAndUserId(
-            PageRequest.of(page, limit), true, ModerationStatus.NEW, user
-        );
-    }
-
-    public Page<Posts> findActiveAndDeclined(int page, int limit, Users user) {
-        return postsRepository.findByIsActiveAndModerationStatusAndUserId(
-            PageRequest.of(page, limit), true, ModerationStatus.DECLINED, user
-        );
-    }
-
-    public Page<Posts> findActiveAndAccepted(int page, int limit, Users user) {
-        return postsRepository.findByIsActiveAndModerationStatusAndUserId(
-            PageRequest.of(page, limit), true, ModerationStatus.ACCEPTED, user
         );
     }
 

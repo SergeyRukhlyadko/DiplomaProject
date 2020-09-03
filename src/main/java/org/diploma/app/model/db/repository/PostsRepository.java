@@ -3,7 +3,6 @@ package org.diploma.app.model.db.repository;
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.PostsCountByDate;
 import org.diploma.app.model.db.entity.PostsStatistics;
-import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -61,10 +60,13 @@ public interface PostsRepository extends JpaRepository<Posts, Integer> {
         Pageable pageable, boolean isActive, ModerationStatus moderationStatus, String email
     );
 
-    Page<Posts> findByIsActiveAndUserId(Pageable pageable, boolean isActive, Users userId);
+    @Query("select p from Posts p join Users u on p.userId = u.id where p.isActive = ?1 and u.email = ?2")
+    Page<Posts> findByIsActiveAndUserEmail(Pageable pageable, boolean isActive, String email);
 
-    Page<Posts> findByIsActiveAndModerationStatusAndUserId(
-        Pageable pageable, boolean isActive, ModerationStatus moderationStatus, Users userId
+    @Query("select p from Posts p join Users u on p.userId = u.id " +
+        "where p.isActive = ?1 and p.moderationStatus = ?2 and u.email = ?3")
+    Page<Posts> findByIsActiveAndModerationStatusAndUserEmail(
+        Pageable pageable, boolean isActive, ModerationStatus moderationStatus, String email
     );
 
     @Query(nativeQuery = true, value =

@@ -130,6 +130,28 @@ public class PostService {
         }
     }
 
+    public Page<Posts> findMyPosts(String email, int offset, int limit, PostStatus postStatus) {
+        int page = offset / limit;
+        switch (postStatus) {
+            case INACTIVE:
+                return postsRepository.findByIsActiveAndUserEmail(PageRequest.of(page, limit), false, email);
+            case PENDING:
+                return postsRepository.findByIsActiveAndModerationStatusAndUserEmail(
+                    PageRequest.of(page, limit), true, ModerationStatus.NEW, email
+                );
+            case DECLINED:
+                return postsRepository.findByIsActiveAndModerationStatusAndUserEmail(
+                    PageRequest.of(page, limit), true, ModerationStatus.DECLINED, email
+                );
+            case PUBLISHED:
+                return postsRepository.findByIsActiveAndModerationStatusAndUserEmail(
+                    PageRequest.of(page, limit), true, ModerationStatus.ACCEPTED, email
+                );
+            default:
+                throw new IllegalArgumentException(enumValues(PostStatus.class));
+        }
+    }
+
     public Map<String, String> create(String email, boolean isActive, Date timestamp, String title, String text, List<String> tags) {
         Map<String, String> errors = new HashMap<>();
 
@@ -259,34 +281,6 @@ public class PostService {
             post.setViewCount(post.getViewCount() + 1);
             postsDBService.save(post);
             return post;
-        }
-    }
-
-    public Page<Posts> findMy(String email, int offset, int limit, PostStatus postStatus) {
-        Users user = usersDBService.find(email);
-        int page = offset / limit;
-
-        switch (postStatus) {
-            case INACTIVE:
-                return postsDBService.findInactive(page, limit, user);
-            case PENDING:
-                return postsDBService.findActiveAndNew(page, limit, user);
-            case DECLINED:
-                return postsDBService.findActiveAndDeclined(page, limit, user);
-            case PUBLISHED:
-                return postsDBService.findActiveAndAccepted(page, limit, user);
-            default:
-                StringBuilder sb = new StringBuilder();
-                sb.append("Supported statuses: ");
-
-                PostStatus[] postStatuses = PostStatus.values();
-                for(int i = 0; i < postStatuses.length; i++ ) {
-                    sb.append(postStatuses[i]);
-                    if (i != postStatuses.length - 1)
-                        sb.append(", ");
-                }
-
-                throw new IllegalArgumentException(sb.toString());
         }
     }
 

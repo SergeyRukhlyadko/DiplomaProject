@@ -6,7 +6,6 @@ import org.diploma.app.controller.request.post.RequestPostBody;
 import org.diploma.app.controller.response.BadRequestBody;
 import org.diploma.app.controller.response.DefaultBody;
 import org.diploma.app.controller.response.ErrorBody;
-import org.diploma.app.controller.response.ResponseBodyFactory;
 import org.diploma.app.controller.response.ResponsePostBody;
 import org.diploma.app.controller.response.ResponsePostByIdBody;
 import org.diploma.app.model.db.entity.Posts;
@@ -20,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -112,6 +110,14 @@ class ApiPostController  {
         return ResponseEntity.status(400).body(new BadRequestBody("Пользователь не модератор"));
     }
 
+    @GetMapping("/my")
+    ResponsePostBody my(Principal principal,
+                        @RequestParam @NotNull @Min(0) Integer offset,
+                        @RequestParam @NotNull @Min(1) @Max(20) Integer limit,
+                        @RequestParam @NotNull PostStatus status) {
+        return new ResponsePostBody(postService.findMyPosts(principal.getName(), offset, limit, status));
+    }
+
     @PutMapping("/{id}")
     ResponseEntity<?> post(Principal principal, @PathVariable int id, @RequestBody RequestPostBody requestBody) {
         CheckupService checkupService = context.getBean("checkupService", CheckupService.class);
@@ -167,11 +173,6 @@ class ApiPostController  {
         } catch(EntityNotFoundException e) {
             return ResponseEntity.status(404).build();
         }
-    }
-
-    @GetMapping("/my")
-    ResponsePostBody postMy(Principal principal, @RequestParam int offset, @RequestParam int limit, @RequestParam PostStatus status) {
-        return new ResponseBodyFactory().createResponsePostBody(postService.findMy(principal.getName(), offset, limit, status));
     }
 
     @PostMapping("/like")

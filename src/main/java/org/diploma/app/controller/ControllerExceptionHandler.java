@@ -3,6 +3,7 @@ package org.diploma.app.controller;
 import org.diploma.app.controller.response.ResponseBadRequestBody;
 import org.diploma.app.controller.response.ResponseErrorBody;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -51,5 +52,11 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<?> handleMissingServletRequestParameterException(MissingServletRequestParameterException e) {
         return ResponseEntity.status(400).body(new ResponseBadRequestBody(e.getMessage()));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<?> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+        e.printStackTrace();
+        return ResponseEntity.status(400).body(new ResponseBadRequestBody("Invalid request message"));
     }
 }

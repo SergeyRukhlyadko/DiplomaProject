@@ -7,7 +7,6 @@ import org.diploma.app.model.db.repository.TagsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -16,10 +15,6 @@ public class TagsDBService {
 
     @Autowired
     TagsRepository tagsRepository;
-
-    public List<Tags> finaAll() {
-        return tagsRepository.findAll();
-    }
 
     public Optional<Tags> find(String name) {
         return tagsRepository.findByName(name);

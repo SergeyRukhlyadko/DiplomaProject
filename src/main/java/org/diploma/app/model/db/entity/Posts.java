@@ -2,6 +2,7 @@ package org.diploma.app.model.db.entity;
 
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@NoArgsConstructor
 @Setter
 @Getter
 @Entity
@@ -65,4 +67,23 @@ public class Posts {
 
     @OneToMany(mappedBy = "postId")
     Set<Tag2post> tag2posts;
+
+    public Posts(boolean isActive, Users user, LocalDateTime time, String title, String text, int viewCount) {
+        this.isActive = isActive;
+        this.userId = user;
+        this.time = time;
+        this.title = title;
+        this.text = text;
+        this.viewCount = viewCount;
+    }
+
+    public Posts(boolean isActive, ModerationStatus moderationStatus, Users user, LocalDateTime time, String title, String text, int viewCount) {
+        this.isActive = isActive;
+        this.moderationStatus = moderationStatus;
+        this.userId = user;
+        this.time = time;
+        this.title = title;
+        this.text = text;
+        this.viewCount = viewCount;
+    }
 }

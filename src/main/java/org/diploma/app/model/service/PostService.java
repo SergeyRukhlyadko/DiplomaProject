@@ -10,11 +10,15 @@ import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
 import org.diploma.app.model.db.repository.PostsRepository;
+import org.diploma.app.model.db.repository.Tag2postRepository;
+import org.diploma.app.model.db.repository.TagsRepository;
+import org.diploma.app.model.db.repository.UsersRepository;
 import org.diploma.app.model.service.db.PostVotesDBService;
 import org.diploma.app.model.service.db.PostsDBService;
 import org.diploma.app.model.service.db.Tag2postDBService;
 import org.diploma.app.model.service.db.TagsDBService;
 import org.diploma.app.model.service.db.UsersDBService;
+import org.diploma.app.model.util.DateTimeUtil;
 import org.diploma.app.model.util.PostStatus;
 import org.diploma.app.model.util.SortMode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +63,16 @@ public class PostService {
     GeneralService generalService;
 
     @Autowired
+    UsersRepository usersRepository;
+
+    @Autowired
     PostsRepository postsRepository;
+
+    @Autowired
+    TagsRepository tagsRepository;
+
+    @Autowired
+    Tag2postRepository tag2postRepository;
 
     public Page<Posts> findPosts(int offset, int limit, SortMode mode) {
         switch(mode) {
@@ -153,63 +166,33 @@ public class PostService {
         return postsRepository.findById(id);
     }
 
-    public Map<String, String> create(String email, boolean isActive, Date timestamp, String title, String text, List<String> tags) {
-        Map<String, String> errors = new HashMap<>();
+    @Transactional
+    public void createPost(String email, boolean isActive, Date timestamp, String title, String text, List<String> tags) {
+        Users user = usersRepository.findByEmail(email).orElseThrow(
+            () -> new UserNotFoundException("User with email " + email + " not found")
+        );
 
-        if (title.isEmpty()) {
-            errors.put("title", "Заголовок не установлен");
-        } else if (title.length() < 3) {
-            errors.put("title", "Заголовок слишком короткий");
+        LocalDateTime dateTime = getNowIfDateTimeBefore(DateTimeUtil.toLocalDateTime(timestamp));
+
+        Posts post;
+        if (!generalService.isEnabled(GlobalSetting.POST_PREMODERATION) && isActive) {
+            post = postsRepository.save(new Posts(isActive, ModerationStatus.ACCEPTED, user, dateTime, title, text, 0));
+        } else {
+            post = postsRepository.save(new Posts(isActive, user, dateTime, title, text, 0));
         }
 
-        if (text.isEmpty()) {
-            errors.put("text", "Текст публикации не установлен");
-        } else if (text.length() < 50) {
-            errors.put("text", "Текст публикации слишком короткий");
-        }
-
-        if (errors.isEmpty()) {
-            Users user = usersDBService.find(email);
-
-            LocalDateTime dateTimeNow = LocalDateTime.now();
-            LocalDateTime dateTime = LocalDateTime.ofInstant(
-                timestamp.toInstant(),
-                ZoneId.systemDefault()
-            );
-
-            if (dateTime.isBefore(dateTimeNow))
-                dateTime = dateTimeNow;
-
-            Posts post;
-            if (!generalService.isEnabled(GlobalSetting.POST_PREMODERATION) && isActive) {
-                Posts newPost = new Posts();
-                newPost.setActive(isActive);
-                newPost.setModerationStatus(ModerationStatus.ACCEPTED);
-                newPost.setUserId(user);
-                newPost.setTime(dateTime);
-                newPost.setTitle(title);
-                newPost.setText(text);
-                newPost.setViewCount(0);
-                post = postsDBService.save(newPost);
-            } else {
-                post = postsDBService.save(isActive, user, dateTime, title, text, 0);
-            }
-
-            if (!tags.isEmpty()) {
-                for(String tagString : tags) {
-                    Optional<Tags> tag = tagsDBService.find(tagString);
-                    if (tag.isEmpty()) {
-                        Tags newTag = tagsDBService.save(tagString);
-                        tag2postDBService.save(post, newTag);
-                    } else {
-                        tag2postDBService.save(post, tag.get());
-                    }
-
+        if (!tags.isEmpty()) {
+            for(String tagString : tags) {
+                Optional<Tags> tag = tagsRepository.findByName(tagString);
+                if (tag.isEmpty()) {
+                    Tags newTag = tagsRepository.save(new Tags(tagString));
+                    tag2postRepository.save(new Tag2post(post, newTag));
+                } else {
+                    tag2postRepository.save(new Tag2post(post, tag.get()));
                 }
+
             }
         }
-
-        return  errors;
     }
 
     public boolean editPost(String email, int postId, boolean isActive, Date timestamp, String title, String text, List<String> tags) {
@@ -329,5 +312,10 @@ public class PostService {
         }
 
         return sb.toString();
+    }
+
+    private LocalDateTime getNowIfDateTimeBefore(LocalDateTime dateTime) {
+        LocalDateTime dateTimeNow = LocalDateTime.now();
+        return dateTime.isBefore(dateTimeNow) ? dateTimeNow : dateTime;
     }
 }

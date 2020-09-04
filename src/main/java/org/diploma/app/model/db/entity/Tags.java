@@ -2,6 +2,7 @@ package org.diploma.app.model.db.entity;
 
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
@@ -14,6 +15,7 @@ import javax.persistence.OneToMany;
 import java.util.Set;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@NoArgsConstructor
 @Setter
 @Getter
 @Entity
@@ -28,4 +30,8 @@ public class Tags {
 
     @OneToMany(mappedBy = "tagId")
     Set<Tag2post> tag2posts;
+
+    public Tags(String name) {
+        this.name = name;
+    }
 }

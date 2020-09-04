@@ -45,17 +45,6 @@ public class PostsDBService {
         return postsRepository.findByYearGroupByYear(year);
     }
 
-    public Posts save(boolean isActive, Users user, LocalDateTime time, String title, String text, int viewCount) {
-        Posts post = new Posts();
-        post.setActive(isActive);
-        post.setUserId(user);
-        post.setTime(time);
-        post.setTitle(title);
-        post.setText(text);
-        post.setViewCount(viewCount);
-        return postsRepository.save(post);
-    }
-
     public Posts save(Posts post) {
         return postsRepository.save(post);
     }

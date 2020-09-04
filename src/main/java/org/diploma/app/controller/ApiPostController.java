@@ -2,10 +2,11 @@ package org.diploma.app.controller;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
-import org.diploma.app.controller.request.post.RequestPostBody;
+import org.diploma.app.controller.request.RequestPostBody;
 import org.diploma.app.controller.response.BadRequestBody;
 import org.diploma.app.controller.response.DefaultBody;
 import org.diploma.app.controller.response.ErrorBody;
+import org.diploma.app.controller.response.ResponseDefaultBody;
 import org.diploma.app.controller.response.ResponsePostBody;
 import org.diploma.app.controller.response.ResponsePostByIdBody;
 import org.diploma.app.model.db.entity.Posts;
@@ -32,8 +33,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -124,7 +125,7 @@ class ApiPostController  {
     }
 
     @GetMapping("{id}")
-    ResponseEntity<?> postId(HttpSession session, @PathVariable @NotNull @Positive Integer id) {
+    ResponseEntity<?> postId(HttpSession session, @PathVariable @Positive Integer id) {
         Optional<Posts> postOptional = postService.findPostById(id);
         if (postOptional.isPresent()) {
             Users user = null;
@@ -147,6 +148,19 @@ class ApiPostController  {
         return ResponseEntity.status(404).build();
     }
 
+    @PostMapping
+    ResponseDefaultBody post(Principal principal, @Valid @RequestBody RequestPostBody requestBody) {
+        postService.createPost(
+            principal.getName(),
+            requestBody.getActive(),
+            requestBody.getTimestamp(),
+            requestBody.getTitle(),
+            requestBody.getText(),
+            requestBody.getTags()
+        );
+        return new ResponseDefaultBody(true);
+    }
+
     @PutMapping("/{id}")
     ResponseEntity<?> post(Principal principal, @PathVariable int id, @RequestBody RequestPostBody requestBody) {
         CheckupService checkupService = context.getBean("checkupService", CheckupService.class);
@@ -160,7 +174,7 @@ class ApiPostController  {
         boolean isEdited = postService.editPost(
             principal.getName(),
             id,
-            requestBody.isActive(),
+            requestBody.getActive(),
             requestBody.getTimestamp(),
             requestBody.getTitle(),
             requestBody.getText(),
@@ -172,27 +186,6 @@ class ApiPostController  {
         } else {
             return ResponseEntity.status(400).body(new BadRequestBody("Пользователь не является модератором или автором поста"));
         }
-    }
-
-    @PostMapping
-    ResponseEntity<?> post(Principal principal, @RequestBody RequestPostBody requestBody) {
-        try {
-            Map<String, String> errors = postService.create(
-                principal.getName(),
-                requestBody.isActive(),
-                requestBody.getTimestamp(),
-                requestBody.getTitle(),
-                requestBody.getText(),
-                requestBody.getTags()
-            );
-
-            if (!errors.isEmpty())
-                return ResponseEntity.ok(new ErrorBody(errors));
-        } catch(EntityNotFoundException enf) {
-            return ResponseEntity.status(500).build();
-        }
-
-        return ResponseEntity.ok(new DefaultBody(true));
     }
 
     @PostMapping("/like")

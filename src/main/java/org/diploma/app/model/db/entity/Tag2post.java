@@ -2,6 +2,7 @@ package org.diploma.app.model.db.entity;
 
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
@@ -13,6 +14,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@NoArgsConstructor
 @Setter
 @Getter
 @Entity
@@ -29,4 +31,9 @@ public class Tag2post {
     @ManyToOne
     @JoinColumn(name = "tag_id", nullable = false)
     Tags tagId;
+
+    public Tag2post(Posts post, Tags tag) {
+        this.postId = post;
+        this.tagId = tag;
+    }
 }

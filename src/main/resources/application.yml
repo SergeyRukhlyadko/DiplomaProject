@@ -29,6 +29,7 @@ captcha:
   outdated: 1
 
 upload.dir: C:/
+static.resource.upload: file:///C:/upload/ #linux file:/upload
 
 #logging.level.org.hibernate:
 #    SQL: debug

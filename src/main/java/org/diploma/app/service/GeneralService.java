@@ -146,10 +146,6 @@ public class GeneralService {
         return uploadFile;
     }
 
-    public byte[] downloadImage(Path path) throws IOException {
-        return Files.readAllBytes(path);
-    }
-
     public void deleteImage(Path path) throws IOException {
         Files.delete(path);
     }

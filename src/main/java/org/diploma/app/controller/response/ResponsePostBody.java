@@ -4,12 +4,12 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
-import org.diploma.app.controller.response.dto.PostDto;
-import org.diploma.app.controller.response.dto.UserDto;
+import org.diploma.app.dto.PostDto;
+import org.diploma.app.dto.UserDto;
 import org.diploma.app.model.db.entity.PostVotes;
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.Users;
-import org.diploma.app.model.util.DateTimeUtil;
+import org.diploma.app.util.DateTimeUtil;
 import org.jsoup.Jsoup;
 import org.springframework.data.domain.Page;
 

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
-import org.diploma.app.model.service.CheckupService;
+import org.diploma.app.service.CheckupService;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;

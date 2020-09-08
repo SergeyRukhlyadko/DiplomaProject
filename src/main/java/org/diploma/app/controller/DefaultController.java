@@ -1,7 +1,7 @@
 package org.diploma.app.controller;
 
 import org.diploma.app.controller.response.BadRequestBody;
-import org.diploma.app.model.service.GeneralService;
+import org.diploma.app.service.GeneralService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;

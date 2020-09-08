@@ -3,7 +3,7 @@ package org.diploma.app.controller.response;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
-import org.diploma.app.controller.response.dto.FullUserDto;
+import org.diploma.app.dto.FullUserDto;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter

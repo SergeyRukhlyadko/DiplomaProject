@@ -1,7 +1,7 @@
 package org.diploma.app.controller.response;
 
-import org.diploma.app.controller.response.dto.PostDto;
-import org.diploma.app.controller.response.dto.UserDto;
+import org.diploma.app.dto.PostDto;
+import org.diploma.app.dto.UserDto;
 import org.diploma.app.model.db.entity.PostVotes;
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.Users;

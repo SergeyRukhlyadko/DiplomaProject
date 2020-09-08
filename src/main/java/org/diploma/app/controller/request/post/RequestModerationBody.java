@@ -5,7 +5,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
-import org.diploma.app.model.util.Decision;
+import org.diploma.app.util.Decision;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @AllArgsConstructor

@@ -4,13 +4,13 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
-import org.diploma.app.controller.response.dto.CommentDto;
-import org.diploma.app.controller.response.dto.UserDto;
-import org.diploma.app.controller.response.dto.UserDtoWithPhoto;
+import org.diploma.app.dto.CommentDto;
+import org.diploma.app.dto.UserDto;
+import org.diploma.app.dto.UserDtoWithPhoto;
 import org.diploma.app.model.db.entity.PostVotes;
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.Users;
-import org.diploma.app.model.util.DateTimeUtil;
+import org.diploma.app.util.DateTimeUtil;
 
 import java.time.ZoneId;
 import java.util.ArrayList;

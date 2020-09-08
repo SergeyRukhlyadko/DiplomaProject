@@ -19,6 +19,14 @@ spring:
       auth: true
       starttls.enable: true
 
+init:
+  title: DevPub
+  subtitle: Рассказы разработчиков
+  phone:
+  email:
+  copyright: Рухлядко Сергей
+  copyrightFrom: 2020
+
 captcha:
   length: 8
   width: 100

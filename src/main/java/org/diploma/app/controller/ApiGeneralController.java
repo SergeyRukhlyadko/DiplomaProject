@@ -26,6 +26,7 @@ import org.diploma.app.util.NormalizationAlgorithm;
 import org.diploma.app.util.NullRemover;
 import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -59,6 +60,24 @@ import java.util.Objects;
 @RequestMapping("/api")
 class ApiGeneralController {
 
+    @Value("${init.title}")
+    String title;
+
+    @Value("${init.subtitle}")
+    String subtitle;
+
+    @Value("${init.phone}")
+    String phone;
+
+    @Value("${init.email}")
+    String email;
+
+    @Value("${init.copyright}")
+    String copyright;
+
+    @Value("${init.copyrightFrom}")
+    String copyrightFrom;
+
     @Autowired
     ApplicationContext context;
 
@@ -85,10 +104,12 @@ class ApiGeneralController {
     @GetMapping("/init")
     Map<String, String> init() {
         Map<String, String> initMap = new HashMap<>();
-        initMap.put("title", "DevPub");
-        initMap.put("subtitle", "Рассказы разработчиков");
-        initMap.put("copyright", "Рухлядко Сергей");
-        initMap.put("copyrightFrom", "2020");
+        initMap.put("title", title);
+        initMap.put("subtitle", subtitle);
+        initMap.put("phone", phone);
+        initMap.put("email", email);
+        initMap.put("copyright", copyright);
+        initMap.put("copyrightFrom", copyrightFrom);
         return initMap;
     }
 

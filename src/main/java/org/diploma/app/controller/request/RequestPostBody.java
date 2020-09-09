@@ -20,14 +20,14 @@ public class RequestPostBody {
     @NotNull
     Boolean active;
 
-    @NotBlank
+    @NotBlank(message = "Заголовок не установлен")
     @Size(min = 3, max = 255, message = "Длинна заголовка должна быть от {min} до {max} символов")
     String title;
 
     @NotNull
     List<String> tags;
 
-    @NotBlank
+    @NotBlank(message = "Отсутствует текст публикации")
     @Size(min = 50, message = "Длинна текста публкации заголовка должна быть от {min} символов")
     String text;
 }

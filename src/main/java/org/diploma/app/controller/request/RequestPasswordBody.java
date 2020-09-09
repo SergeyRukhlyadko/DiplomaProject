@@ -24,7 +24,7 @@ public class RequestPasswordBody {
     String password;
 
     @NotNull
-    @Size(min = 8, max = 10, message = "Длинна каптчи должна быть {min} символов")
+    @Size(min = 8, max = 10, message = "Длинна капчи должна быть {min} символов")
     String captcha;
 
     @NotBlank

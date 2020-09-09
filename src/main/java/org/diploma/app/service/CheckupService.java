@@ -31,7 +31,7 @@ public class CheckupService {
     @Autowired
     CaptchaCodesRepository captchaCodesRepository;
 
-    public static final String NAME_REGEX = "([A-Z]{1}[a-z]+)|([А-я]{1}[а-я]+)";
+    public static final String NAME_REGEX = "([A-Za-z- ]+)|([А-Яа-я- ]+)";
     public static final String PASSWORD_REGEX = "[A-Za-z0-9]+";
 
     @Getter

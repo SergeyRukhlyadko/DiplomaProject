@@ -22,7 +22,7 @@ public class RequestRegisterBody {
     String email;
 
     @NotNull
-    @Pattern(regexp = CheckupService.NAME_REGEX, message = "Имя может содержать только латинсике или кириллические символы")
+    @Pattern(regexp = CheckupService.NAME_REGEX, message = "Имя может содержать только латинские или кириллические символы")
     @Size(min = 2, max = 255, message = "Длинна имени должна быть от {min} до {max} символов")
     String name;
 
@@ -32,7 +32,7 @@ public class RequestRegisterBody {
     String password;
 
     @NotNull
-    @Size(min = 8, max = 8, message = "Длинна каптчи должна быть {min} символов")
+    @Size(min = 8, max = 8, message = "Длинна капчи должна быть {min} символов")
     String captcha;
 
     @NotBlank

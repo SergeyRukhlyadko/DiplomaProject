@@ -18,6 +18,9 @@ spring:
     properties.mail.smtp:
       auth: true
       starttls.enable: true
+  servlet.multipart:
+    max-file-size: 5MB
+    max-request-size: 5MB
 
 init:
   title: DevPub

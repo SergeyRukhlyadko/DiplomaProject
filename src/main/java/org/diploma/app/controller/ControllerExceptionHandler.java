@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import javax.validation.ConstraintViolationException;
 import java.util.HashMap;
@@ -58,5 +59,10 @@ public class ControllerExceptionHandler {
     public ResponseEntity<?> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
         e.printStackTrace();
         return ResponseEntity.status(400).body(new ResponseBadRequestBody("Invalid request message"));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<?> handleMaxSizeException() {
+        return ResponseEntity.status(400).body(new ResponseBadRequestBody("Attached file more than 5MB"));
     }
 }

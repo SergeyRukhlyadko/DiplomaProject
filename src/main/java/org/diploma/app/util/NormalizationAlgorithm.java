@@ -13,6 +13,9 @@ public class NormalizationAlgorithm {
     static RoundingMode DEFAULT_ROUNDING_MODE = RoundingMode.DOWN;
 
     public static float normalizeMinMax(double min, double max, double weight) {
+        if (min == max)
+            return BigDecimal.valueOf(weight).setScale(DEFAULT_SCALE, DEFAULT_ROUNDING_MODE).floatValue();
+
         BigDecimal minDecimal = new BigDecimal(min).setScale(DEFAULT_SCALE, DEFAULT_ROUNDING_MODE);
         BigDecimal maxDecimal = new BigDecimal(max).setScale(DEFAULT_SCALE, DEFAULT_ROUNDING_MODE);
         BigDecimal divider = maxDecimal.subtract(minDecimal);

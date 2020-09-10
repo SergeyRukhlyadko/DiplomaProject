@@ -13,6 +13,9 @@ public class NormalizationAlgorithm {
     static RoundingMode DEFAULT_ROUNDING_MODE = RoundingMode.DOWN;
 
     public static float normalizeMinMax(double min, double max, double weight) {
+        if (Double.isNaN(min) || Double.isNaN(max))
+            return 0;
+
         if (min == max)
             return BigDecimal.valueOf(weight).setScale(DEFAULT_SCALE, DEFAULT_ROUNDING_MODE).floatValue();
 

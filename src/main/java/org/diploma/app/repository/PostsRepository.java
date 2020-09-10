@@ -88,7 +88,7 @@ public interface PostsRepository extends JpaRepository<Posts, Integer> {
     )
     Optional<PostsStatistics> findMyStatistic(int userId, int isActive, String moderationStatus);
 
-    @Query("select year(time) from Posts group by year(time) order by time")
+    @Query("select year(time) as y from Posts group by y order by y")
     List<Integer> findAllYears();
 
     @Query("select date_format(time, '%Y-%m-%d') as date, count(id) as count from Posts where year(time) = ?1 group by year(time), month(time), day(time) order by time")

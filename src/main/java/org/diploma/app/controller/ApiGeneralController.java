@@ -13,9 +13,9 @@ import org.diploma.app.controller.response.ResponseCalendarBody;
 import org.diploma.app.controller.response.ResponseStatisticBody;
 import org.diploma.app.controller.response.ResponseTagBody;
 import org.diploma.app.dto.TagDto;
-import org.diploma.app.model.db.entity.PostVotesStatistics;
+import org.diploma.app.model.db.entity.projection.PostVotesStatistics;
 import org.diploma.app.model.db.entity.PostsCountByTagName;
-import org.diploma.app.model.db.entity.PostsStatistics;
+import org.diploma.app.model.db.entity.projection.PostsStatistics;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
 import org.diploma.app.service.AuthService;
@@ -172,39 +172,6 @@ class ApiGeneralController {
         return new DefaultBody(generalService.changeModerationStatus(principal.getName(), requestBody.getPostId(), requestBody.getDecision()));
     }
 
-    @GetMapping("/statistics/all")
-    ResponseEntity<?> statisticsAll(HttpSession session) {
-        if (!generalService.isEnabled(GlobalSetting.STATISTICS_IS_PUBLIC)) {
-            Users user = authService.checkAuthentication(session.getId());
-            if (!user.isModerator())
-                return ResponseEntity.status(401).build();
-        }
-
-        PostsStatistics postsStatistics = generalService.getAllPostStatistics();
-        PostVotesStatistics postVotesStatistics = generalService.getAllPostVoteStatistics();
-
-        return ResponseEntity.ok(new ResponseStatisticBody(
-            postsStatistics.getPostsCount(),
-            postVotesStatistics.getLikesCount(),
-            postVotesStatistics.getDislikesCount(),
-            postsStatistics.getViewsCount(),
-            postsStatistics.getFirstPublication()
-        ));
-    }
-
-    @GetMapping("/statistics/my")
-    ResponseStatisticBody statisticsMy(Principal principal) {
-        PostsStatistics postsStatistics = generalService.getMyPostStatistics(principal.getName());
-        PostVotesStatistics postVotesStatistics = generalService.getMyPostVotesStatistics(principal.getName());
-        return new ResponseStatisticBody(
-            postsStatistics.getPostsCount(),
-            postVotesStatistics.getLikesCount(),
-            postVotesStatistics.getDislikesCount(),
-            postsStatistics.getViewsCount(),
-            postsStatistics.getFirstPublication()
-        );
-    }
-
     @PostMapping("/image")
     ResponseEntity<?> image(@RequestParam("image") MultipartFile multipartFile) throws IOException {
         ImageInputStream iis = ImageIO.createImageInputStream(multipartFile.getInputStream());
@@ -303,6 +270,39 @@ class ApiGeneralController {
         return new ResponseCalendarBody(
             generalService.years(),
             generalService.countByYear(Objects.requireNonNullElseGet(year, () -> LocalDateTime.now().getYear()))
+        );
+    }
+
+    @GetMapping("/statistics/all")
+    ResponseEntity<?> statisticsAll(HttpSession session) {
+        if (!generalService.isEnabled(GlobalSetting.STATISTICS_IS_PUBLIC)) {
+            Users user = authService.checkAuthentication(session.getId());
+            if (!user.isModerator())
+                return ResponseEntity.status(401).build();
+        }
+
+        PostsStatistics postsStatistics = generalService.getPostStatistics();
+        PostVotesStatistics postVotesStatistics = generalService.getPostVoteStatistics();
+
+        return ResponseEntity.ok(new ResponseStatisticBody(
+            postsStatistics.getPostsCount(),
+            postVotesStatistics.getLikesCount(),
+            postVotesStatistics.getDislikesCount(),
+            postsStatistics.getViewsCount(),
+            postsStatistics.getFirstPublication()
+        ));
+    }
+
+    @GetMapping("/statistics/my")
+    ResponseStatisticBody statisticsMy(Principal principal) {
+        PostsStatistics postsStatistics = generalService.getPostStatistics(principal.getName());
+        PostVotesStatistics postVotesStatistics = generalService.getPostVotesStatistics(principal.getName());
+        return new ResponseStatisticBody(
+            postsStatistics.getPostsCount(),
+            postVotesStatistics.getLikesCount(),
+            postVotesStatistics.getDislikesCount(),
+            postsStatistics.getViewsCount(),
+            postsStatistics.getFirstPublication()
         );
     }
 

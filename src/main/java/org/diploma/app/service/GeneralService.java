@@ -3,16 +3,18 @@ package org.diploma.app.service;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.model.db.entity.PostComments;
-import org.diploma.app.model.db.entity.PostVotesStatistics;
+import org.diploma.app.model.db.entity.projection.PostVotesStatistics;
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.PostsCountByDate;
 import org.diploma.app.model.db.entity.PostsCountByTagName;
-import org.diploma.app.model.db.entity.PostsStatistics;
+import org.diploma.app.model.db.entity.projection.PostsStatistics;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
 import org.diploma.app.model.db.entity.projection.GlobalSettingCodeAndValue;
 import org.diploma.app.repository.GlobalSettingsRepository;
+import org.diploma.app.repository.PostVotesRepository;
+import org.diploma.app.repository.PostsRepository;
 import org.diploma.app.repository.TagsRepository;
 import org.diploma.app.service.db.PostCommentsDBService;
 import org.diploma.app.service.db.PostVotesDBService;
@@ -44,9 +46,6 @@ public class GeneralService {
     String uploadDir;
 
     @Autowired
-    TagsDBService tagsDBService;
-
-    @Autowired
     UsersDBService usersDBService;
 
     @Autowired
@@ -56,10 +55,13 @@ public class GeneralService {
     PostsDBService postsDBService;
 
     @Autowired
-    PostVotesDBService postVotesDBService;
+    PasswordEncoder passwordEncoder;
 
     @Autowired
-    PasswordEncoder passwordEncoder;
+    PostsRepository postsRepository;
+
+    @Autowired
+    PostVotesRepository postVotesRepository;
 
     @Autowired
     TagsRepository tagsRepository;
@@ -111,22 +113,20 @@ public class GeneralService {
         return true;
     }
 
-    public PostsStatistics getAllPostStatistics() {
-        return postsDBService.findAllStatistic();
+    public PostsStatistics getPostStatistics() {
+        return postsRepository.findAllStatistic();
     }
 
-    public PostVotesStatistics getAllPostVoteStatistics() {
-        return postVotesDBService.findAllStatistic();
+    public PostVotesStatistics getPostVoteStatistics() {
+        return postVotesRepository.findAllStatistic();
     }
 
-    public PostsStatistics getMyPostStatistics(String email) {
-        Users user = usersDBService.find(email);
-        return postsDBService.findMyStatistic(user, true, ModerationStatus.ACCEPTED);
+    public PostsStatistics getPostStatistics(String email) {
+        return postsRepository.findMyStatistic(email, 1, ModerationStatus.ACCEPTED.toString());
     }
 
-    public PostVotesStatistics getMyPostVotesStatistics(String email) {
-        Users user = usersDBService.find(email);
-        return postVotesDBService.findMyStatistic(user, true, ModerationStatus.ACCEPTED);
+    public PostVotesStatistics getPostVotesStatistics(String email) {
+        return postVotesRepository.findMyStatistic(email, 1, ModerationStatus.ACCEPTED.toString());
     }
 
     public String uploadImage(byte[] bytes, String format) throws IOException {

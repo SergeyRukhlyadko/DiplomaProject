@@ -4,8 +4,6 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.PostsCountByDate;
-import org.diploma.app.model.db.entity.PostsStatistics;
-import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
 import org.diploma.app.repository.PostsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,15 +24,6 @@ public class PostsDBService {
         return postsRepository.findById(id).orElseThrow(
             () -> new EntityNotFoundException("Post with id " + id + " not found")
         );
-    }
-
-    public PostsStatistics findAllStatistic() {
-        //Протестировать запрос, при отсутствии данных и написать обработку
-        return postsRepository.findAllStatistic().get();
-    }
-
-    public PostsStatistics findMyStatistic(Users user, boolean isActive, ModerationStatus moderationStatus) {
-        return postsRepository.findMyStatistic(user.getId(), isActive ? 1 : 0, moderationStatus.toString()).get();
     }
 
     public List<Integer> findAllYears() {

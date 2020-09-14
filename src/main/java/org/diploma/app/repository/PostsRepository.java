@@ -2,7 +2,7 @@ package org.diploma.app.repository;
 
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.PostsCountByDate;
-import org.diploma.app.model.db.entity.PostsStatistics;
+import org.diploma.app.model.db.entity.projection.PostsStatistics;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -71,22 +71,16 @@ public interface PostsRepository extends JpaRepository<Posts, Integer> {
     );
 
     @Query(nativeQuery = true, value =
-        "select " +
-        "count(id) postsCount, " +
-        "sum(view_count) viewsCount, " +
-        "unix_timestamp(min(time)) firstPublication " +
-        "from posts;"
+        "select count(id) postsCount, ifnull(sum(view_count), 0) viewsCount, ifnull(unix_timestamp(min(time)), 0) firstPublication from posts"
     )
-    Optional<PostsStatistics> findAllStatistic();
+    PostsStatistics findAllStatistic();
 
     @Query(nativeQuery = true, value =
-        "select " +
-        "count(id) postsCount, " +
-        "sum(view_count) viewsCount, " +
-        "unix_timestamp(min(time)) firstPublication " +
-        "from posts where user_id = ?1 and is_active = ?2 and moderation_status = ?3"
+        "select count(p.id) postsCount, ifnull(sum(p.view_count), 0) viewsCount, ifnull(unix_timestamp(min(p.time)), 0) firstPublication " +
+        "from posts p join users u on p.user_id = u.id " +
+        "where u.email = ?1 and p.is_active = ?2 and p.moderation_status = ?3"
     )
-    Optional<PostsStatistics> findMyStatistic(int userId, int isActive, String moderationStatus);
+    PostsStatistics findMyStatistic(String email, int isActive, String moderationStatus);
 
     @Query("select year(time) as y from Posts group by y order by y")
     List<Integer> findAllYears();

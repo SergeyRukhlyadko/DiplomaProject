@@ -4,12 +4,14 @@ server:
 
 spring:
   jpa:
-    hibernate.ddl-auto: update
+    hibernate.ddl-auto: none
+#    show-sql: true
   datasource:
     initialization-mode: always
     url: jdbc:mysql://localhost:3306/diploma_project
     username: root
     password: root
+#  flyway.enabled: false
   mail:
     host: smtp.gmail.com
     port: 587

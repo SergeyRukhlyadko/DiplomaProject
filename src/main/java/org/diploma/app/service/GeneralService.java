@@ -21,6 +21,7 @@ import org.diploma.app.service.db.PostCommentsDBService;
 import org.diploma.app.service.db.PostsDBService;
 import org.diploma.app.service.db.UsersDBService;
 import org.diploma.app.util.Decision;
+import org.diploma.app.util.OperatingSystemUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,8 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -41,8 +40,8 @@ import java.util.UUID;
 @Service
 public class GeneralService {
 
-    @Value("${upload.dir}")
-    String uploadDir;
+    @Value("${upload.image-path}")
+    String imagePath;
 
     @Autowired
     UsersDBService usersDBService;
@@ -70,6 +69,9 @@ public class GeneralService {
 
     @Autowired
     GlobalSettingsRepository globalSettingsRepository;
+
+    @Autowired
+    OperatingSystemUtil operatingSystemUtil;
 
     public Users changeModeratorStatus(String email) {
         Users user = usersDBService.find(email);
@@ -133,18 +135,14 @@ public class GeneralService {
 
     public String uploadImage(byte[] bytes, String format) throws IOException {
         String[] hashes = UUID.randomUUID().toString().split("-");
-        StringBuilder uploadPath = new StringBuilder();
-        uploadPath.append("/upload/");
+        StringBuilder uploadDir = new StringBuilder();
+        uploadDir.append(imagePath);
         for(int i = 1; i < 4; i++)
-            uploadPath.append(hashes[i]).append("/");
+            uploadDir.append(hashes[i]).append("/");
 
-        Files.createDirectories(Path.of(uploadDir + uploadPath.toString()));
-        uploadPath.append(hashes[4]).append(".").append(format.toLowerCase());
-
-        String uploadFile = uploadPath.toString();
-        Path path = Path.of(uploadDir + uploadFile);
-        Files.createFile(path);
-        Files.write(path, bytes);
+        operatingSystemUtil.createDirectories(uploadDir.toString());
+        String uploadFile = uploadDir.append(hashes[4]).append(".").append(format.toLowerCase()).toString();
+        operatingSystemUtil.createFileThenWrite(uploadFile, bytes);
         return uploadFile;
     }
 
@@ -165,7 +163,7 @@ public class GeneralService {
         if (countUpdated == 1) {
             if (oldPhoto != null) {
                 try {
-                    Files.delete(Path.of(oldPhoto));
+                    operatingSystemUtil.deleteFile(oldPhoto);
                 } catch(IOException e) {
                     return false;
                 }

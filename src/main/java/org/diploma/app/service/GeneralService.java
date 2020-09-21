@@ -4,7 +4,7 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.model.db.entity.PostComments;
 import org.diploma.app.model.db.entity.Posts;
-import org.diploma.app.model.db.entity.PostsCountByDate;
+import org.diploma.app.model.db.entity.projection.PostsCountByDate;
 import org.diploma.app.model.db.entity.PostsCountByTagName;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
@@ -80,7 +80,7 @@ public class GeneralService {
     }
 
     public List<PostsCountByTagName> getAllTags() {
-        return tagsRepository.findAllTagNamesAndPostsCountGroupByTagName();
+        return tagsRepository.findAllNameAndPostsCountByIsActiveAndModerationStatusGroupByName(true, ModerationStatus.ACCEPTED.toString());
     }
 
     public int addComment(String email, int parentId, int postId, String text) {

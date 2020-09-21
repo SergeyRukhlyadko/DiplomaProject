@@ -1,7 +1,7 @@
 package org.diploma.app.repository;
 
 import org.diploma.app.model.db.entity.Posts;
-import org.diploma.app.model.db.entity.PostsCountByDate;
+import org.diploma.app.model.db.entity.projection.PostsCountByDate;
 import org.diploma.app.model.db.entity.projection.PostsStatistics;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
 import org.springframework.data.domain.Page;
@@ -13,7 +13,6 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface PostsRepository extends JpaRepository<Posts, Integer> {

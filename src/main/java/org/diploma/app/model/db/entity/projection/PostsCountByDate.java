@@ -1,4 +1,4 @@
-package org.diploma.app.model.db.entity;
+package org.diploma.app.model.db.entity.projection;
 
 import java.util.HashMap;
 import java.util.List;

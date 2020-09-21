@@ -3,7 +3,7 @@ package org.diploma.app.service.db;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.model.db.entity.Posts;
-import org.diploma.app.model.db.entity.PostsCountByDate;
+import org.diploma.app.model.db.entity.projection.PostsCountByDate;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
 import org.diploma.app.repository.PostsRepository;
 import org.springframework.beans.factory.annotation.Autowired;

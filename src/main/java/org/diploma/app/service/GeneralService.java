@@ -3,23 +3,22 @@ package org.diploma.app.service;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.model.db.entity.PostComments;
-import org.diploma.app.model.db.entity.projection.PostVotesStatistics;
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.PostsCountByDate;
 import org.diploma.app.model.db.entity.PostsCountByTagName;
-import org.diploma.app.model.db.entity.projection.PostsStatistics;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
 import org.diploma.app.model.db.entity.projection.GlobalSettingCodeAndValue;
+import org.diploma.app.model.db.entity.projection.PostVotesStatistics;
+import org.diploma.app.model.db.entity.projection.PostsStatistics;
 import org.diploma.app.repository.GlobalSettingsRepository;
 import org.diploma.app.repository.PostVotesRepository;
 import org.diploma.app.repository.PostsRepository;
 import org.diploma.app.repository.TagsRepository;
+import org.diploma.app.repository.UsersRepository;
 import org.diploma.app.service.db.PostCommentsDBService;
-import org.diploma.app.service.db.PostVotesDBService;
 import org.diploma.app.service.db.PostsDBService;
-import org.diploma.app.service.db.TagsDBService;
 import org.diploma.app.service.db.UsersDBService;
 import org.diploma.app.util.Decision;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +55,9 @@ public class GeneralService {
 
     @Autowired
     PasswordEncoder passwordEncoder;
+
+    @Autowired
+    UsersRepository usersRepository;
 
     @Autowired
     PostsRepository postsRepository;
@@ -146,16 +148,13 @@ public class GeneralService {
         return uploadFile;
     }
 
-    public void deleteImage(Path path) throws IOException {
-        Files.delete(path);
-    }
-
+    @Transactional
     public boolean updateProfile(String email, String name, String newEmail, String password, String photo) {
-        String oldPhoto = "";
+        String oldPhoto = null;
         if (photo != null)
-            oldPhoto = usersDBService.findPhoto(email);
+            oldPhoto = usersRepository.findPhoto(email);
 
-        int countUpdated = usersDBService.updateUser(
+        int countUpdated = usersRepository.update(
             email,
             name,
             newEmail,
@@ -164,9 +163,9 @@ public class GeneralService {
         );
 
         if (countUpdated == 1) {
-            if (!oldPhoto.isEmpty()) {
+            if (oldPhoto != null) {
                 try {
-                    deleteImage(Path.of(oldPhoto));
+                    Files.delete(Path.of(oldPhoto));
                 } catch(IOException e) {
                     return false;
                 }

@@ -84,7 +84,8 @@ public interface PostsRepository extends JpaRepository<Posts, Integer> {
     @Query("select year(time) as y from Posts group by y order by y")
     List<Integer> findAllYears();
 
-    @Query("select date_format(time, '%Y-%m-%d') as date, count(id) as count from Posts where year(time) = ?1 group by year(time), month(time), day(time) order by time")
+    @Query("select date_format(time, '%Y-%m-%d') as date, count(id) as count from Posts " +
+        "where year(time) = ?1 and isActive = true and moderation_status = 'ACCEPTED' group by date order by date")
     List<PostsCountByDate> findByYearGroupByYear(int year);
 
     int countByIsActiveAndModerationStatus(boolean isActive, ModerationStatus moderationStatus);

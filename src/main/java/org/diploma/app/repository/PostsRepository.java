@@ -21,16 +21,16 @@ public interface PostsRepository extends JpaRepository<Posts, Integer> {
         Pageable pageable, boolean isActive, ModerationStatus moderationStatus, LocalDateTime time
     );
 
-    @Query("select p from Posts p join PostComments pc on p.id = pc.postId " +
+    @Query("select p from Posts p left join PostComments pc on p.id = pc.postId " +
         "where p.isActive = ?1 and p.moderationStatus = ?2 and p.time < ?3 " +
         "group by p.id order by count(p) desc")
     Page<Posts> findByIsActiveAndModerationStatusAndTimeBeforeOrderByCommentCountDesc(
         Pageable pageable, boolean isActive, ModerationStatus moderationStatus, LocalDateTime time
     );
 
-    @Query("select p from Posts p join PostVotes pv on p.id = pv.postId " +
-        "where p.isActive = ?1 and p.moderationStatus = ?2 and p.time < ?3 and pv.value = 1" +
-        "group by p.id order by count(p) desc")
+    @Query("select p from Posts p left join PostVotes pv on p.id = pv.postId left join PostComments pc on p.id = pc.postId " +
+        "where p.isActive = ?1 and p.moderationStatus = ?2 and p.time < ?3 " +
+        "group by p.id order by count(pc.id) + count(pv.value) desc")
     Page<Posts> findByIsActiveAndModerationStatusAndTimeBeforeOrderByLikeCountDesc(
         Pageable pageable, boolean isActive, ModerationStatus moderationStatus, LocalDateTime time
     );

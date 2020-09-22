@@ -21,7 +21,7 @@ public class ResponseBodyFactory {
         List<PostDto> postDtoList = new ArrayList<>();
         while(iterator.hasNext()) {
             Posts post = iterator.next();
-            Users user = post.getUserId();
+            Users user = post.getUser();
 
             int likeCount = 0;
             int dislikeCount = 0;

@@ -46,16 +46,16 @@ public class Users {
     @Column(columnDefinition = "TEXT")
     String photo;
 
-    @OneToMany(mappedBy = "moderatorId")
+    @OneToMany(mappedBy = "moderator")
     List<Posts> postsModerator;
 
-    @OneToMany(mappedBy = "userId")
+    @OneToMany(mappedBy = "user")
     List<Posts> postsUser;
 
-    @OneToMany(mappedBy = "userId")
+    @OneToMany(mappedBy = "user")
     List<PostVotes> postVotes;
 
-    @OneToMany(mappedBy = "userId")
+    @OneToMany(mappedBy = "user")
     List<PostComments> postComments;
 
     /*

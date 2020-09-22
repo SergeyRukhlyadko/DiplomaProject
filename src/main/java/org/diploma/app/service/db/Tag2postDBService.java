@@ -18,8 +18,8 @@ public class Tag2postDBService {
 
     public Tag2post save(Posts post, Tags tag) {
         Tag2post tag2post = new Tag2post();
-        tag2post.setPostId(post);
-        tag2post.setTagId(tag);
+        tag2post.setPost(post);
+        tag2post.setTag(tag);
         return tag2postRepository.save(tag2post);
     }
 

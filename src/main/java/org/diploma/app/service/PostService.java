@@ -207,7 +207,7 @@ public class PostService {
 
         Posts post = postsDBService.find(postId);
 
-        if (user.getId() == post.getUserId().getId()) {
+        if (user.getId() == post.getUser().getId()) {
             postsDBService.update(post, isActive, ModerationStatus.NEW, dateTime, title, text);
         } else if (user.isModerator()) {
             postsDBService.update(post, isActive, dateTime, title, text);
@@ -223,7 +223,7 @@ public class PostService {
             if (!tag2postSet.isEmpty()) {
                 List<Tag2post> tag2postsForDeleteList = new ArrayList<>();
                 for(Tag2post tag2post : tag2postSet) {
-                    if (!tags.remove(tag2post.getTagId().getName()))
+                    if (!tags.remove(tag2post.getTag().getName()))
                         tag2postsForDeleteList.add(tag2post);
                 }
 
@@ -263,7 +263,7 @@ public class PostService {
             List<PostVotes> postVotes = post.getPostVotes();
             PostVotes existVote = null;
             for(PostVotes postVote : postVotes) {
-                if (postVote.getUserId().getId() == user.getId()) {
+                if (postVote.getUser().getId() == user.getId()) {
                     existVote = postVote;
                     break;
                 }

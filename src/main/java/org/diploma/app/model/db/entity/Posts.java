@@ -41,11 +41,11 @@ public class Posts {
 
     @ManyToOne
     @JoinColumn(name = "moderator_id")
-    Users moderatorId;
+    Users moderator;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    Users userId;
+    Users user;
 
     @Column(nullable = false)
     LocalDateTime time;
@@ -59,18 +59,18 @@ public class Posts {
     @Column(name = "view_count", nullable = false)
     int viewCount;
 
-    @OneToMany(mappedBy = "postId")
+    @OneToMany(mappedBy = "post")
     List<PostVotes> postVotes;
 
-    @OneToMany(mappedBy = "postId")
+    @OneToMany(mappedBy = "post")
     List<PostComments> postComments;
 
-    @OneToMany(mappedBy = "postId")
+    @OneToMany(mappedBy = "post")
     Set<Tag2post> tag2posts;
 
     public Posts(boolean isActive, Users user, LocalDateTime time, String title, String text, int viewCount) {
         this.isActive = isActive;
-        this.userId = user;
+        this.user = user;
         this.time = time;
         this.title = title;
         this.text = text;
@@ -80,7 +80,7 @@ public class Posts {
     public Posts(boolean isActive, ModerationStatus moderationStatus, Users user, LocalDateTime time, String title, String text, int viewCount) {
         this.isActive = isActive;
         this.moderationStatus = moderationStatus;
-        this.userId = user;
+        this.user = user;
         this.time = time;
         this.title = title;
         this.text = text;

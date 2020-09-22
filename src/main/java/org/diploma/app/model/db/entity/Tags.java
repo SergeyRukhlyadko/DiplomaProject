@@ -28,7 +28,7 @@ public class Tags {
     @Column(nullable = false, unique = true)
     String name;
 
-    @OneToMany(mappedBy = "tagId")
+    @OneToMany(mappedBy = "tag")
     Set<Tag2post> tag2posts;
 
     public Tags(String name) {

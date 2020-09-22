@@ -21,14 +21,14 @@ public interface PostsRepository extends JpaRepository<Posts, Integer> {
         Pageable pageable, boolean isActive, ModerationStatus moderationStatus, LocalDateTime time
     );
 
-    @Query("select p from Posts p left join PostComments pc on p.id = pc.postId " +
+    @Query("select p from Posts p left join PostComments pc on p.id = pc.post " +
         "where p.isActive = ?1 and p.moderationStatus = ?2 and p.time < ?3 " +
         "group by p.id order by count(p) desc")
     Page<Posts> findByIsActiveAndModerationStatusAndTimeBeforeOrderByCommentCountDesc(
         Pageable pageable, boolean isActive, ModerationStatus moderationStatus, LocalDateTime time
     );
 
-    @Query("select p from Posts p left join PostVotes pv on p.id = pv.postId left join PostComments pc on p.id = pc.postId " +
+    @Query("select p from Posts p left join PostVotes pv on p.id = pv.post left join PostComments pc on p.id = pc.post " +
         "where p.isActive = ?1 and p.moderationStatus = ?2 and p.time < ?3 " +
         "group by p.id order by count(pc.id) + count(pv.value) desc")
     Page<Posts> findByIsActiveAndModerationStatusAndTimeBeforeOrderByLikeCountDesc(
@@ -45,8 +45,8 @@ public interface PostsRepository extends JpaRepository<Posts, Integer> {
     );
 
     @Query("select p from Posts p " +
-        "join Tag2post t2p on p.id = t2p.postId " +
-        "join Tags t on t.id = t2p.tagId " +
+        "join Tag2post t2p on p.id = t2p.post " +
+        "join Tags t on t.id = t2p.tag " +
         "where p.isActive = ?1 and p.moderationStatus = ?2 and p.time < ?3 and t.name = ?4")
     Page<Posts> findByIsActiveAndModerationStatusAndTimeBeforeAndTagName(
         Pageable pageable, boolean isActive, ModerationStatus moderationStatus, LocalDateTime time, String tagName
@@ -54,16 +54,16 @@ public interface PostsRepository extends JpaRepository<Posts, Integer> {
 
     Page<Posts> findByIsActiveAndModerationStatus(Pageable pageable, boolean isActive, ModerationStatus moderationStatus);
 
-    @Query("select p from Posts p join Users u on p.moderatorId = u.id " +
+    @Query("select p from Posts p join Users u on p.moderator = u.id " +
         "where p.isActive = ?1 and p.moderationStatus = ?2 and u.email = ?3")
     Page<Posts> findByIsActiveAndModerationStatusAndModeratorEmail(
         Pageable pageable, boolean isActive, ModerationStatus moderationStatus, String email
     );
 
-    @Query("select p from Posts p join Users u on p.userId = u.id where p.isActive = ?1 and u.email = ?2")
+    @Query("select p from Posts p join Users u on p.user = u.id where p.isActive = ?1 and u.email = ?2")
     Page<Posts> findByIsActiveAndUserEmail(Pageable pageable, boolean isActive, String email);
 
-    @Query("select p from Posts p join Users u on p.userId = u.id " +
+    @Query("select p from Posts p join Users u on p.user = u.id " +
         "where p.isActive = ?1 and p.moderationStatus = ?2 and u.email = ?3")
     Page<Posts> findByIsActiveAndModerationStatusAndUserEmail(
         Pageable pageable, boolean isActive, ModerationStatus moderationStatus, String email

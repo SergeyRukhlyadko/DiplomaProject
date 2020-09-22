@@ -48,7 +48,7 @@ public class ResponsePostByIdBody {
         this.timestamp = DateTimeUtil.toTimestamp(post.getTime());
         this.active = post.isActive();
 
-        Users user = post.getUserId();
+        Users user = post.getUser();
         this.user = new UserDto(user.getId(), user.getName());
 
         this.title = post.getTitle();
@@ -69,7 +69,7 @@ public class ResponsePostByIdBody {
 
         this.comments = new ArrayList<>();
         post.getPostComments().forEach(comment -> {
-            Users commentator = comment.getUserId();
+            Users commentator = comment.getUser();
             UserDtoWithPhoto userDtoWithPhoto = new UserDtoWithPhoto(commentator.getId(), commentator.getName(), commentator.getPhoto());
             CommentDto commentDto = new CommentDto(
                 comment.getId(),
@@ -81,6 +81,6 @@ public class ResponsePostByIdBody {
         });
 
         this.tags = new ArrayList<>();
-        post.getTag2posts().forEach(tag2post -> tags.add(tag2post.getTagId().getName()));
+        post.getTag2posts().forEach(tag2post -> tags.add(tag2post.getTag().getName()));
     }
 }

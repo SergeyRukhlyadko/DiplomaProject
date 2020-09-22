@@ -30,7 +30,7 @@ public class ResponsePostBody {
         this.posts = new ArrayList<>();
 
         for (Posts post : posts) {
-            Users user = post.getUserId();
+            Users user = post.getUser();
 
             int likeCount = 0;
             int dislikeCount = 0;

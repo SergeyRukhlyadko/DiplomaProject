@@ -26,14 +26,14 @@ public class Tag2post {
 
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)
-    Posts postId;
+    Posts post;
 
     @ManyToOne
     @JoinColumn(name = "tag_id", nullable = false)
-    Tags tagId;
+    Tags tag;
 
     public Tag2post(Posts post, Tags tag) {
-        this.postId = post;
-        this.tagId = tag;
+        this.post = post;
+        this.tag = tag;
     }
 }

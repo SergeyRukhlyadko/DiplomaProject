@@ -136,7 +136,7 @@ class ApiPostController  {
             Posts post = postOptional.get();
             if (user != null) {
                 //Если авторизованный пользователь не модератор и не является автором поста, добавить счетчик просмотров
-                if (!user.isModerator() && user.getId() != post.getUserId().getId())
+                if (!user.isModerator() && user.getId() != post.getUser().getId())
                     postService.incrementPostView(id);
             } else {
                 postService.incrementPostView(id);

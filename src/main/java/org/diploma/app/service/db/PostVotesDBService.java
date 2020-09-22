@@ -22,10 +22,10 @@ public class PostVotesDBService {
         return postVotesRepository.save(postVote);
     }
 
-    public PostVotes save(Users userId, Posts postId, byte value) {
+    public PostVotes save(Users user, Posts post, byte value) {
         PostVotes postVote = new PostVotes();
-        postVote.setUserId(userId);
-        postVote.setPostId(postId);
+        postVote.setUser(user);
+        postVote.setPost(post);
         postVote.setTime(LocalDateTime.now());
         postVote.setValue(value);
         return postVotesRepository.save(postVote);

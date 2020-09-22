@@ -25,20 +25,20 @@ public class PostCommentsDBService {
         );
     }
 
-    public PostComments save(Posts postId, Users userId, String text) {
+    public PostComments save(Posts post, Users user, String text) {
         PostComments comment = new PostComments();
-        comment.setPostId(postId);
-        comment.setUserId(userId);
+        comment.setPost(post);
+        comment.setUser(user);
         comment.setTime(LocalDateTime.now());
         comment.setText(text);
         return postCommentsRepository.save(comment);
     }
 
-    public PostComments save(PostComments parentId, Posts postId, Users userId, String text) {
+    public PostComments save(PostComments parent, Posts post, Users user, String text) {
         PostComments comment = new PostComments();
-        comment.setParentId(parentId);
-        comment.setPostId(postId);
-        comment.setUserId(userId);
+        comment.setParent(parent);
+        comment.setPost(post);
+        comment.setUser(user);
         comment.setTime(LocalDateTime.now());
         comment.setText(text);
         return postCommentsRepository.save(comment);

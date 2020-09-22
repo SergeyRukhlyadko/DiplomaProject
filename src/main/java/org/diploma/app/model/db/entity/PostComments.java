@@ -30,18 +30,18 @@ public class PostComments {
 
     @ManyToOne
     @JoinColumn(name="parent_id")
-    PostComments parentId;
+    PostComments parent;
 
-    @OneToMany(mappedBy="parentId")
+    @OneToMany(mappedBy="parent")
     List<PostComments> replies;
 
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)
-    Posts postId;
+    Posts post;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    Users userId;
+    Users user;
 
     @Column(nullable = false)
     LocalDateTime time;

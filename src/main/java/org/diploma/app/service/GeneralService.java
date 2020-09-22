@@ -102,7 +102,7 @@ public class GeneralService {
                 return false;
 
             Posts post = postsDBService.find(postId);
-            post.setModeratorId(user);
+            post.setModerator(user);
             if (decision.name().equals(Decision.ACCEPT.toString())) {
                 post.setModerationStatus(ModerationStatus.ACCEPTED);
             } else {

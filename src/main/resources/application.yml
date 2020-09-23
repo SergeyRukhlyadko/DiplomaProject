@@ -1,6 +1,6 @@
 host: localhost
 server:
-  port: 80
+  port: ${PORT:80}
 
 spring:
   jpa:
@@ -8,10 +8,10 @@ spring:
 #    show-sql: true
   datasource:
     initialization-mode: always
-    url: jdbc:mysql://localhost:3306/diploma_project
+    url: jdbc:${CLEARDB_DATABASE_URL:mysql://localhost:3306/diploma_project}
     username: root
     password: root
-#  flyway.enabled: false
+  flyway.enabled: false
   mail:
     host: smtp.gmail.com
     port: 587

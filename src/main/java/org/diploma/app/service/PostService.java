@@ -164,7 +164,7 @@ public class PostService {
         return postsRepository.findById(id);
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void createPost(String email, boolean isActive, Date timestamp, String title, String text, List<String> tags) {
         Users user = usersRepository.findByEmail(email).orElseThrow(
             () -> new UserNotFoundException("User with email " + email + " not found")
@@ -193,6 +193,7 @@ public class PostService {
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public boolean editPost(String email, int postId, boolean isActive, Date timestamp, String title, String text, List<String> tags) {
         Users user = usersDBService.find(email);
 
@@ -292,7 +293,7 @@ public class PostService {
     /*
         throws SQLQueryException
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void incrementPostView(int postId) {
         if (postsRepository.incrementViewCountById(postId) != 1)
             throw new SQLQueryException("More than one row has been updated in the Posts table with id: " + postId);

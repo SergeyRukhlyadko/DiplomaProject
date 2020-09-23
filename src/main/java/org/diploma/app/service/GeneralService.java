@@ -146,7 +146,7 @@ public class GeneralService {
         return uploadFile;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateProfile(String email, String name, String newEmail, String password, String photo) {
         String oldPhoto = null;
         if (photo != null)
@@ -194,7 +194,7 @@ public class GeneralService {
         return GlobalSettingCodeAndValue.toMap(globalSettings);
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void updateGlobalSettings(Map<String, Boolean> settings) {
         List<String> trueSettings = new ArrayList<>();
         List<String> falseSettings = new ArrayList<>();

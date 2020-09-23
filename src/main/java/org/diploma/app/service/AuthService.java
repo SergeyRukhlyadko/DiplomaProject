@@ -100,7 +100,7 @@ public class AuthService {
     /*
         throws SQLQueryException
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public boolean restorePassword(String email) {
         if (usersRepository.existsUsersByEmail(email)) {
             String code = UUID.randomUUID().toString();
@@ -117,7 +117,7 @@ public class AuthService {
     /*
         throws SQLQueryException
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public boolean changePassword(String code, String password) {
         if (usersRepository.updatePasswordByCode(passwordEncoder.encode(password), code) != 1)
             throw new SQLQueryException("More than one row has been updated in the Users table with code: " + code);
@@ -135,6 +135,7 @@ public class AuthService {
         throw new RegistrationIsClosedException();
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public Captcha createCaptcha() {
         Captcha captcha = context.getBean("captcha" , Captcha.class);
 

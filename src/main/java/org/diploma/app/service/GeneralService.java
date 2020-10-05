@@ -119,7 +119,7 @@ public class GeneralService {
     }
 
     public PostsStatistics getPostStatistics() {
-        return postsRepository.findAllStatistic();
+        return postsRepository.findAllStatistic(1, ModerationStatus.ACCEPTED.toString());
     }
 
     public PostVotesStatistics getPostVoteStatistics() {

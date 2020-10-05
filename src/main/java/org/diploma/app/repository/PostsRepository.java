@@ -70,9 +70,10 @@ public interface PostsRepository extends JpaRepository<Posts, Integer> {
     );
 
     @Query(nativeQuery = true, value =
-        "select count(id) postsCount, ifnull(sum(view_count), 0) viewsCount, ifnull(unix_timestamp(min(time)), 0) firstPublication from posts"
+        "select count(id) postsCount, ifnull(sum(view_count), 0) viewsCount, ifnull(unix_timestamp(min(time)), 0) firstPublication from posts " +
+        "where is_active = ?1 and moderation_status = ?2"
     )
-    PostsStatistics findAllStatistic();
+    PostsStatistics findAllStatistic(int isActive, String moderationStatus);
 
     @Query(nativeQuery = true, value =
         "select count(p.id) postsCount, ifnull(sum(p.view_count), 0) viewsCount, ifnull(unix_timestamp(min(p.time)), 0) firstPublication " +

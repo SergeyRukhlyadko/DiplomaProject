@@ -2,16 +2,16 @@ package org.diploma.app.service;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
-import org.apache.tomcat.util.buf.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.diploma.app.model.db.entity.PostComments;
 import org.diploma.app.model.db.entity.Posts;
-import org.diploma.app.model.db.entity.projection.PostsCountByDate;
 import org.diploma.app.model.db.entity.PostsCountByTagName;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
 import org.diploma.app.model.db.entity.enumeration.ModerationStatus;
 import org.diploma.app.model.db.entity.projection.GlobalSettingCodeAndValue;
 import org.diploma.app.model.db.entity.projection.PostVotesStatistics;
+import org.diploma.app.model.db.entity.projection.PostsCountByDate;
 import org.diploma.app.model.db.entity.projection.PostsStatistics;
 import org.diploma.app.repository.GlobalSettingsRepository;
 import org.diploma.app.repository.PostVotesRepository;
@@ -23,7 +23,6 @@ import org.diploma.app.service.db.PostsDBService;
 import org.diploma.app.service.db.UsersDBService;
 import org.diploma.app.util.Decision;
 import org.diploma.app.util.OperatingSystemUtil;
-import org.diploma.app.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -138,7 +137,7 @@ public class GeneralService {
     public String uploadImage(byte[] bytes, String format) throws IOException {
         String[] hashes = UUID.randomUUID().toString().split("-");
         StringBuilder uploadDir = new StringBuilder();
-        uploadDir.append("/").append(StringUtil.trimSlash(imagePath)).append("/");
+        uploadDir.append(StringUtils.strip(imagePath, "/\\")).append("/");
         for(int i = 1; i < 4; i++)
             uploadDir.append(hashes[i]).append("/");
 

@@ -190,7 +190,7 @@ class ApiGeneralController {
         if (!errors.isEmpty())
             return ResponseEntity.ok(new ErrorBody(errors));
 
-        return ResponseEntity.ok(generalService.uploadImage(multipartFile.getBytes(), format));
+        return ResponseEntity.ok("/" + generalService.uploadImage(multipartFile.getBytes(), format));
     }
 
     @PostMapping(value = "/profile/my", consumes = "application/json")
@@ -256,7 +256,7 @@ class ApiGeneralController {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(outputImage, format, baos);
 
-        String photoPath = generalService.uploadImage(baos.toByteArray(), format);
+        String photoPath = "/" + generalService.uploadImage(baos.toByteArray(), format);
         boolean isUpdated = generalService.updateProfile(principal.getName(), name, email, password, photoPath);
 
         if (isUpdated && email != null)

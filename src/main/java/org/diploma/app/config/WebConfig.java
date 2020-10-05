@@ -1,7 +1,7 @@
 package org.diploma.app.config;
 
+import org.apache.commons.lang3.StringUtils;
 import org.diploma.app.util.OperatingSystemUtil;
-import org.diploma.app.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -30,16 +30,17 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        String path = StringUtils.strip(imagePath, "/\\");
         switch (operatingSystemUtil.getCurrent()) {
             case WINDOWS:
                 registry
-                    .addResourceHandler("/" + StringUtil.trimSlash(imagePath) + "/**")
-                    .addResourceLocations("file:///" + localDisk + StringUtil.trimSlash(imagePath) + "/");
+                    .addResourceHandler("/" + path + "/**")
+                    .addResourceLocations("file:///" + localDisk + path + "/");
                 break;
             case LINUX:
                 registry
-                    .addResourceHandler("/" + StringUtil.trimSlash(imagePath) + "/**")
-                    .addResourceLocations("file:" + StringUtil.trimSlash(imagePath) + "/");
+                    .addResourceHandler("/" + path + "/**")
+                    .addResourceLocations("file:" + path + "/");
         }
     }
 }

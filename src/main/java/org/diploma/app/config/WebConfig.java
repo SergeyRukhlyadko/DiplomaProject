@@ -1,6 +1,7 @@
 package org.diploma.app.config;
 
 import org.diploma.app.util.OperatingSystemUtil;
+import org.diploma.app.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -31,10 +32,14 @@ public class WebConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         switch (operatingSystemUtil.getCurrent()) {
             case WINDOWS:
-                registry.addResourceHandler(imagePath + "**").addResourceLocations("file:///" + localDisk + imagePath);
+                registry
+                    .addResourceHandler("/" + StringUtil.trimSlash(imagePath) + "/**")
+                    .addResourceLocations("file:///" + localDisk + StringUtil.trimSlash(imagePath) + "/");
                 break;
             case LINUX:
-                registry.addResourceHandler(imagePath + "**").addResourceLocations("file:" + imagePath);
+                registry
+                    .addResourceHandler("/" + StringUtil.trimSlash(imagePath) + "/**")
+                    .addResourceLocations("file:" + StringUtil.trimSlash(imagePath) + "/");
         }
     }
 }

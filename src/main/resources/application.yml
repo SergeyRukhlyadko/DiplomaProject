@@ -42,7 +42,7 @@ captcha:
   outdated: 1
 
 win.local-disk: C:/
-upload.image-path: /upload/
+upload.image-path: upload
 
 #logging.level.org.hibernate:
 #    SQL: debug

@@ -162,15 +162,7 @@ class ApiPostController  {
     }
 
     @PutMapping("/{id}")
-    ResponseEntity<?> post(Principal principal, @PathVariable int id, @RequestBody RequestPostBody requestBody) {
-        CheckupService checkupService = context.getBean("checkupService", CheckupService.class);
-        checkupService.title(requestBody.getTitle());
-        checkupService.text(requestBody.getText());
-        Map<String, String> errors = checkupService.getErrors();
-
-        if (!errors.isEmpty())
-            return ResponseEntity.ok().body(new ErrorBody(errors));
-
+    ResponseEntity<?> post(Principal principal, @PathVariable int id, @Valid @RequestBody RequestPostBody requestBody) {
         boolean isEdited = postService.editPost(
             principal.getName(),
             id,
@@ -184,7 +176,7 @@ class ApiPostController  {
         if (isEdited) {
             return ResponseEntity.ok(new DefaultBody(isEdited));
         } else {
-            return ResponseEntity.status(400).body(new BadRequestBody("Пользователь не является модератором или автором поста"));
+            return ResponseEntity.status(400).body(new BadRequestBody("Пост не найден или пользователь не является модератором или автором поста"));
         }
     }
 

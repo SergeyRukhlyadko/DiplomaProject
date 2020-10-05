@@ -195,18 +195,19 @@ public class PostService {
 
     @Transactional(rollbackFor = Exception.class)
     public boolean editPost(String email, int postId, boolean isActive, Date timestamp, String title, String text, List<String> tags) {
-        Users user = usersDBService.find(email);
-
-        LocalDateTime dateTimeNow = LocalDateTime.now();
-        LocalDateTime dateTime = LocalDateTime.ofInstant(
-            timestamp.toInstant(),
-            ZoneId.systemDefault()
+        Users user = usersRepository.findByEmail(email).orElseThrow(
+            () -> new UserNotFoundException("User with email " + email + " not found")
         );
 
-        if (dateTime.isBefore(dateTimeNow))
-            dateTime = dateTimeNow;
+        Posts post;
+        Optional<Posts> postOptional = postsRepository.findById(postId);
+        if (postOptional.isPresent()) {
+            post = postOptional.get();
+        } else {
+            return false;
+        }
 
-        Posts post = postsDBService.find(postId);
+        LocalDateTime dateTime = getNowIfDateTimeBefore(DateTimeUtil.toLocalDateTime(timestamp));
 
         if (user.getId() == post.getUser().getId()) {
             postsDBService.update(post, isActive, ModerationStatus.NEW, dateTime, title, text);

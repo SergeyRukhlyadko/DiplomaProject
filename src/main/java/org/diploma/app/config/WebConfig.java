@@ -1,25 +1,32 @@
 package org.diploma.app.config;
 
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import org.apache.commons.lang3.StringUtils;
 import org.diploma.app.util.OperatingSystemUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    @Value("${win.local-disk}")
     String localDisk;
-
-    @Value("${upload.image-path}")
     String imagePath;
-
-    @Autowired
     OperatingSystemUtil operatingSystemUtil;
+
+    public WebConfig(
+        @Value("${win.local-disk}") String localDisk,
+        @Value("${upload.image-path}") String imagePath,
+        OperatingSystemUtil operatingSystemUtil
+    ) {
+        this.localDisk = localDisk;
+        this.imagePath = imagePath;
+        this.operatingSystemUtil = operatingSystemUtil;
+    }
 
     @Override
     public void addFormatters(FormatterRegistry registry) {

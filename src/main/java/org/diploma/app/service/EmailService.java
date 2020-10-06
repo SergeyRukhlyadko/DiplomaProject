@@ -2,19 +2,21 @@ package org.diploma.app.service;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Service
 public class EmailService {
 
-    static final String EMAIL_REGEX = ".+@.+";
+    static String EMAIL_REGEX = ".+@.+";
 
-    @Autowired
     JavaMailSender javaMailSender;
+
+    public EmailService(JavaMailSender javaMailSender) {
+        this.javaMailSender = javaMailSender;
+    }
 
     public void send(String from, String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();

@@ -1,5 +1,8 @@
 package org.diploma.app.service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.model.db.entity.CaptchaCodes;
@@ -8,7 +11,6 @@ import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
 import org.diploma.app.repository.CaptchaCodesRepository;
 import org.diploma.app.repository.UsersRepository;
 import org.diploma.app.util.Captcha;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
@@ -20,40 +22,41 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.UUID;
-
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Service
 public class AuthService {
 
-    @Value("${spring.mail.username}")
     String from;
-
-    @Value("${host}")
     String host;
-
-    @Value("${captcha.outdated}")
     int captchaOutdated;
-
-    @Autowired
     ApplicationContext context;
-
-    @Autowired
     GeneralService generalService;
-
-    @Autowired
     EmailService emailService;
-
-    @Autowired
     PasswordEncoder passwordEncoder;
-
-    @Autowired
     UsersRepository usersRepository;
-
-    @Autowired
     CaptchaCodesRepository captchaCodesRepository;
+
+    public AuthService(
+        @Value("${spring.mail.username}") String from,
+        @Value("${host}") String host,
+        @Value("${captcha.outdated}") int captchaOutdated,
+        ApplicationContext context,
+        GeneralService generalService,
+        EmailService emailService,
+        PasswordEncoder passwordEncoder,
+        UsersRepository usersRepository,
+        CaptchaCodesRepository captchaCodesRepository
+    ) {
+        this.from = from;
+        this.host = host;
+        this.captchaOutdated = captchaOutdated;
+        this.context = context;
+        this.generalService = generalService;
+        this.emailService = emailService;
+        this.passwordEncoder = passwordEncoder;
+        this.usersRepository = usersRepository;
+        this.captchaCodesRepository = captchaCodesRepository;
+    }
 
     /*
         throws UserNotFoundException, BadCredentialsException
@@ -63,8 +66,9 @@ public class AuthService {
             () -> new UserNotFoundException("User with email " + email + " not found")
         );
 
-        if (!passwordEncoder.matches(password, user.getPassword()))
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new BadCredentialsException("Wrong password");
+        }
 
         authenticate(email, sessionId);
         return user;
@@ -77,8 +81,10 @@ public class AuthService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String details = String.valueOf(authentication.getDetails());
 
-        if (!authentication.isAuthenticated() || !details.equals(sessionId))
-            throw new AuthenticationCredentialsNotFoundException("User with session " + sessionId + " is not authorized");
+        if (!authentication.isAuthenticated() || !details.equals(sessionId)) {
+            throw new AuthenticationCredentialsNotFoundException(
+                "User with session " + sessionId + " is not authorized");
+        }
 
         String email = String.valueOf(authentication.getPrincipal());
         return usersRepository.findByEmail(email).orElseThrow(
@@ -104,10 +110,13 @@ public class AuthService {
     public boolean restorePassword(String email) {
         if (usersRepository.existsUsersByEmail(email)) {
             String code = UUID.randomUUID().toString();
-            if (usersRepository.updateCodeByEmail(code, email) != 1)
-                throw new SQLQueryException("More than one row has been updated in the Users table with email: " + email);
+            if (usersRepository.updateCodeByEmail(code, email) != 1) {
+                throw new SQLQueryException(
+                    "More than one row has been updated in the Users table with email: " + email);
+            }
 
-            emailService.send(from, email, "Restore password", "http://" + host + "/login/change-password/" + code);
+            emailService.send(from, email, "Restore password",
+                "http://" + host + "/login/change-password/" + code);
             return true;
         }
 
@@ -119,8 +128,10 @@ public class AuthService {
      */
     @Transactional(rollbackFor = Exception.class)
     public boolean changePassword(String code, String password) {
-        if (usersRepository.updatePasswordByCode(passwordEncoder.encode(password), code) != 1)
-            throw new SQLQueryException("More than one row has been updated in the Users table with code: " + code);
+        if (usersRepository.updatePasswordByCode(passwordEncoder.encode(password), code) != 1) {
+            throw new SQLQueryException(
+                "More than one row has been updated in the Users table with code: " + code);
+        }
 
         return true;
     }
@@ -129,18 +140,20 @@ public class AuthService {
         throws RegistrationIsClosedException
      */
     public Users register(String name, String email, String password) throws RegistrationIsClosedException {
-        if (generalService.isEnabled(GlobalSetting.MULTIUSER_MODE))
-            return usersRepository.save(new Users(false, name, email, passwordEncoder.encode(password)));
+        if (generalService.isEnabled(GlobalSetting.MULTIUSER_MODE)) {
+            return usersRepository
+                .save(new Users(false, name, email, passwordEncoder.encode(password)));
+        }
 
         throw new RegistrationIsClosedException();
     }
 
     @Transactional(rollbackFor = Exception.class)
     public Captcha createCaptcha() {
-        Captcha captcha = context.getBean("captcha" , Captcha.class);
+        Captcha captcha = context.getBean("captcha", Captcha.class);
 
         LocalDateTime now = LocalDateTime.now();
-        captchaCodesRepository.deleteByTimeLessThen(now.minusHours(1));
+        captchaCodesRepository.deleteByTimeLessThen(now.minusHours(captchaOutdated));
 
         CaptchaCodes captchaCodes = new CaptchaCodes(now, captcha.getCode(), captcha.getSecret());
         captchaCodesRepository.save(captchaCodes);

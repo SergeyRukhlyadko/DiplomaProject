@@ -1,5 +1,12 @@
 package org.diploma.app.service;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import javax.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.apache.commons.lang3.StringUtils;
@@ -23,56 +30,52 @@ import org.diploma.app.service.db.PostsDBService;
 import org.diploma.app.service.db.UsersDBService;
 import org.diploma.app.util.Decision;
 import org.diploma.app.util.OperatingSystemUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Service
 public class GeneralService {
 
-    @Value("${upload.image-path}")
     String imagePath;
-
-    @Autowired
     UsersDBService usersDBService;
-
-    @Autowired
     PostCommentsDBService postCommentsDBService;
-
-    @Autowired
     PostsDBService postsDBService;
-
-    @Autowired
     PasswordEncoder passwordEncoder;
-
-    @Autowired
     UsersRepository usersRepository;
-
-    @Autowired
     PostsRepository postsRepository;
-
-    @Autowired
     PostVotesRepository postVotesRepository;
-
-    @Autowired
     TagsRepository tagsRepository;
-
-    @Autowired
     GlobalSettingsRepository globalSettingsRepository;
-
-    @Autowired
     OperatingSystemUtil operatingSystemUtil;
+
+    public GeneralService(
+        @Value("${upload.image-path}") String imagePath,
+        UsersDBService usersDBService,
+        PostCommentsDBService postCommentsDBService,
+        PostsDBService postsDBService,
+        PasswordEncoder passwordEncoder,
+        UsersRepository usersRepository,
+        PostsRepository postsRepository,
+        PostVotesRepository postVotesRepository,
+        TagsRepository tagsRepository,
+        GlobalSettingsRepository globalSettingsRepository,
+        OperatingSystemUtil operatingSystemUtil
+    ) {
+        this.imagePath = imagePath;
+        this.usersDBService = usersDBService;
+        this.postCommentsDBService = postCommentsDBService;
+        this.postsDBService = postsDBService;
+        this.passwordEncoder = passwordEncoder;
+        this.usersRepository = usersRepository;
+        this.postsRepository = postsRepository;
+        this.postVotesRepository = postVotesRepository;
+        this.tagsRepository = tagsRepository;
+        this.globalSettingsRepository = globalSettingsRepository;
+        this.operatingSystemUtil = operatingSystemUtil;
+    }
 
     public Users changeModeratorStatus(String email) {
         Users user = usersDBService.find(email);
@@ -81,7 +84,8 @@ public class GeneralService {
     }
 
     public List<PostsCountByTagName> getAllTags() {
-        return tagsRepository.findAllNameAndPostsCountByIsActiveAndModerationStatusGroupByName(true, ModerationStatus.ACCEPTED.toString());
+        return tagsRepository.findAllNameAndPostsCountByIsActiveAndModerationStatusGroupByName(
+            true, ModerationStatus.ACCEPTED.toString());
     }
 
     public int addComment(String email, int parentId, int postId, String text) {
@@ -99,8 +103,9 @@ public class GeneralService {
         try {
             Users user = usersDBService.find(email);
 
-            if (!user.isModerator())
+            if (!user.isModerator()) {
                 return false;
+            }
 
             Posts post = postsDBService.find(postId);
             post.setModerator(user);
@@ -138,8 +143,9 @@ public class GeneralService {
         String[] hashes = UUID.randomUUID().toString().split("-");
         StringBuilder uploadDir = new StringBuilder();
         uploadDir.append(StringUtils.strip(imagePath, "/\\")).append("/");
-        for(int i = 1; i < 4; i++)
+        for (int i = 1; i < 4; i++) {
             uploadDir.append(hashes[i]).append("/");
+        }
 
         operatingSystemUtil.createDirectories(uploadDir.toString());
         String uploadFile = uploadDir.append(hashes[4]).append(".").append(format.toLowerCase()).toString();
@@ -148,10 +154,12 @@ public class GeneralService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public boolean updateProfile(String email, String name, String newEmail, String password, String photo) {
+    public boolean updateProfile(String email, String name, String newEmail, String password,
+        String photo) {
         String oldPhoto = null;
-        if (photo != null)
+        if (photo != null) {
             oldPhoto = usersRepository.findPhoto(email);
+        }
 
         int countUpdated = usersRepository.update(
             email,
@@ -165,7 +173,7 @@ public class GeneralService {
             if (oldPhoto != null) {
                 try {
                     operatingSystemUtil.deleteFile(oldPhoto);
-                } catch(IOException e) {
+                } catch (IOException e) {
                     return false;
                 }
             }
@@ -188,9 +196,11 @@ public class GeneralService {
         throws GlobalSettingNotFoundException
      */
     public Map<String, Boolean> findAllGlobalSettings() {
-        Collection<GlobalSettingCodeAndValue> globalSettings = globalSettingsRepository.findBy(GlobalSettingCodeAndValue.class);
-        if (globalSettings.isEmpty())
+        Collection<GlobalSettingCodeAndValue> globalSettings = globalSettingsRepository
+            .findBy(GlobalSettingCodeAndValue.class);
+        if (globalSettings.isEmpty()) {
             throw new GlobalSettingNotFoundException("Global settings not found");
+        }
 
         return GlobalSettingCodeAndValue.toMap(globalSettings);
     }
@@ -207,16 +217,19 @@ public class GeneralService {
             }
         });
 
-        if (!trueSettings.isEmpty())
+        if (!trueSettings.isEmpty()) {
             globalSettingsRepository.updateValueByCodeIn(true, trueSettings);
+        }
 
-        if (!falseSettings.isEmpty())
+        if (!falseSettings.isEmpty()) {
             globalSettingsRepository.updateValueByCodeIn(false, falseSettings);
+        }
     }
 
     public boolean isEnabled(GlobalSetting globalSetting) {
         return globalSettingsRepository.valueByCode(globalSetting.toString()).orElseThrow(
-            () -> new GlobalSettingNotFoundException("Global setting: " + globalSetting.toString() + " not found")
+            () -> new GlobalSettingNotFoundException(
+                "Global setting: " + globalSetting.toString() + " not found")
         );
     }
 }

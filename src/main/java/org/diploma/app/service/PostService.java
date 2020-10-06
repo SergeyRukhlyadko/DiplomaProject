@@ -1,5 +1,13 @@
 package org.diploma.app.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import javax.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.model.db.entity.PostVotes;
@@ -21,74 +29,74 @@ import org.diploma.app.service.db.UsersDBService;
 import org.diploma.app.util.DateTimeUtil;
 import org.diploma.app.util.PostStatus;
 import org.diploma.app.util.SortMode;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityNotFoundException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Service
 public class PostService {
 
-    @Autowired
     PostsDBService postsDBService;
-
-    @Autowired
     UsersDBService usersDBService;
-
-    @Autowired
     TagsDBService tagsDBService;
-
-    @Autowired
     Tag2postDBService tag2postDBService;
-
-    @Autowired
     PostVotesDBService postVotesDBService;
-
-    @Autowired
     GeneralService generalService;
-
-    @Autowired
     UsersRepository usersRepository;
-
-    @Autowired
     PostsRepository postsRepository;
-
-    @Autowired
     TagsRepository tagsRepository;
-
-    @Autowired
     Tag2postRepository tag2postRepository;
 
+    public PostService(
+        PostsDBService postsDBService,
+        UsersDBService usersDBService,
+        TagsDBService tagsDBService,
+        Tag2postDBService tag2postDBService,
+        PostVotesDBService postVotesDBService,
+        GeneralService generalService,
+        UsersRepository usersRepository,
+        PostsRepository postsRepository,
+        TagsRepository tagsRepository,
+        Tag2postRepository tag2postRepository
+    ) {
+        this.postsDBService = postsDBService;
+        this.usersDBService = usersDBService;
+        this.tagsDBService = tagsDBService;
+        this.tag2postDBService = tag2postDBService;
+        this.postVotesDBService = postVotesDBService;
+        this.generalService = generalService;
+        this.usersRepository = usersRepository;
+        this.postsRepository = postsRepository;
+        this.tagsRepository = tagsRepository;
+        this.tag2postRepository = tag2postRepository;
+    }
+
     public Page<Posts> findPosts(int offset, int limit, SortMode mode) {
-        switch(mode) {
+        switch (mode) {
             case RECENT:
                 return postsRepository.findByIsActiveAndModerationStatusAndTimeBefore(
-                    PageRequest.of(offset / limit, limit, Sort.by("time").ascending()), true, ModerationStatus.ACCEPTED, LocalDateTime.now()
+                    PageRequest.of(offset / limit, limit, Sort.by("time").ascending()), true,
+                    ModerationStatus.ACCEPTED, LocalDateTime.now()
                 );
             case POPULAR:
-                return postsRepository.findByIsActiveAndModerationStatusAndTimeBeforeOrderByCommentCountDesc(
-                    PageRequest.of(offset / limit, limit), true, ModerationStatus.ACCEPTED, LocalDateTime.now()
-                );
+                return postsRepository
+                    .findByIsActiveAndModerationStatusAndTimeBeforeOrderByCommentCountDesc(
+                        PageRequest.of(offset / limit, limit), true, ModerationStatus.ACCEPTED,
+                        LocalDateTime.now()
+                    );
             case BEST:
-                return postsRepository.findByIsActiveAndModerationStatusAndTimeBeforeOrderByLikeCountDesc(
-                    PageRequest.of(offset / limit, limit), true, ModerationStatus.ACCEPTED, LocalDateTime.now()
-                );
+                return postsRepository
+                    .findByIsActiveAndModerationStatusAndTimeBeforeOrderByLikeCountDesc(
+                        PageRequest.of(offset / limit, limit), true, ModerationStatus.ACCEPTED,
+                        LocalDateTime.now()
+                    );
             case EARLY:
                 return postsRepository.findByIsActiveAndModerationStatusAndTimeBefore(
-                    PageRequest.of(offset / limit, limit, Sort.by("time").descending()), true, ModerationStatus.ACCEPTED, LocalDateTime.now()
+                    PageRequest.of(offset / limit, limit, Sort.by("time").descending()), true,
+                    ModerationStatus.ACCEPTED, LocalDateTime.now()
                 );
             default:
                 throw new IllegalArgumentException(enumValues(SortMode.class));
@@ -97,34 +105,43 @@ public class PostService {
 
     public Page<Posts> findPosts(int offset, int limit) {
         return postsRepository.findByIsActiveAndModerationStatusAndTimeBefore(
-            PageRequest.of(offset / limit, limit), true, ModerationStatus.ACCEPTED, LocalDateTime.now()
+            PageRequest.of(offset / limit, limit), true, ModerationStatus.ACCEPTED,
+            LocalDateTime.now()
         );
     }
 
     public Page<Posts> findPostsByTitleOrText(int offset, int limit, String titleOrText) {
-        return postsRepository.findByIsActiveAndModerationStatusAndTimeBeforeAndTitleContainingOrTextContaining(
-            PageRequest.of(offset / limit, limit), true, ModerationStatus.ACCEPTED, LocalDateTime.now(), titleOrText, titleOrText
-        );
+        return postsRepository
+            .findByIsActiveAndModerationStatusAndTimeBeforeAndTitleContainingOrTextContaining(
+                PageRequest.of(offset / limit, limit), true, ModerationStatus.ACCEPTED,
+                LocalDateTime.now(), titleOrText, titleOrText
+            );
     }
 
     public Page<Posts> findPostsByDate(int offset, int limit, LocalDate date) {
         LocalDateTime timeStart = date.atStartOfDay();
         LocalDateTime timeEnd = timeStart.plusDays(1);
-        return postsRepository.findByIsActiveAndModerationStatusAndTimeGreaterThanEqualAndTimeLessThan(
-            PageRequest.of(offset / limit, limit), true, ModerationStatus.ACCEPTED, timeStart, timeEnd
-        );
+        return postsRepository
+            .findByIsActiveAndModerationStatusAndTimeGreaterThanEqualAndTimeLessThan(
+                PageRequest.of(offset / limit, limit), true, ModerationStatus.ACCEPTED, timeStart,
+                timeEnd
+            );
     }
 
     public Page<Posts> findPostsByTag(int offset, int limit, String tagName) {
         return postsRepository.findByIsActiveAndModerationStatusAndTimeBeforeAndTagName(
-            PageRequest.of(offset / limit, limit), true, ModerationStatus.ACCEPTED, LocalDateTime.now(), tagName
+            PageRequest.of(offset / limit, limit), true, ModerationStatus.ACCEPTED,
+            LocalDateTime.now(), tagName
         );
     }
 
-    public Page<Posts> findPostsForModeration(String email, int offset, int limit, ModerationStatus status) {
-        switch(status) {
+    public Page<Posts> findPostsForModeration(String email, int offset, int limit,
+        ModerationStatus status) {
+        switch (status) {
             case NEW:
-                return postsRepository.findByIsActiveAndModerationStatus(PageRequest.of(offset / limit, limit), true, ModerationStatus.NEW);
+                return postsRepository
+                    .findByIsActiveAndModerationStatus(PageRequest.of(offset / limit, limit), true,
+                        ModerationStatus.NEW);
             case ACCEPTED:
                 return postsRepository.findByIsActiveAndModerationStatusAndModeratorEmail(
                     PageRequest.of(offset / limit, limit), true, ModerationStatus.ACCEPTED, email
@@ -165,7 +182,8 @@ public class PostService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void createPost(String email, boolean isActive, Date timestamp, String title, String text, List<String> tags) {
+    public void createPost(String email, boolean isActive, Date timestamp, String title,
+        String text, List<String> tags) {
         Users user = usersRepository.findByEmail(email).orElseThrow(
             () -> new UserNotFoundException("User with email " + email + " not found")
         );
@@ -174,13 +192,14 @@ public class PostService {
 
         Posts post;
         if (!generalService.isEnabled(GlobalSetting.POST_PREMODERATION) && isActive) {
-            post = postsRepository.save(new Posts(isActive, ModerationStatus.ACCEPTED, user, dateTime, title, text, 0));
+            post = postsRepository.save(
+                new Posts(isActive, ModerationStatus.ACCEPTED, user, dateTime, title, text, 0));
         } else {
             post = postsRepository.save(new Posts(isActive, user, dateTime, title, text, 0));
         }
 
         if (!tags.isEmpty()) {
-            for(String tagString : tags) {
+            for (String tagString : tags) {
                 Optional<Tags> tag = tagsRepository.findByName(tagString);
                 if (tag.isEmpty()) {
                     Tags newTag = tagsRepository.save(new Tags(tagString));
@@ -194,7 +213,10 @@ public class PostService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public boolean editPost(String email, int postId, boolean isActive, Date timestamp, String title, String text, List<String> tags) {
+    public boolean editPost(
+        String email, int postId, boolean isActive, Date timestamp,
+        String title, String text, List<String> tags
+    ) {
         Users user = usersRepository.findByEmail(email).orElseThrow(
             () -> new UserNotFoundException("User with email " + email + " not found")
         );
@@ -219,20 +241,22 @@ public class PostService {
 
         Set<Tag2post> tag2postSet = post.getTag2posts();
         if (tags.isEmpty()) {
-            if (!tag2postSet.isEmpty())
+            if (!tag2postSet.isEmpty()) {
                 tag2postDBService.deleteAll(tag2postSet);
+            }
         } else {
             if (!tag2postSet.isEmpty()) {
                 List<Tag2post> tag2postsForDeleteList = new ArrayList<>();
-                for(Tag2post tag2post : tag2postSet) {
-                    if (!tags.remove(tag2post.getTag().getName()))
+                for (Tag2post tag2post : tag2postSet) {
+                    if (!tags.remove(tag2post.getTag().getName())) {
                         tag2postsForDeleteList.add(tag2post);
+                    }
                 }
 
                 tag2postDBService.deleteAll(tag2postsForDeleteList);
             }
 
-            for(String tagName : tags) {
+            for (String tagName : tags) {
                 Optional<Tags> tagOptional = tagsDBService.find(tagName);
                 if (tagOptional.isPresent()) {
                     tag2postDBService.save(post, tagOptional.get());
@@ -264,7 +288,7 @@ public class PostService {
             Posts post = postsDBService.find(postId);
             List<PostVotes> postVotes = post.getPostVotes();
             PostVotes existVote = null;
-            for(PostVotes postVote : postVotes) {
+            for (PostVotes postVote : postVotes) {
                 if (postVote.getUser().getId() == user.getId()) {
                     existVote = postVote;
                     break;
@@ -280,7 +304,7 @@ public class PostService {
                 existVote.setValue(value);
                 postVotesDBService.save(existVote);
             }
-        } catch(EntityNotFoundException e) {
+        } catch (EntityNotFoundException e) {
             return false;
         }
 
@@ -296,8 +320,10 @@ public class PostService {
      */
     @Transactional(rollbackFor = Exception.class)
     public void incrementPostView(int postId) {
-        if (postsRepository.incrementViewCountById(postId) != 1)
-            throw new SQLQueryException("More than one row has been updated in the Posts table with id: " + postId);
+        if (postsRepository.incrementViewCountById(postId) != 1) {
+            throw new SQLQueryException(
+                "More than one row has been updated in the Posts table with id: " + postId);
+        }
     }
 
     private <E extends Enum<E>> String enumValues(Class<E> enumClass) {
@@ -305,10 +331,11 @@ public class PostService {
         sb.append("Supported statuses: ");
 
         E[] values = enumClass.getEnumConstants();
-        for(int i = 0; i < values.length; i++ ) {
+        for (int i = 0; i < values.length; i++) {
             sb.append(values[i]);
-            if (i != values.length - 1)
+            if (i != values.length - 1) {
                 sb.append(", ");
+            }
         }
 
         return sb.toString();

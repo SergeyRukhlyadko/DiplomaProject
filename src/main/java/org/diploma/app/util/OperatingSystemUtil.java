@@ -1,27 +1,25 @@
 package org.diploma.app.util;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Component
 public class OperatingSystemUtil {
 
     OperatingSystem os;
-
-    @Value("${win.local-disk}")
     String localDisk;
 
     /*
         throws UnsupportedOperatingSystemException
      */
-    public OperatingSystemUtil() {
+    public OperatingSystemUtil(@Value("${win.local-disk}") String localDisk) {
+        this.localDisk = localDisk;
         String osName = System.getProperty("os.name").toLowerCase();
         if (osName.contains("win")) {
             os = OperatingSystem.WINDOWS;
@@ -37,7 +35,7 @@ public class OperatingSystemUtil {
     }
 
     public void createDirectories(String dirs) throws IOException {
-        switch(os) {
+        switch (os) {
             case WINDOWS:
                 Files.createDirectories(Path.of(localDisk + dirs));
                 break;
@@ -48,7 +46,7 @@ public class OperatingSystemUtil {
 
     public void createFileThenWrite(String path, byte[] bytes) throws IOException {
         Path absolutePath = null;
-        switch(os) {
+        switch (os) {
             case WINDOWS:
                 absolutePath = Path.of(localDisk + path);
                 break;
@@ -61,7 +59,7 @@ public class OperatingSystemUtil {
     }
 
     public void deleteFile(String path) throws IOException {
-        switch(os) {
+        switch (os) {
             case WINDOWS:
                 Files.delete(Path.of(localDisk + path));
                 break;

@@ -1,5 +1,21 @@
 package org.diploma.app.controller;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.security.Principal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
+import javax.persistence.EntityNotFoundException;
+import javax.servlet.http.HttpSession;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.controller.request.post.RequestCommentBody;
@@ -13,11 +29,11 @@ import org.diploma.app.controller.response.ResponseCalendarBody;
 import org.diploma.app.controller.response.ResponseStatisticBody;
 import org.diploma.app.controller.response.ResponseTagBody;
 import org.diploma.app.dto.TagDto;
-import org.diploma.app.model.db.entity.projection.PostVotesStatistics;
 import org.diploma.app.model.db.entity.PostsCountByTagName;
-import org.diploma.app.model.db.entity.projection.PostsStatistics;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
+import org.diploma.app.model.db.entity.projection.PostVotesStatistics;
+import org.diploma.app.model.db.entity.projection.PostsStatistics;
 import org.diploma.app.service.AuthService;
 import org.diploma.app.service.CheckupService;
 import org.diploma.app.service.GeneralService;
@@ -25,7 +41,6 @@ import org.diploma.app.service.PostService;
 import org.diploma.app.util.NormalizationAlgorithm;
 import org.diploma.app.util.NullRemover;
 import org.imgscalr.Scalr;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.ResponseEntity;
@@ -38,65 +53,54 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
-import javax.persistence.EntityNotFoundException;
-import javax.servlet.http.HttpSession;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.security.Principal;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RestController
 @RequestMapping("/api")
 class ApiGeneralController {
 
-    @Value("${init.title}")
     String title;
-
-    @Value("${init.subtitle}")
     String subtitle;
-
-    @Value("${init.phone}")
     String phone;
-
-    @Value("${init.email}")
     String email;
-
-    @Value("${init.copyright}")
     String copyright;
-
-    @Value("${init.copyrightFrom}")
     String copyrightFrom;
-
-    @Autowired
     ApplicationContext context;
-
-    @Autowired
     AuthService authService;
-
-    @Autowired
     GeneralService generalService;
-
-    @Autowired
     PostService postService;
+
+    public ApiGeneralController(
+        @Value("${init.title}") String title,
+        @Value("${init.subtitle}") String subtitle,
+        @Value("${init.phone}") String phone,
+        @Value("${init.email}") String email,
+        @Value("${init.copyright}") String copyright,
+        @Value("${init.copyrightFrom}") String copyrightFrom,
+        ApplicationContext context,
+        AuthService authService,
+        GeneralService generalService,
+        PostService postService
+    ) {
+        this.title = title;
+        this.subtitle = subtitle;
+        this.phone = phone;
+        this.email = email;
+        this.copyright = copyright;
+        this.copyrightFrom = copyrightFrom;
+        this.context = context;
+        this.authService = authService;
+        this.generalService = generalService;
+        this.postService = postService;
+    }
 
     //Метод смены флага модератора для удобства
     @GetMapping("/moderator")
     ResponseEntity<?> moderator(@RequestParam String email) {
         try {
             generalService.changeModeratorStatus(email);
-        } catch(EntityNotFoundException e) {
-            return ResponseEntity.status(400).body(new BadRequestBody("Пользователь " + email + " не найден"));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(400).body(
+                new BadRequestBody("Пользователь " + email + " не найден"));
         }
         return ResponseEntity.ok().build();
     }
@@ -117,15 +121,16 @@ class ApiGeneralController {
     ResponseEntity<?> tag(@RequestParam(required = false) String query) {
         List<PostsCountByTagName> postsCountByTagNameList = generalService.getAllTags();
         List<TagDto> tagDtoList = new ArrayList<>();
-        if (postsCountByTagNameList.size() == 0)
+        if (postsCountByTagNameList.size() == 0) {
             return ResponseEntity.ok(new ResponseTagBody(tagDtoList));
+        }
 
         long postsCount = postService.postsCount();
         double min = (float) postsCountByTagNameList.get(0).getPostsCount() / postsCount;
         double max = min;
         Map<String, Double> weights = new HashMap<>();
         weights.put(postsCountByTagNameList.get(0).getName(), min);
-        for(int i = 1; i < postsCountByTagNameList.size(); i++) {
+        for (int i = 1; i < postsCountByTagNameList.size(); i++) {
             double weight = (float) postsCountByTagNameList.get(i).getPostsCount() / postsCount;
             if (min > weight) {
                 min = weight;
@@ -137,11 +142,17 @@ class ApiGeneralController {
         }
 
         if (query == null || query.isEmpty()) {
-            for(Map.Entry<String, Double> entry : weights.entrySet())
-                tagDtoList.add(new TagDto(entry.getKey(), NormalizationAlgorithm.normalizeMinMax(min, max, entry.getValue())));
+            for (Map.Entry<String, Double> entry : weights.entrySet()) {
+                tagDtoList.add(
+                    new TagDto(entry.getKey(),
+                        NormalizationAlgorithm.normalizeMinMax(min, max, entry.getValue())));
+            }
         } else {
-            if (weights.containsKey(query))
-                tagDtoList.add(new TagDto(query, NormalizationAlgorithm.normalizeMinMax(min, max, weights.get(query))));
+            if (weights.containsKey(query)) {
+                tagDtoList.add(
+                    new TagDto(query,
+                        NormalizationAlgorithm.normalizeMinMax(min, max, weights.get(query))));
+            }
         }
 
         return ResponseEntity.ok(new ResponseTagBody(tagDtoList));
@@ -158,18 +169,21 @@ class ApiGeneralController {
         }
 
         try {
-            int id = generalService.addComment(principal.getName(), requestBody.getParentId(), requestBody.getPostId(), requestBody.getText());
+            int id = generalService.addComment(
+                principal.getName(), requestBody.getParentId(), requestBody.getPostId(), requestBody.getText());
             Map<String, Integer> response = new HashMap<>();
             response.put("id", id);
             return ResponseEntity.ok(response);
-        } catch(EntityNotFoundException e) {
-            return ResponseEntity.status(400).body(new BadRequestBody("Соответствующие комментарий и/или пост не существуют"));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(400).body(
+                new BadRequestBody("Соответствующие комментарий и/или пост не существуют"));
         }
     }
 
     @PostMapping("moderation")
     DefaultBody moderation(Principal principal, @RequestBody RequestModerationBody requestBody) {
-        return new DefaultBody(generalService.changeModerationStatus(principal.getName(), requestBody.getPostId(), requestBody.getDecision()));
+        return new DefaultBody(generalService.changeModerationStatus(
+            principal.getName(), requestBody.getPostId(), requestBody.getDecision()));
     }
 
     @PostMapping("/image")
@@ -187,8 +201,9 @@ class ApiGeneralController {
         checkupService.imageSize(multipartFile.getSize());
         checkupService.imageFormat(format);
         Map<String, String> errors = checkupService.getErrors();
-        if (!errors.isEmpty())
+        if (!errors.isEmpty()) {
             return ResponseEntity.ok(new ErrorBody(errors));
+        }
 
         return ResponseEntity.ok("/" + generalService.uploadImage(multipartFile.getBytes(), format));
     }
@@ -200,12 +215,14 @@ class ApiGeneralController {
             .password(requestBody.getPassword())
             .removePhoto(requestBody.getPhoto(), requestBody.getRemovePhoto());
 
-        if (!principal.getName().equals(requestBody.getEmail()))
+        if (!principal.getName().equals(requestBody.getEmail())) {
             checkupService.email(requestBody.getEmail());
+        }
 
         Map<String, String> errors = checkupService.getErrors();
-        if (!errors.isEmpty())
+        if (!errors.isEmpty()) {
             return ResponseEntity.ok(new ErrorBody(errors));
+        }
 
         boolean isUpdated = generalService.updateProfile(
             principal.getName(),
@@ -222,12 +239,14 @@ class ApiGeneralController {
     }
 
     @PostMapping(value = "/profile/my", consumes = "multipart/form-data")
-    ResponseEntity<?> profileMy(HttpSession session, Principal principal,
-                                @RequestParam("photo") MultipartFile multipartFile,
-                                @RequestParam(value = "removePhoto", required = false) int removePhoto,
-                                @RequestParam(value = "name", required = false) String name,
-                                @RequestParam(value = "email", required = false) String email,
-                                @RequestParam(value = "password", required = false) String password) throws IOException {
+    ResponseEntity<?> profileMy(
+        HttpSession session, Principal principal,
+        @RequestParam("photo") MultipartFile multipartFile,
+        @RequestParam(value = "removePhoto", required = false) int removePhoto,
+        @RequestParam(value = "name", required = false) String name,
+        @RequestParam(value = "email", required = false) String email,
+        @RequestParam(value = "password", required = false) String password
+    ) throws IOException {
         ImageInputStream iis = ImageIO.createImageInputStream(multipartFile.getInputStream());
         Iterator<ImageReader> imageReaders = ImageIO.getImageReaders(iis);
         String format;
@@ -244,12 +263,14 @@ class ApiGeneralController {
             .name(name)
             .password(password);
 
-        if (!principal.getName().equals(email))
+        if (!principal.getName().equals(email)) {
             checkupService.email(email);
+        }
 
         Map<String, String> errors = checkupService.getErrors();
-        if (!errors.isEmpty())
+        if (!errors.isEmpty()) {
             return ResponseEntity.ok(new ErrorBody(errors));
+        }
 
         BufferedImage originalImage = ImageIO.read(iis);
         BufferedImage outputImage = Scalr.resize(originalImage, 36, 36);
@@ -259,8 +280,9 @@ class ApiGeneralController {
         String photoPath = "/" + generalService.uploadImage(baos.toByteArray(), format);
         boolean isUpdated = generalService.updateProfile(principal.getName(), name, email, password, photoPath);
 
-        if (isUpdated && email != null)
+        if (isUpdated && email != null) {
             authService.relogin(email, session.getId());
+        }
 
         return ResponseEntity.ok(new DefaultBody(isUpdated));
     }
@@ -277,8 +299,9 @@ class ApiGeneralController {
     ResponseEntity<?> statisticsAll(HttpSession session) {
         if (!generalService.isEnabled(GlobalSetting.STATISTICS_IS_PUBLIC)) {
             Users user = authService.checkAuthentication(session.getId());
-            if (!user.isModerator())
+            if (!user.isModerator()) {
                 return ResponseEntity.status(401).build();
+            }
         }
 
         PostsStatistics postsStatistics = generalService.getPostStatistics();
@@ -314,12 +337,15 @@ class ApiGeneralController {
     @PutMapping("/settings")
     ResponseEntity<?> settings(Principal principal, @RequestBody HashMap<String, Boolean> settings) {
         boolean isModerator = authService.isModerator(principal.getName());
-        if (!isModerator)
-            return ResponseEntity.status(400).body(new ResponseBadRequestBody("Пользователь не модератор"));
+        if (!isModerator) {
+            return ResponseEntity.status(400)
+                .body(new ResponseBadRequestBody("Пользователь не модератор"));
+        }
 
         NullRemover.remove(settings);
-        if (settings.isEmpty())
+        if (settings.isEmpty()) {
             return ResponseEntity.ok().build();
+        }
 
         generalService.updateGlobalSettings(settings);
         return ResponseEntity.ok().build();

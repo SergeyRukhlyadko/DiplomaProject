@@ -1,23 +1,24 @@
 package org.diploma.app.util;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class NormalizationAlgorithm {
 
     static int DEFAULT_SCALE = 2;
     static RoundingMode DEFAULT_ROUNDING_MODE = RoundingMode.DOWN;
 
     public static float normalizeMinMax(double min, double max, double weight) {
-        if (Double.isNaN(min) || Double.isNaN(max))
+        if (Double.isNaN(min) || Double.isNaN(max)) {
             return 0;
+        }
 
-        if (min == max)
+        if (min == max) {
             return BigDecimal.valueOf(weight).setScale(DEFAULT_SCALE, DEFAULT_ROUNDING_MODE).floatValue();
+        }
 
         BigDecimal minDecimal = new BigDecimal(min).setScale(DEFAULT_SCALE, DEFAULT_ROUNDING_MODE);
         BigDecimal maxDecimal = new BigDecimal(max).setScale(DEFAULT_SCALE, DEFAULT_ROUNDING_MODE);

@@ -1,4 +1,4 @@
-host: localhost
+host: ${HOST:localhost}
 server:
   port: ${PORT:80}
 

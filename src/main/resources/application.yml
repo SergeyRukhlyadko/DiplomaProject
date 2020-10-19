@@ -33,7 +33,7 @@ init:
   copyrightFrom: 2020
 
 captcha:
-  length: 8
+  length: 4
   width: 100
   height: 35
   fontPath: /static/fonts/OpenSans-Regular.ttf

@@ -8,7 +8,7 @@ import java.util.Random;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class CodeGenerator {
 
-    static String SYMBOLS = "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    static String SYMBOLS = "1234567890abcdefghjkmnopqrstuvwxyzABCDEFGHJKMNOPQRSTUVWXYZ";
 
     public char[] generate(int codeLength) {
         Random random = new Random();

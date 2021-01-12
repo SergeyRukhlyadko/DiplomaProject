@@ -4,38 +4,31 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
-import org.diploma.app.service.CheckupService;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
 public class RequestRegisterBody {
 
-    @NotBlank
-    @Email(message = "Неверный формат e-mail")
+    @NotBlank(groups = FirstOrder.class)
+    @Email(message = "неверный формат e-mail", groups = SecondOrder.class)
     @JsonProperty("e_mail")
     String email;
 
-    @NotNull
-    @Pattern(regexp = CheckupService.NAME_REGEX, message = "Имя может содержать только латинские или кириллические символы")
-    @Size(min = 2, max = 255, message = "Длинна имени должна быть от {min} до {max} символов")
+    @NotBlank(groups = FirstOrder.class)
     String name;
 
-    @NotNull
-    @Pattern(regexp = CheckupService.PASSWORD_REGEX, message = "Пароль может содержать только латинские символы и цифры")
-    @Size(min = 6, max = 255, message = "Длинна пароля должна быть от {min} до {max} символов")
+    @NotBlank(groups = FirstOrder.class)
+    @Size(min = 6, message = "длинна пароля должна быть не менее {min} символов", groups = SecondOrder.class)
     String password;
 
-    @NotNull
-    @Size(min = 8, max = 8, message = "Длинна капчи должна быть {min} символов")
+    @NotBlank(groups = FirstOrder.class)
     String captcha;
 
-    @NotBlank
+    @NotBlank(groups = FirstOrder.class)
     @JsonProperty("captcha_secret")
     String captchaSecret;
 }

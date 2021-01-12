@@ -8,6 +8,7 @@ import org.diploma.app.controller.request.RequestLoginBody;
 import org.diploma.app.controller.request.RequestPasswordBody;
 import org.diploma.app.controller.request.RequestRegisterBody;
 import org.diploma.app.controller.request.RequestRestoreBody;
+import org.diploma.app.controller.request.ValidationOrder;
 import org.diploma.app.controller.response.ResponseCaptchaBody;
 import org.diploma.app.controller.response.ResponseDefaultBody;
 import org.diploma.app.controller.response.ResponseErrorBody;
@@ -20,9 +21,11 @@ import org.diploma.app.service.RegistrationIsClosedException;
 import org.diploma.app.service.UserNotFoundException;
 import org.diploma.app.util.Captcha;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,9 +41,7 @@ class ApiAuthController {
     AuthService authService;
     PostService postService;
 
-    public ApiAuthController(
-        ApplicationContext context, AuthService authService, PostService postService
-    ) {
+    public ApiAuthController(ApplicationContext context, AuthService authService, PostService postService) {
         this.context = context;
         this.authService = authService;
         this.postService = postService;
@@ -105,8 +106,10 @@ class ApiAuthController {
         );
     }
 
-    @PostMapping("/register")
-    ResponseEntity<?> register(@Valid @RequestBody RequestRegisterBody requestBody) {
+    @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<?> register(
+        @Validated(ValidationOrder.class) @RequestBody RequestRegisterBody requestBody
+    ) {
         CheckupService checkupService = context.getBean("checkupService", CheckupService.class);
         checkupService
             .existsEmail(requestBody.getEmail())

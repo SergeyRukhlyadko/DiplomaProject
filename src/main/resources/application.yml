@@ -1,6 +1,9 @@
 host: ${HOST:localhost}
 server:
   port: ${PORT:80}
+  servlet.encoding:
+    charset: UTF-8
+    force: true
 
 spring:
   jpa:

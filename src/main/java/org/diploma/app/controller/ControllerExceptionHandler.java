@@ -5,6 +5,7 @@ import org.diploma.app.controller.response.ResponseErrorBody;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -27,14 +28,14 @@ public class ControllerExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> handleBodyValidationExceptions(MethodArgumentNotValidException e) {
+    public ResponseEntity<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         Map<String, String> errors = new HashMap<>();
         e.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
-        return ResponseEntity.status(400).body(new ResponseErrorBody(errors));
+        return ResponseEntity.status(200).body(new ResponseErrorBody(errors));
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -55,9 +56,13 @@ public class ControllerExceptionHandler {
         return ResponseEntity.status(400).body(new ResponseBadRequestBody(e.getMessage()));
     }
 
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    ResponseEntity<?> handleHttpMediaTypeNotSupportedException() {
+        return ResponseEntity.status(400).body(new ResponseBadRequestBody("Not supported content type"));
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<?> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
-        e.printStackTrace();
         return ResponseEntity.status(400).body(new ResponseBadRequestBody("Invalid request message"));
     }
 

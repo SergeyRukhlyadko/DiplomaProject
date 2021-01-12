@@ -1,0 +1,1 @@
+insert into captcha_codes(code, secret_code, time) values('1', '1', '2020-01-01 00:00:00');

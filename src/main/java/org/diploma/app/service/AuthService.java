@@ -1,8 +1,5 @@
 package org.diploma.app.service;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.model.db.entity.CaptchaCodes;
@@ -11,8 +8,8 @@ import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
 import org.diploma.app.repository.CaptchaCodesRepository;
 import org.diploma.app.repository.UsersRepository;
 import org.diploma.app.util.Captcha;
+import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,14 +19,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.UUID;
+
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Service
 public class AuthService {
 
     String from;
     String host;
     int captchaOutdated;
-    ApplicationContext context;
     GeneralService generalService;
     EmailService emailService;
     PasswordEncoder passwordEncoder;
@@ -40,7 +40,6 @@ public class AuthService {
         @Value("${spring.mail.username}") String from,
         @Value("${host}") String host,
         @Value("${captcha.outdated}") int captchaOutdated,
-        ApplicationContext context,
         GeneralService generalService,
         EmailService emailService,
         PasswordEncoder passwordEncoder,
@@ -50,12 +49,16 @@ public class AuthService {
         this.from = from;
         this.host = host;
         this.captchaOutdated = captchaOutdated;
-        this.context = context;
         this.generalService = generalService;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
         this.usersRepository = usersRepository;
         this.captchaCodesRepository = captchaCodesRepository;
+    }
+
+    @Lookup
+    protected Captcha createCaptcha() {
+        return null;
     }
 
     /*
@@ -149,9 +152,10 @@ public class AuthService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Captcha createCaptcha() {
-        Captcha captcha = context.getBean("captcha", Captcha.class);
+    public Captcha getCaptcha() {
+        Captcha captcha = createCaptcha();
 
+        //TODO do as a batch
         LocalDateTime now = LocalDateTime.now();
         captchaCodesRepository.deleteByTimeLessThen(now.minusHours(captchaOutdated));
 

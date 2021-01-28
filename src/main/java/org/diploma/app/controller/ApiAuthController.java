@@ -130,7 +130,7 @@ class ApiAuthController {
 
     @GetMapping("/captcha")
     ResponseCaptchaBody captcha() {
-        Captcha captcha = authService.createCaptcha();
+        Captcha captcha = authService.getCaptcha();
         return new ResponseCaptchaBody(captcha.getSecret(), captcha.getImage());
     }
 

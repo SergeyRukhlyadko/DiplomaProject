@@ -19,7 +19,7 @@ import org.diploma.app.service.CheckupService;
 import org.diploma.app.service.PostService;
 import org.diploma.app.service.RegistrationIsClosedException;
 import org.diploma.app.service.UserNotFoundException;
-import org.diploma.app.util.Captcha;
+import org.diploma.app.model.auth.Captcha;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

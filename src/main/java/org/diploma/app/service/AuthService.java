@@ -7,7 +7,7 @@ import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
 import org.diploma.app.repository.CaptchaCodesRepository;
 import org.diploma.app.repository.UsersRepository;
-import org.diploma.app.util.Captcha;
+import org.diploma.app.model.auth.Captcha;
 import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;

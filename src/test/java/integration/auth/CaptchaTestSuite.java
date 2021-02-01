@@ -8,7 +8,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.matchesPattern;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -22,7 +24,7 @@ public class CaptchaTestSuite {
 
     @Test
     @Transactional
-    void captcha_Get_200() throws Exception {
+    void RequestReturnsCorrectCaptcha() throws Exception {
         mvc.perform(get("/api/auth/captcha"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.secret").exists())
@@ -31,5 +33,13 @@ public class CaptchaTestSuite {
             .andExpect(jsonPath("$.image").exists())
             .andExpect(jsonPath("$.image")
                 .value(matchesPattern("^data:image\\/jpeg;base64, [A-Za-z\\d\\+\\/=]+$")));
+    }
+
+    @Test
+    @Transactional
+    void EachRequestDoesNotReturnSameCaptcha() throws Exception {
+        String response1 = mvc.perform(get("/api/auth/captcha")).andReturn().getResponse().getContentAsString();
+        String response2 = mvc.perform(get("/api/auth/captcha")).andReturn().getResponse().getContentAsString();
+        assertThat(response1, not(response2));
     }
 }

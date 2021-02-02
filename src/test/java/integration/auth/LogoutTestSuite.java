@@ -22,14 +22,14 @@ public class LogoutTestSuite {
 
     @Test
     @WithMockUser
-    void logout_GetWithAuth_200ResultTrue() throws Exception {
+    void LogoutIsDone() throws Exception {
         mvc.perform(get("/api/auth/logout"))
             .andExpect(status().isOk())
             .andExpect(content().json(new String(getResource("json/response/DefaultBody_True.json"))));
     }
 
     @Test
-    void logout_GetWithoutAuth_200ResultFalse() throws Exception {
+    void LogoutFailedWithoutAuthentication() throws Exception {
         mvc.perform(get("/api/auth/logout"))
             .andExpect(status().isOk())
             .andExpect(content().json(new String(getResource("json/response/DefaultBody_False.json"))));

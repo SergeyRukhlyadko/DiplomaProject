@@ -127,6 +127,7 @@ public class CheckupService {
         return this;
     }
 
+    @Deprecated
     public CheckupService existsEmail(String email) {
         if (usersRepository.existsUsersByEmail(email)) {
             errors.put("email", "Этот e-mail уже зарегистрирован");

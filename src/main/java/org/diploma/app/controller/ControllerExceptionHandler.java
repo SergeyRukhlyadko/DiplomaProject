@@ -1,7 +1,12 @@
 package org.diploma.app.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.diploma.app.controller.response.ResponseBadRequestBody;
 import org.diploma.app.controller.response.ResponseErrorBody;
+import org.diploma.app.model.auth.EmailAlreadyExistsException;
+import org.diploma.app.model.auth.IncorrectCaptchaException;
+import org.diploma.app.model.auth.RegistrationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -18,6 +23,7 @@ import javax.validation.ConstraintViolationException;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @ControllerAdvice
 public class ControllerExceptionHandler {
 
@@ -25,6 +31,24 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(Exception.class)
     public void defaultHandler(Exception e) {
         e.printStackTrace();
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler
+    void handler(RegistrationException e) {
+        log.warn(e.getMessage());
+    }
+
+    @ExceptionHandler
+    ResponseEntity<?> handle(EmailAlreadyExistsException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.ok(new ResponseErrorBody("email", "Этот e-mail уже зарегистрирован"));
+    }
+
+    @ExceptionHandler
+    ResponseEntity<?> handle(IncorrectCaptchaException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.ok(new ResponseErrorBody("captcha", "Код с картинки введён неверно"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

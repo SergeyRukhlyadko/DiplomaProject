@@ -1,7 +1,5 @@
 package org.diploma.app.controller;
 
-import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.controller.request.RequestLoginBody;
@@ -13,13 +11,12 @@ import org.diploma.app.controller.response.ResponseCaptchaBody;
 import org.diploma.app.controller.response.ResponseDefaultBody;
 import org.diploma.app.controller.response.ResponseErrorBody;
 import org.diploma.app.controller.response.ResponseLoginCheckBody;
+import org.diploma.app.model.auth.Captcha;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.service.AuthService;
 import org.diploma.app.service.CheckupService;
 import org.diploma.app.service.PostService;
-import org.diploma.app.service.RegistrationIsClosedException;
 import org.diploma.app.service.UserNotFoundException;
-import org.diploma.app.model.auth.Captcha;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +28,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RestController
@@ -107,24 +107,10 @@ class ApiAuthController {
     }
 
     @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<?> register(
-        @Validated(ValidationOrder.class) @RequestBody RequestRegisterBody requestBody
-    ) {
-        CheckupService checkupService = context.getBean("checkupService", CheckupService.class);
-        checkupService
-            .existsEmail(requestBody.getEmail())
-            .checkCaptcha(requestBody.getCaptcha(), requestBody.getCaptchaSecret());
-
-        if (checkupService.containsErrors()) {
-            return ResponseEntity.ok(new ResponseErrorBody(checkupService.getErrors()));
-        }
-
-        try {
-            authService.register(requestBody.getName(), requestBody.getEmail(), requestBody.getPassword());
-        } catch (RegistrationIsClosedException e) {
-            return ResponseEntity.status(404).build();
-        }
-
+    ResponseEntity<?> register(@Validated(ValidationOrder.class) @RequestBody RequestRegisterBody body) {
+        authService.register(
+            body.getName(), body.getEmail(), body.getPassword(), body.getCaptcha(), body.getCaptchaSecret()
+        );
         return ResponseEntity.ok(new ResponseDefaultBody(true));
     }
 

@@ -24,7 +24,7 @@ public class RegisterTestSuite {
 
     @Test
     @Transactional
-    @Sql("/sql/captcha.sql")
+    @Sql({"/sql/captcha.sql", "/sql/GlobalSetting_MultiUserMode_Enable.sql"})
     void RegistrationCompleted() throws Exception {
         mvc.perform(
             post("/api/auth/register")

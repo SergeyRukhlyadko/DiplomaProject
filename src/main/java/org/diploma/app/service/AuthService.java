@@ -2,6 +2,9 @@ package org.diploma.app.service;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
+import org.diploma.app.model.auth.EmailAlreadyExistsException;
+import org.diploma.app.model.auth.IncorrectCaptchaException;
+import org.diploma.app.model.auth.RegistrationException;
 import org.diploma.app.model.db.entity.CaptchaCodes;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
@@ -140,15 +143,24 @@ public class AuthService {
     }
 
     /*
-        throws RegistrationIsClosedException
-     */
-    public Users register(String name, String email, String password) throws RegistrationIsClosedException {
-        if (generalService.isEnabled(GlobalSetting.MULTIUSER_MODE)) {
-            return usersRepository
-                .save(new Users(false, name, email, passwordEncoder.encode(password)));
+        @throws RegistrationException if global setting MULTIUSER_MODE disabled
+        @throws EmailAlreadyExistsException if user with given email already exists
+        @throws IncorrectCaptchaException if pair of captcha code and secret code not found
+    */
+    public Users register(String name, String email, String password, String captcha, String secretCode) {
+        if (!generalService.isEnabled(GlobalSetting.MULTIUSER_MODE)) {
+            throw new RegistrationException("Registration is closed");
         }
 
-        throw new RegistrationIsClosedException();
+        if (usersRepository.existsUsersByEmail(email)) {
+            throw new EmailAlreadyExistsException("Email " + email + " already exists");
+        }
+
+        if (!captchaCodesRepository.existsByCodeAndSecretCode(captcha, secretCode)) {
+            throw new IncorrectCaptchaException("Captcha " + captcha + " incorrect");
+        }
+
+        return usersRepository.save(new Users(false, name, email, passwordEncoder.encode(password)));
     }
 
     @Transactional(rollbackFor = Exception.class)

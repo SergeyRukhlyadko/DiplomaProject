@@ -1,0 +1,1 @@
+update global_settings set value = true where code = 'MULTIUSER_MODE';

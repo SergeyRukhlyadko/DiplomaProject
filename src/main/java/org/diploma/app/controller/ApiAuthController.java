@@ -108,10 +108,15 @@ class ApiAuthController {
 
     @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<?> register(@Validated(ValidationOrder.class) @RequestBody RequestRegisterBody body) {
-        authService.register(
+        boolean isRegistered = authService.register(
             body.getName(), body.getEmail(), body.getPassword(), body.getCaptcha(), body.getCaptchaSecret()
         );
-        return ResponseEntity.ok(new ResponseDefaultBody(true));
+
+        if (isRegistered) {
+            return ResponseEntity.ok(new ResponseDefaultBody(true));
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/captcha")

@@ -2,15 +2,14 @@ package org.diploma.app.service;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
+import org.diploma.app.model.auth.Captcha;
 import org.diploma.app.model.auth.EmailAlreadyExistsException;
 import org.diploma.app.model.auth.IncorrectCaptchaException;
-import org.diploma.app.model.auth.RegistrationException;
 import org.diploma.app.model.db.entity.CaptchaCodes;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
 import org.diploma.app.repository.CaptchaCodesRepository;
 import org.diploma.app.repository.UsersRepository;
-import org.diploma.app.model.auth.Captcha;
 import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
@@ -143,13 +142,13 @@ public class AuthService {
     }
 
     /*
-        @throws RegistrationException if global setting MULTIUSER_MODE disabled
+        @return (@code false) if global setting MULTIUSER_MODE disabled
         @throws EmailAlreadyExistsException if user with given email already exists
         @throws IncorrectCaptchaException if pair of captcha code and secret code not found
-    */
-    public Users register(String name, String email, String password, String captcha, String secretCode) {
+     */
+    public boolean register(String name, String email, String password, String captcha, String secretCode) {
         if (!generalService.isEnabled(GlobalSetting.MULTIUSER_MODE)) {
-            throw new RegistrationException("Registration is closed");
+            return false;
         }
 
         if (usersRepository.existsUsersByEmail(email)) {
@@ -160,7 +159,8 @@ public class AuthService {
             throw new IncorrectCaptchaException("Captcha " + captcha + " incorrect");
         }
 
-        return usersRepository.save(new Users(false, name, email, passwordEncoder.encode(password)));
+        usersRepository.save(new Users(false, name, email, passwordEncoder.encode(password)));
+        return true;
     }
 
     @Transactional(rollbackFor = Exception.class)

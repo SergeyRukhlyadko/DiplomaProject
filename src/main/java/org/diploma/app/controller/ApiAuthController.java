@@ -47,13 +47,12 @@ class ApiAuthController {
         this.postService = postService;
     }
 
-    @PostMapping("/login")
-    ResponseEntity<?> login(HttpSession session, @Valid @RequestBody RequestLoginBody requestBody) {
+    @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<?> login(HttpSession session, @Validated(ValidationOrder.class) @RequestBody RequestLoginBody body) {
         Users user;
         try {
-            user = authService.login(requestBody.getEmail(), requestBody.getPassword(), session.getId());
+            user = authService.login(body.getEmail(), body.getPassword(), session.getId());
         } catch (UserNotFoundException | BadCredentialsException e) {
-            //e.printStackTrace();
             return ResponseEntity.ok().body(new ResponseDefaultBody());
         }
 

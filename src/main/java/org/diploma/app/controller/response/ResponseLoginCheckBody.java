@@ -1,15 +1,12 @@
 package org.diploma.app.controller.response;
 
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.experimental.FieldDefaults;
 import org.diploma.app.dto.FullUserDto;
 
-@FieldDefaults(level = AccessLevel.PRIVATE)
-@Getter
-public class ResponseLoginCheckBody extends DefaultBody {
+public class ResponseLoginCheckBody extends ResponseDefaultBody {
 
-    FullUserDto user;
+    @Getter
+    private FullUserDto user;
 
     public ResponseLoginCheckBody(
         int id,

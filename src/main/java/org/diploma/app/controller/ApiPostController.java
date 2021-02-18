@@ -138,7 +138,7 @@ class ApiPostController  {
         if (postOptional.isPresent()) {
             Users user = null;
             try {
-                user = authService.checkAuthentication(session.getId());
+                user = authService.checkAuthentication();
             } catch (AuthenticationCredentialsNotFoundException | UserNotFoundException ignored) {
             }
 

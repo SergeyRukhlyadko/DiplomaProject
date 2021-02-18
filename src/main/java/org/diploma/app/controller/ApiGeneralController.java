@@ -298,7 +298,7 @@ class ApiGeneralController {
     @GetMapping("/statistics/all")
     ResponseEntity<?> statisticsAll(HttpSession session) {
         if (!generalService.isEnabled(GlobalSetting.STATISTICS_IS_PUBLIC)) {
-            Users user = authService.checkAuthentication(session.getId());
+            Users user = authService.checkAuthentication();
             if (!user.isModerator()) {
                 return ResponseEntity.status(401).build();
             }

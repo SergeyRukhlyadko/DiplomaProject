@@ -81,22 +81,17 @@ public class AuthService {
         return user;
     }
 
-    /*
-        throws AuthenticationCredentialsNotFoundException, UserNotFoundException
-     */
-    public Users checkAuthentication(String sessionId) {
+    //temporary implementation for ApiGeneralController.statisticsAll and ApiPostController.postId
+    public Users checkAuthentication() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String details = String.valueOf(authentication.getDetails());
-
-        if (!authentication.isAuthenticated() || !details.equals(sessionId)) {
-            throw new AuthenticationCredentialsNotFoundException(
-                "User with session " + sessionId + " is not authorized");
+        if (authentication.isAuthenticated() && !authentication.getName().equals("anonymousUser")) {
+            String email = String.valueOf(authentication.getName());
+            return usersRepository.findByEmail(email).orElseThrow(
+                () -> new UserNotFoundException("User with email " + email + " not found")
+            );
+        } else {
+            throw new AuthenticationCredentialsNotFoundException("User is not authorized");
         }
-
-        String email = String.valueOf(authentication.getPrincipal());
-        return usersRepository.findByEmail(email).orElseThrow(
-            () -> new UserNotFoundException("User with email " + email + " not found")
-        );
     }
 
     public void relogin(String email, String sessionId) {

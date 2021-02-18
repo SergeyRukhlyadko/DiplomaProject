@@ -15,12 +15,12 @@ import org.diploma.app.model.auth.Captcha;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.service.AuthService;
 import org.diploma.app.service.CheckupService;
+import org.diploma.app.service.GeneralService;
 import org.diploma.app.service.PostService;
 import org.diploma.app.service.UserNotFoundException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.security.Principal;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RestController
@@ -40,11 +41,13 @@ class ApiAuthController {
     ApplicationContext context;
     AuthService authService;
     PostService postService;
+    GeneralService generalService;
 
-    public ApiAuthController(ApplicationContext context, AuthService authService, PostService postService) {
+    public ApiAuthController(ApplicationContext context, AuthService authService, PostService postService, GeneralService generalService) {
         this.context = context;
         this.authService = authService;
         this.postService = postService;
+        this.generalService = generalService;
     }
 
     @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -68,23 +71,13 @@ class ApiAuthController {
     }
 
     @GetMapping("/check")
-    ResponseEntity<?> check(HttpSession session) {
-        Users user;
-        try {
-            user = authService.checkAuthentication(session.getId());
-        } catch (AuthenticationCredentialsNotFoundException e) {
-            return ResponseEntity.ok().body(new ResponseDefaultBody());
-        }
-
-        return ResponseEntity.ok(new ResponseLoginCheckBody(
-            user.getId(),
-            user.getName(),
-            user.getPhoto(),
-            user.getEmail(),
-            user.isModerator(),
-            user.isModerator() ? postService.moderationCount() : 0,
-            user.isModerator()
-        ));
+    ResponseLoginCheckBody check(Principal principal) {
+        Users user = generalService.findUser(principal.getName());
+        boolean isModerator = user.isModerator();
+        int moderationCount = isModerator ? postService.moderationCount() : 0;
+        return new ResponseLoginCheckBody(
+            user.getId(), user.getName(), user.getPhoto(), user.getEmail(), isModerator, moderationCount, isModerator
+        );
     }
 
     @PostMapping("/restore")

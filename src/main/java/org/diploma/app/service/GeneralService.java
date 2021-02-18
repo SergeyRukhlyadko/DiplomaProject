@@ -77,6 +77,15 @@ public class GeneralService {
         this.operatingSystemUtil = operatingSystemUtil;
     }
 
+    /*
+     *  @thrown UserNotFountException if user not found by email
+     */
+    public Users findUser(String email) {
+        return usersRepository.findByEmail(email).orElseThrow(
+            () -> new UserNotFoundException("User with email " + email + " not found")
+        );
+    }
+
     public Users changeModeratorStatus(String email) {
         Users user = usersDBService.find(email);
         user.setModerator(!user.isModerator());

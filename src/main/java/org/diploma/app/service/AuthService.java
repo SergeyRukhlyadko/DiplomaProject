@@ -13,8 +13,6 @@ import org.diploma.app.repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.UUID;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -74,17 +71,6 @@ public class AuthService {
         } else {
             throw new AuthenticationCredentialsNotFoundException("User is not authorized");
         }
-    }
-
-    public void relogin(String email, String sessionId) {
-        logout();
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-            email,
-            "",
-            new ArrayList<>()
-        );
-        authentication.setDetails(sessionId);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     /*
@@ -156,10 +142,6 @@ public class AuthService {
         return captcha;
     }
 
-    public void logout() {
-        SecurityContextHolder.clearContext();
-    }
-
     /*
         throws UserNotFoundException
      */
@@ -167,15 +149,5 @@ public class AuthService {
         return usersRepository.isModeratorByEmail(email).orElseThrow(
             () -> new UserNotFoundException("User with email " + email + " not found")
         );
-    }
-
-    private void authenticate(String email, String sessionId) {
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-            email,
-            "",
-            new ArrayList<>()
-        );
-        authentication.setDetails(sessionId);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 }

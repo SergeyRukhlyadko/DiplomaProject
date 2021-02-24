@@ -102,10 +102,4 @@ class ApiAuthController {
         Captcha captcha = authService.getCaptcha();
         return new ResponseCaptchaBody(captcha.getSecret(), captcha.getImage());
     }
-
-    @GetMapping("/logout")
-    ResponseDefaultBody logout() {
-        authService.logout();
-        return new ResponseDefaultBody(true);
-    }
 }

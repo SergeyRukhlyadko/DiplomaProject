@@ -29,9 +29,9 @@ public class LogoutTestSuite {
     }
 
     @Test
-    void LogoutFailedWithoutAuthentication() throws Exception {
+    void LogoutWithoutAuthentication() throws Exception {
         mvc.perform(get("/api/auth/logout"))
             .andExpect(status().isOk())
-            .andExpect(content().json(new String(getResource("json/response/DefaultBody_False.json"))));
+            .andExpect(content().json(new String(getResource("json/response/DefaultBody_True.json"))));
     }
 }

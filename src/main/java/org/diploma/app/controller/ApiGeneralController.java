@@ -232,9 +232,6 @@ class ApiGeneralController {
             requestBody.getPhoto()
         );
 
-        if (isUpdated && requestBody.getEmail() != null)
-            authService.relogin(requestBody.getEmail(), session.getId());
-
         return ResponseEntity.ok(new DefaultBody(isUpdated));
     }
 
@@ -279,10 +276,6 @@ class ApiGeneralController {
 
         String photoPath = "/" + generalService.uploadImage(baos.toByteArray(), format);
         boolean isUpdated = generalService.updateProfile(principal.getName(), name, email, password, photoPath);
-
-        if (isUpdated && email != null) {
-            authService.relogin(email, session.getId());
-        }
 
         return ResponseEntity.ok(new DefaultBody(isUpdated));
     }

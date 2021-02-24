@@ -41,13 +41,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
                 .antMatchers(HttpMethod.PUT, "/api/post", "/api/settings").authenticated()
                 .antMatchers(HttpMethod.POST, "/api/post", "/api/post/like", "/api/post/dislike").authenticated()
-                .antMatchers("/api/auth/logout", "/api/post/my", "/api/post/moderation", "/api/moderation",
+                .antMatchers("/api/post/my", "/api/post/moderation", "/api/moderation",
                     "/api/comment", "/api/statistics/my", "/api/profile/my", "/api/image").authenticated()
                 .anyRequest().permitAll()
             .and()
             .addFilterAfter(new CheckAuthenticationFilter(authenticationEntryPoint()), LogoutFilter.class)
             .addFilterAfter(
                 new LoginFilter(authenticationManagerBean(), authenticationEntryPoint(), validator), LogoutFilter.class)
+            .logout()
+                .logoutUrl("/api/auth/logout")
+                .deleteCookies("JSESSIONID")
+                .logoutSuccessHandler(new JsonReturningLogoutSuccessHandler())
+            .and()
             .exceptionHandling().authenticationEntryPoint(authenticationEntryPoint());
     }
 

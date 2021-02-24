@@ -63,24 +63,6 @@ public class AuthService {
         return null;
     }
 
-    /*
-        @throws UserNotFoundException if given email not found
-        @throws BadCredentialsException if given password not match to stored password
-     */
-    public Users login(String email, String password, String sessionId) {
-        Users user = usersRepository.findByEmail(email).orElseThrow(
-            () -> new UserNotFoundException("User with email " + email + " not found")
-        );
-
-        if (passwordEncoder.matches(password, user.getPassword())) {
-            authenticate(email, sessionId);
-        } else {
-            throw new BadCredentialsException("Wrong password");
-        }
-
-        return user;
-    }
-
     //temporary implementation for ApiGeneralController.statisticsAll and ApiPostController.postId
     public Users checkAuthentication() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

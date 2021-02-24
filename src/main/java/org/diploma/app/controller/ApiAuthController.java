@@ -2,7 +2,6 @@ package org.diploma.app.controller;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
-import org.diploma.app.controller.request.RequestLoginBody;
 import org.diploma.app.controller.request.RequestPasswordBody;
 import org.diploma.app.controller.request.RequestRegisterBody;
 import org.diploma.app.controller.request.RequestRestoreBody;
@@ -17,11 +16,9 @@ import org.diploma.app.service.AuthService;
 import org.diploma.app.service.CheckupService;
 import org.diploma.app.service.GeneralService;
 import org.diploma.app.service.PostService;
-import org.diploma.app.service.UserNotFoundException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.security.Principal;
 
@@ -50,24 +46,14 @@ class ApiAuthController {
         this.generalService = generalService;
     }
 
-    @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<?> login(HttpSession session, @Validated(ValidationOrder.class) @RequestBody RequestLoginBody body) {
-        Users user;
-        try {
-            user = authService.login(body.getEmail(), body.getPassword(), session.getId());
-        } catch (UserNotFoundException | BadCredentialsException e) {
-            return ResponseEntity.ok().body(new ResponseDefaultBody());
-        }
-
-        return ResponseEntity.ok(new ResponseLoginCheckBody(
-            user.getId(),
-            user.getName(),
-            user.getPhoto(),
-            user.getEmail(),
-            user.isModerator(),
-            user.isModerator() ? postService.moderationCount() : 0,
-            user.isModerator()
-        ));
+    @PostMapping("/login")
+    ResponseLoginCheckBody login(Principal principal) {
+        Users user = generalService.findUser(principal.getName());
+        boolean isModerator = user.isModerator();
+        int moderationCount = isModerator ? postService.moderationCount() : 0;
+        return new ResponseLoginCheckBody(
+            user.getId(), user.getName(), user.getPhoto(), user.getEmail(), isModerator, moderationCount, isModerator
+        );
     }
 
     @GetMapping("/check")

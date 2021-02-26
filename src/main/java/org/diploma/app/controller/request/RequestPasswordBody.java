@@ -4,30 +4,25 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
-import org.diploma.app.service.CheckupService;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
 public class RequestPasswordBody {
 
-    @NotBlank
+    @NotBlank(groups = FirstOrder.class)
     String code;
 
-    @NotNull
-    @Pattern(regexp = CheckupService.PASSWORD_REGEX, message = "Пароль может содержать только латинские символы и цифры")
-    @Size(min = 6, max = 255, message = "Длинна пароля должна быть от {min} до {max} символов")
+    @NotBlank(groups = FirstOrder.class)
+    @Size(min = 6, message = "длинна пароля должна быть не менее {min} символов", groups = SecondOrder.class)
     String password;
 
-    @NotNull
-    @Size(min = 8, max = 10, message = "Длинна капчи должна быть {min} символов")
+    @NotBlank(groups = FirstOrder.class)
     String captcha;
 
-    @NotBlank
+    @NotBlank(groups = FirstOrder.class)
     @JsonProperty("captcha_secret")
     String captchaSecret;
 }

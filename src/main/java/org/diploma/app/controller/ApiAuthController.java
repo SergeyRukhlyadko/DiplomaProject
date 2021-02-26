@@ -8,15 +8,12 @@ import org.diploma.app.controller.request.RequestRestoreBody;
 import org.diploma.app.controller.request.ValidationOrder;
 import org.diploma.app.controller.response.ResponseCaptchaBody;
 import org.diploma.app.controller.response.ResponseDefaultBody;
-import org.diploma.app.controller.response.ResponseErrorBody;
 import org.diploma.app.controller.response.ResponseLoginCheckBody;
 import org.diploma.app.model.auth.Captcha;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.service.AuthService;
-import org.diploma.app.service.CheckupService;
 import org.diploma.app.service.GeneralService;
 import org.diploma.app.service.PostService;
-import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -34,13 +31,11 @@ import java.security.Principal;
 @RequestMapping("/api/auth")
 class ApiAuthController {
 
-    ApplicationContext context;
     AuthService authService;
     PostService postService;
     GeneralService generalService;
 
-    public ApiAuthController(ApplicationContext context, AuthService authService, PostService postService, GeneralService generalService) {
-        this.context = context;
+    public ApiAuthController(AuthService authService, PostService postService, GeneralService generalService) {
         this.authService = authService;
         this.postService = postService;
         this.generalService = generalService;
@@ -71,16 +66,10 @@ class ApiAuthController {
         return new ResponseDefaultBody(authService.restorePassword(requestBody.getEmail()));
     }
 
-    @PostMapping("/password")
-    ResponseEntity<?> password(@Valid @RequestBody RequestPasswordBody requestBody) {
-        CheckupService checkupService = context.getBean("checkupService", CheckupService.class);
-        checkupService.checkCaptcha(requestBody.getCaptcha(), requestBody.getCaptchaSecret());
-        if (checkupService.containsErrors()) {
-            return ResponseEntity.ok(new ResponseErrorBody(checkupService.getErrors()));
-        }
-
+    @PostMapping(value = "/password", consumes = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<?> changePassword(@Validated(ValidationOrder.class) @RequestBody RequestPasswordBody body) {
         return ResponseEntity.ok(new ResponseDefaultBody(
-            authService.changePassword(requestBody.getCode(), requestBody.getPassword()))
+            authService.changePassword(body.getCode(), body.getPassword(), body.getCaptcha(), body.getCaptchaSecret()))
         );
     }
 

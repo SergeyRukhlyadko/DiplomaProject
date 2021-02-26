@@ -40,6 +40,7 @@ public class CheckupService {
         this.captchaCodesRepository = captchaCodesRepository;
     }
 
+    @Deprecated
     public boolean containsErrors() {
         return !errors.isEmpty();
     }
@@ -136,6 +137,7 @@ public class CheckupService {
         return this;
     }
 
+    @Deprecated
     public CheckupService checkCaptcha(String code, String secretCode) {
         if (!captchaCodesRepository.existsByCodeAndSecretCode(code, secretCode)) {
             errors.put("captcha", "Код с картинки введён неверно");

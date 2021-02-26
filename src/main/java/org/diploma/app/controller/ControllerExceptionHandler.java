@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.diploma.app.controller.response.ResponseBadRequestBody;
 import org.diploma.app.controller.response.ResponseErrorBody;
 import org.diploma.app.model.auth.EmailAlreadyExistsException;
-import org.diploma.app.model.auth.IncorrectCaptchaException;
+import org.diploma.app.model.auth.InvalidCaptchaException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -38,7 +38,7 @@ public class ControllerExceptionHandler {
     }
 
     @ExceptionHandler
-    ResponseEntity<?> handle(IncorrectCaptchaException e) {
+    ResponseEntity<?> handle(InvalidCaptchaException e) {
         log.error(e.getMessage());
         return ResponseEntity.ok(new ResponseErrorBody("captcha", "Код с картинки введён неверно"));
     }

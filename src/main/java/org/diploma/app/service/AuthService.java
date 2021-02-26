@@ -4,7 +4,7 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.model.auth.Captcha;
 import org.diploma.app.model.auth.EmailAlreadyExistsException;
-import org.diploma.app.model.auth.IncorrectCaptchaException;
+import org.diploma.app.model.auth.InvalidCaptchaException;
 import org.diploma.app.model.db.entity.CaptchaCodes;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
@@ -94,13 +94,21 @@ public class AuthService {
     }
 
     /*
-        throws SQLQueryException
+        @return true if password changed
+        @throws SQLQueryException if updated more then one row
+        @throws InvalidCaptchaException if captcha is not valid
      */
     @Transactional(rollbackFor = Exception.class)
-    public boolean changePassword(String code, String password) {
-        if (usersRepository.updatePasswordByCode(passwordEncoder.encode(password), code) != 1) {
-            throw new SQLQueryException(
-                "More than one row has been updated in the Users table with code: " + code);
+    public boolean changePassword(String code, String password, String captcha, String secretCode) {
+        boolean isCaptchaValid = verifyCaptcha(captcha, secretCode);
+        if (isCaptchaValid) {
+            int numberOftUpdatedRows = usersRepository.updatePasswordByCode(passwordEncoder.encode(password), code);
+            if (numberOftUpdatedRows != 1) {
+                throw new SQLQueryException(
+                    "More than one row has been updated in the Users table with code: " + code);
+            }
+        } else {
+            throw new InvalidCaptchaException("Invalid " + captcha + " captcha");
         }
 
         return true;
@@ -109,7 +117,7 @@ public class AuthService {
     /*
         @return (@code false) if global setting MULTIUSER_MODE disabled
         @throws EmailAlreadyExistsException if user with given email already exists
-        @throws IncorrectCaptchaException if pair of captcha code and secret code not found
+        @throws InvalidCaptchaException if captcha is not valid
      */
     public boolean register(String name, String email, String password, String captcha, String secretCode) {
         if (!generalService.isEnabled(GlobalSetting.MULTIUSER_MODE)) {
@@ -120,8 +128,8 @@ public class AuthService {
             throw new EmailAlreadyExistsException("Email " + email + " already exists");
         }
 
-        if (!captchaCodesRepository.existsByCodeAndSecretCode(captcha, secretCode)) {
-            throw new IncorrectCaptchaException("Captcha " + captcha + " incorrect");
+        if (!verifyCaptcha(captcha, secretCode)) {
+            throw new InvalidCaptchaException("Invalid " + captcha + " captcha");
         }
 
         usersRepository.save(new Users(false, name, email, passwordEncoder.encode(password)));
@@ -140,6 +148,23 @@ public class AuthService {
         captchaCodesRepository.save(captchaCodes);
 
         return captcha;
+    }
+
+    /*
+        @param captcha alphanumeric representation of captcha image
+        @param secretCode unique captcha identifier
+        @return false if arguments is null or blank, either if pair of captcha and secretCode not found, otherwise true
+     */
+    public boolean verifyCaptcha(String captcha, String secretCode) {
+        if (captcha == null || secretCode == null) {
+            return false;
+        }
+
+        if (captcha.isBlank() || secretCode.isBlank()) {
+            return false;
+        }
+
+        return captchaCodesRepository.existsByCodeAndSecretCode(captcha, secretCode);
     }
 
     /*

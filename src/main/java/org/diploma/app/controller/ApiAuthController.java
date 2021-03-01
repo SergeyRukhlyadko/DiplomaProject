@@ -62,8 +62,8 @@ class ApiAuthController {
     }
 
     @PostMapping("/restore")
-    ResponseDefaultBody restore(@Valid @RequestBody RequestRestoreBody requestBody) {
-        return new ResponseDefaultBody(authService.restorePassword(requestBody.getEmail()));
+    ResponseDefaultBody restorePassword(@Validated(ValidationOrder.class)  @RequestBody RequestRestoreBody body) {
+        return new ResponseDefaultBody(authService.restorePassword(body.getEmail()));
     }
 
     @PostMapping(value = "/password", consumes = MediaType.APPLICATION_JSON_VALUE)

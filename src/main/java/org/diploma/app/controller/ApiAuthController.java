@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
 import java.security.Principal;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -61,7 +60,7 @@ class ApiAuthController {
         );
     }
 
-    @PostMapping("/restore")
+    @PostMapping(value = "/restore", consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseDefaultBody restorePassword(@Validated(ValidationOrder.class)  @RequestBody RequestRestoreBody body) {
         return new ResponseDefaultBody(authService.restorePassword(body.getEmail()));
     }

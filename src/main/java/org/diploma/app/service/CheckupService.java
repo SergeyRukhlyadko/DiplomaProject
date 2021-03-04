@@ -84,6 +84,7 @@ public class CheckupService {
         return this;
     }
 
+    @Deprecated
     public void comment(String text) {
         if (text.length() < 2) {
             errors.put("text", "Текст комментария не задан или слишком короткий");

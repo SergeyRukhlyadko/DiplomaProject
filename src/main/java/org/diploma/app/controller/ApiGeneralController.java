@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -16,9 +17,11 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.persistence.EntityNotFoundException;
 import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
+
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
-import org.diploma.app.controller.request.post.RequestCommentBody;
+import org.diploma.app.controller.request.RequestCommentBody;
 import org.diploma.app.controller.request.post.RequestModerationBody;
 import org.diploma.app.controller.request.post.RequestProfileBody;
 import org.diploma.app.controller.response.BadRequestBody;
@@ -159,21 +162,11 @@ class ApiGeneralController {
     }
 
     @PostMapping("/comment")
-    ResponseEntity<?> comment(Principal principal, @RequestBody RequestCommentBody requestBody) {
-        CheckupService checkupService = context.getBean("checkupService", CheckupService.class);
-        checkupService.comment(requestBody.getText());
-        Map<String, String> errors = checkupService.getErrors();
-
-        if (!errors.isEmpty()) {
-            return ResponseEntity.ok(new ErrorBody(errors));
-        }
-
+    ResponseEntity<?> addComment(Principal principal, @Valid @RequestBody RequestCommentBody body) {
         try {
             int id = generalService.addComment(
-                principal.getName(), requestBody.getParentId(), requestBody.getPostId(), requestBody.getText());
-            Map<String, Integer> response = new HashMap<>();
-            response.put("id", id);
-            return ResponseEntity.ok(response);
+                principal.getName(), body.getParentId(), body.getPostId(), body.getText());
+            return ResponseEntity.ok(Collections.singletonMap("id", id));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(400).body(
                 new BadRequestBody("Соответствующие комментарий и/или пост не существуют"));

@@ -1,13 +1,13 @@
-package org.diploma.app.controller.request.post;
+package org.diploma.app.controller.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 
+import javax.validation.constraints.NotBlank;
+
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@AllArgsConstructor
 @Getter
 public class RequestCommentBody {
 
@@ -17,5 +17,6 @@ public class RequestCommentBody {
     @JsonProperty("post_id")
     int postId;
 
+    @NotBlank
     String text;
 }

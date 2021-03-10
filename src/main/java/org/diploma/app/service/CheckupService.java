@@ -111,6 +111,7 @@ public class CheckupService {
         return this;
     }
 
+    @Deprecated
     public CheckupService removePhoto(String photo, int removePhoto) {
         Optional.ofNullable(photo).ifPresent((p) -> {
             if (!p.isEmpty() && removePhoto != 1) {

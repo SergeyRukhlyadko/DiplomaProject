@@ -1,29 +1,11 @@
 package org.diploma.app.controller;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.security.Principal;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
-import javax.persistence.EntityNotFoundException;
-import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
-
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.controller.request.RequestCommentBody;
+import org.diploma.app.controller.request.RequestProfileBody;
+import org.diploma.app.controller.request.ValidationOrder;
 import org.diploma.app.controller.request.post.RequestModerationBody;
-import org.diploma.app.controller.request.post.RequestProfileBody;
 import org.diploma.app.controller.response.BadRequestBody;
 import org.diploma.app.controller.response.DefaultBody;
 import org.diploma.app.controller.response.ErrorBody;
@@ -46,7 +28,9 @@ import org.diploma.app.util.NullRemover;
 import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -55,6 +39,25 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
+import javax.persistence.EntityNotFoundException;
+import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.security.Principal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RestController
@@ -201,31 +204,20 @@ class ApiGeneralController {
         return ResponseEntity.ok("/" + generalService.uploadImage(multipartFile.getBytes(), format));
     }
 
-    @PostMapping(value = "/profile/my", consumes = "application/json")
-    ResponseEntity<?> profileMy(HttpSession session, Principal principal, @RequestBody RequestProfileBody requestBody) {
-        CheckupService checkupService = context.getBean("checkupService", CheckupService.class);
-        checkupService.name(requestBody.getName())
-            .password(requestBody.getPassword())
-            .removePhoto(requestBody.getPhoto(), requestBody.getRemovePhoto());
-
-        if (!principal.getName().equals(requestBody.getEmail())) {
-            checkupService.email(requestBody.getEmail());
-        }
-
-        Map<String, String> errors = checkupService.getErrors();
-        if (!errors.isEmpty()) {
-            return ResponseEntity.ok(new ErrorBody(errors));
-        }
-
-        boolean isUpdated = generalService.updateProfile(
+    @PostMapping(value = "/profile/my", consumes = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<?> changeProfile(
+        Principal principal, @Validated(ValidationOrder.class) @RequestBody RequestProfileBody body) throws IOException
+    {
+        generalService.updateProfile(
             principal.getName(),
-            requestBody.getName(),
-            requestBody.getEmail(),
-            requestBody.getPassword(),
-            requestBody.getPhoto()
+            body.getName(),
+            body.getEmail(),
+            body.getPassword(),
+            body.getPhoto()
         );
 
-        return ResponseEntity.ok(new DefaultBody(isUpdated));
+        //TODO forward to login
+        return ResponseEntity.ok(new DefaultBody(true));
     }
 
     @PostMapping(value = "/profile/my", consumes = "multipart/form-data")
@@ -268,9 +260,10 @@ class ApiGeneralController {
         ImageIO.write(outputImage, format, baos);
 
         String photoPath = "/" + generalService.uploadImage(baos.toByteArray(), format);
-        boolean isUpdated = generalService.updateProfile(principal.getName(), name, email, password, photoPath);
+        generalService.updateProfile(principal.getName(), name, email, password, photoPath);
 
-        return ResponseEntity.ok(new DefaultBody(isUpdated));
+        //TODO forward to login
+        return ResponseEntity.ok(new DefaultBody(true));
     }
 
     @GetMapping("/calendar")

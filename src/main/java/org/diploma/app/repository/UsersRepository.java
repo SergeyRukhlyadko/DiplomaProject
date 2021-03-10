@@ -35,11 +35,11 @@ public interface UsersRepository extends JpaRepository<Users, Integer> {
         "u.photo = if (:photo is null, u.photo, :photo)" +
         "where u.email = :email"
     )
-    int update(@Param("email") String email,
-               @Param("name") String name,
-               @Param("newEmail") String newEmail,
-               @Param("password") String password,
-               @Param("photo") String photo);
+    int updateByEmail(@Param("email") String email,
+                      @Param("name") String name,
+                      @Param("newEmail") String newEmail,
+                      @Param("password") String password,
+                      @Param("photo") String photo);
 
     @Query("select photo from Users where email = ?1")
     String findPhoto(String email);

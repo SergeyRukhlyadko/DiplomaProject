@@ -1,15 +1,9 @@
 package org.diploma.app.service;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import javax.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.apache.commons.lang3.StringUtils;
+import org.diploma.app.model.auth.EmailAlreadyExistsException;
 import org.diploma.app.model.db.entity.PostComments;
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.PostsCountByTagName;
@@ -34,6 +28,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.EntityNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Service
@@ -163,34 +165,30 @@ public class GeneralService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public boolean updateProfile(String email, String name, String newEmail, String password,
-        String photo) {
+    public void updateProfile(
+        String email, String name, String newEmail, String password, String photoPath) throws IOException
+    {
+        if (usersRepository.existsUsersByEmail(newEmail)) {
+            throw new EmailAlreadyExistsException("Email " + newEmail + " already exists");
+        }
+
         String oldPhoto = null;
-        if (photo != null) {
+        if (photoPath != null) {
             oldPhoto = usersRepository.findPhoto(email);
         }
 
-        int countUpdated = usersRepository.update(
-            email,
-            name,
-            newEmail,
-            password == null ? null : passwordEncoder.encode(password),
-            photo
-        );
-
-        if (countUpdated == 1) {
-            if (oldPhoto != null) {
-                try {
-                    operatingSystemUtil.deleteFile(oldPhoto);
-                } catch (IOException e) {
-                    return false;
-                }
-            }
-        } else {
-            return false;
+        if (password != null) {
+            password = passwordEncoder.encode(password);
         }
 
-        return true;
+        int updatedRows = usersRepository.updateByEmail(email, name, newEmail, password, photoPath);
+        if (updatedRows != 1) {
+            throw new SQLQueryException("More than one row has been updated in the Users table");
+        }
+
+        if (oldPhoto != null) {
+            operatingSystemUtil.deleteFile(oldPhoto);
+        }
     }
 
     public List<Integer> years() {

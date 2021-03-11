@@ -3,7 +3,9 @@ package org.diploma.app.controller.request;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
+import org.diploma.app.validation.FirstOrder;
 import org.diploma.app.validation.NullOrNotBlank;
+import org.diploma.app.validation.SecondOrder;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Size;

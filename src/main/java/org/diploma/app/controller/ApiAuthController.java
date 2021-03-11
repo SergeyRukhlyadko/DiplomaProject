@@ -5,7 +5,7 @@ import lombok.experimental.FieldDefaults;
 import org.diploma.app.controller.request.RequestPasswordBody;
 import org.diploma.app.controller.request.RequestRegisterBody;
 import org.diploma.app.controller.request.RequestRestoreBody;
-import org.diploma.app.controller.request.ValidationOrder;
+import org.diploma.app.validation.ValidationOrder;
 import org.diploma.app.controller.response.ResponseCaptchaBody;
 import org.diploma.app.controller.response.ResponseDefaultBody;
 import org.diploma.app.controller.response.ResponseLoginCheckBody;

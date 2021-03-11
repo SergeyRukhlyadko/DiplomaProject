@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
+import org.diploma.app.validation.FirstOrder;
+import org.diploma.app.validation.SecondOrder;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;

@@ -1,4 +1,4 @@
-package org.diploma.app.controller.request;
+package org.diploma.app.validation;
 
 import javax.validation.GroupSequence;
 

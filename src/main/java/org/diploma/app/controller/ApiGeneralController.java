@@ -4,7 +4,7 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.controller.request.RequestCommentBody;
 import org.diploma.app.controller.request.RequestProfileBody;
-import org.diploma.app.controller.request.ValidationOrder;
+import org.diploma.app.validation.ValidationOrder;
 import org.diploma.app.controller.request.post.RequestModerationBody;
 import org.diploma.app.controller.response.BadRequestBody;
 import org.diploma.app.controller.response.DefaultBody;

@@ -2,7 +2,7 @@ package org.diploma.app.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.diploma.app.controller.request.RequestLoginBody;
-import org.diploma.app.controller.request.ValidationOrder;
+import org.diploma.app.validation.ValidationOrder;
 import org.diploma.app.controller.response.ResponseBadRequestBody;
 import org.diploma.app.controller.response.ResponseErrorBody;
 import org.springframework.http.MediaType;

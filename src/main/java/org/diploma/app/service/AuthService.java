@@ -2,15 +2,12 @@ package org.diploma.app.service;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
-import org.diploma.app.model.auth.Captcha;
 import org.diploma.app.model.auth.EmailAlreadyExistsException;
 import org.diploma.app.model.auth.InvalidCaptchaException;
-import org.diploma.app.model.db.entity.CaptchaCodes;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
 import org.diploma.app.repository.CaptchaCodesRepository;
 import org.diploma.app.repository.UsersRepository;
-import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
@@ -19,7 +16,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -50,11 +46,6 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
         this.usersRepository = usersRepository;
         this.captchaCodesRepository = captchaCodesRepository;
-    }
-
-    @Lookup
-    protected Captcha createCaptcha() {
-        return null;
     }
 
     //temporary implementation for ApiGeneralController.statisticsAll and ApiPostController.postId
@@ -131,14 +122,6 @@ public class AuthService {
 
         usersRepository.save(new Users(false, name, email, passwordEncoder.encode(password)));
         return true;
-    }
-
-    @Transactional(rollbackFor = Exception.class)
-    public Captcha getCaptcha() {
-        Captcha captcha = createCaptcha();
-        CaptchaCodes captchaCodes = new CaptchaCodes(LocalDateTime.now(), captcha.getCode(), captcha.getSecret());
-        captchaCodesRepository.save(captchaCodes);
-        return captcha;
     }
 
     /*

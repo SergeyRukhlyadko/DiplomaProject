@@ -1,10 +1,9 @@
 package org.diploma.app.controller;
 
-import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
 import org.diploma.app.controller.request.RequestPasswordBody;
 import org.diploma.app.controller.request.RequestRegisterBody;
 import org.diploma.app.controller.request.RequestRestoreBody;
+import org.diploma.app.service.CaptchaService;
 import org.diploma.app.validation.ValidationOrder;
 import org.diploma.app.controller.response.ResponseCaptchaBody;
 import org.diploma.app.controller.response.ResponseDefaultBody;
@@ -25,19 +24,22 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
 
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RestController
 @RequestMapping("/api/auth")
 class ApiAuthController {
 
-    AuthService authService;
-    PostService postService;
-    GeneralService generalService;
+    private AuthService authService;
+    private PostService postService;
+    private GeneralService generalService;
+    private CaptchaService captchaService;
 
-    public ApiAuthController(AuthService authService, PostService postService, GeneralService generalService) {
+    public ApiAuthController(
+        AuthService authService, PostService postService, GeneralService generalService, CaptchaService captchaService)
+    {
         this.authService = authService;
         this.postService = postService;
         this.generalService = generalService;
+        this.captchaService = captchaService;
     }
 
     @PostMapping("/login")
@@ -87,7 +89,7 @@ class ApiAuthController {
 
     @GetMapping("/captcha")
     ResponseCaptchaBody captcha() {
-        Captcha captcha = authService.getCaptcha();
+        Captcha captcha = captchaService.create();
         return new ResponseCaptchaBody(captcha.getSecret(), captcha.getImage());
     }
 }

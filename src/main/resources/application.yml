@@ -42,7 +42,6 @@ captcha:
   fontPath: /static/fonts/OpenSans-Regular.ttf
   fontSize: 20
   grid: false
-  outdated: 1
 
 win.local-disk: C:/
 upload.image-path: upload

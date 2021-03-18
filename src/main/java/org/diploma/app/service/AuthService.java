@@ -28,7 +28,6 @@ public class AuthService {
 
     String from;
     String host;
-    int captchaOutdated;
     GeneralService generalService;
     EmailService emailService;
     PasswordEncoder passwordEncoder;
@@ -38,7 +37,6 @@ public class AuthService {
     public AuthService(
         @Value("${spring.mail.username}") String from,
         @Value("${host}") String host,
-        @Value("${captcha.outdated}") int captchaOutdated,
         GeneralService generalService,
         EmailService emailService,
         PasswordEncoder passwordEncoder,
@@ -47,7 +45,6 @@ public class AuthService {
     ) {
         this.from = from;
         this.host = host;
-        this.captchaOutdated = captchaOutdated;
         this.generalService = generalService;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
@@ -139,14 +136,8 @@ public class AuthService {
     @Transactional(rollbackFor = Exception.class)
     public Captcha getCaptcha() {
         Captcha captcha = createCaptcha();
-
-        //TODO do as a batch
-        LocalDateTime now = LocalDateTime.now();
-        captchaCodesRepository.deleteByTimeLessThen(now.minusHours(captchaOutdated));
-
-        CaptchaCodes captchaCodes = new CaptchaCodes(now, captcha.getCode(), captcha.getSecret());
+        CaptchaCodes captchaCodes = new CaptchaCodes(LocalDateTime.now(), captcha.getCode(), captcha.getSecret());
         captchaCodesRepository.save(captchaCodes);
-
         return captcha;
     }
 

@@ -5,6 +5,7 @@ import org.shredzone.commons.captcha.CaptchaGenerator;
 import org.shredzone.commons.captcha.impl.DefaultCaptchaGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
 
 import javax.validation.Validation;
@@ -12,6 +13,7 @@ import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
 @Configuration
+@EnableScheduling
 public class AppConfig {
 
     @Bean

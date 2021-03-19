@@ -33,4 +33,21 @@ public class CaptchaService {
         captchaCodesRepository.save(captchaCodes);
         return captcha;
     }
+
+    /*
+        @param captcha alphanumeric representation of captcha image
+        @param secretCode unique captcha identifier
+        @return false if arguments are null or blank, either if pair of captcha and secretCode not found, otherwise true
+     */
+    public boolean matches(String captcha, String secretCode) {
+        if (captcha == null || secretCode == null) {
+            return false;
+        }
+
+        if (captcha.isBlank() || secretCode.isBlank()) {
+            return false;
+        }
+
+        return captchaCodesRepository.existsByCodeAndSecretCode(captcha, secretCode);
+    }
 }

@@ -3,6 +3,7 @@ package org.diploma.app.controller;
 import org.diploma.app.controller.request.RequestPasswordBody;
 import org.diploma.app.controller.request.RequestRegisterBody;
 import org.diploma.app.controller.request.RequestRestoreBody;
+import org.diploma.app.controller.response.ResponseErrorBody;
 import org.diploma.app.service.CaptchaService;
 import org.diploma.app.validation.ValidationOrder;
 import org.diploma.app.controller.response.ResponseCaptchaBody;
@@ -76,9 +77,11 @@ class ApiAuthController {
 
     @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<?> register(@Validated(ValidationOrder.class) @RequestBody RequestRegisterBody body) {
-        boolean isRegistered = authService.register(
-            body.getName(), body.getEmail(), body.getPassword(), body.getCaptcha(), body.getCaptchaSecret()
-        );
+        if (!captchaService.matches(body.getCaptcha(), body.getCaptchaSecret())) {
+            return ResponseEntity.ok(new ResponseErrorBody("captcha", "Код с картинки введён неверно"));
+        }
+
+        boolean isRegistered = authService.register(body.getName(), body.getEmail(), body.getPassword());
 
         if (isRegistered) {
             return ResponseEntity.ok(new ResponseDefaultBody(true));

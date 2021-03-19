@@ -105,19 +105,14 @@ public class AuthService {
     /*
         @return (@code false) if global setting MULTIUSER_MODE disabled
         @throws EmailAlreadyExistsException if user with given email already exists
-        @throws InvalidCaptchaException if captcha is not valid
      */
-    public boolean register(String name, String email, String password, String captcha, String secretCode) {
+    public boolean register(String name, String email, String password) {
         if (!generalService.isEnabled(GlobalSetting.MULTIUSER_MODE)) {
             return false;
         }
 
         if (usersRepository.existsUsersByEmail(email)) {
             throw new EmailAlreadyExistsException("Email " + email + " already exists");
-        }
-
-        if (!verifyCaptcha(captcha, secretCode)) {
-            throw new InvalidCaptchaException("Invalid " + captcha + " captcha");
         }
 
         usersRepository.save(new Users(false, name, email, passwordEncoder.encode(password)));

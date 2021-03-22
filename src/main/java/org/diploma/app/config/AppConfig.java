@@ -11,6 +11,7 @@ import org.springframework.validation.beanvalidation.MethodValidationPostProcess
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+import java.util.Locale;
 
 @Configuration
 @EnableScheduling
@@ -22,9 +23,16 @@ public class AppConfig {
     }
 
     @Bean
+    public HibernateLocalResolver hibernateLocalResolver() {
+        return new HibernateLocalResolver();
+    }
+
+    @Bean
     public Validator validator() {
         final ValidatorFactory validatorFactory = Validation.byProvider(HibernateValidator.class)
             .configure()
+            .locales(Locale.ENGLISH, Locale.forLanguageTag("ru"))
+            .localeResolver(hibernateLocalResolver())
             .propertyNodeNameProvider(new JacksonPropertyNodeNameProvider())
             .buildValidatorFactory();
         return validatorFactory.getValidator();

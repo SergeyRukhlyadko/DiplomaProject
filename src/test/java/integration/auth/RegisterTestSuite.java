@@ -10,8 +10,12 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.hamcrest.Matchers.blankString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static util.TestUtil.getResource;
 
@@ -35,43 +39,50 @@ public class RegisterTestSuite {
     }
 
     @Test
-    void RegistrationFailedWithEmptyJSON() throws Exception {
-        mvc.perform(
-            post("/api/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(getResource("json/EmptyJSON.json"))
-        ).andExpect(status().isOk())
-            .andExpect(content().json(new String(getResource("json/response/BadRequestBody_EmptyAllValues.json"))));
-    }
-
-    @Test
-    void RegistrationFailedWithAllEmptyValues() throws Exception {
-        mvc.perform(
-            post("/api/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(getResource("json/request/auth/RegisterBody_EmptyAllValues.json"))
-        ).andExpect(status().isOk())
-            .andExpect(content().json(new String(getResource("json/response/BadRequestBody_EmptyAllValues.json"))));
-    }
-
-    @Test
-    void RegistrationFailedWithInvalidEmail() throws Exception {
+    void InvalidEmailFormat() throws Exception {
         mvc.perform(
             post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(getResource("json/request/auth/RegisterBody_InvalidEmail.json"))
         ).andExpect(status().isOk())
-            .andExpect(content().json(new String(getResource("json/response/BadRequestBody_InvalidEmail.json"))));
+            .andExpect(jsonPath("$.result").value(false))
+            .andExpect(jsonPath("$.errors.e_mail").value(is(not(blankString()))));
     }
 
     @Test
-    void RegistrationFailedWithPasswordLengthLessThanSix() throws Exception {
+    void PasswordLengthLessThanSix() throws Exception {
         mvc.perform(
             post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(getResource("json/request/auth/RegisterBody_ShortPassword.json"))
         ).andExpect(status().isOk())
-            .andExpect(content().json(new String(getResource("json/response/BadRequestBody_ShortPassword.json"))));
+            .andExpect(jsonPath("$.result").value(false))
+            .andExpect(jsonPath("$.errors.password").value(is(not(blankString()))));
+    }
+
+    @Test
+    void WrongCaptcha() throws Exception {
+        mvc.perform(post("/api/auth/register")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(getResource("json/request/auth/RegisterBody_Ok.json"))
+        ).andExpect(status().isOk())
+            .andExpect(jsonPath("$.result").value(false))
+            .andExpect(jsonPath("$.errors.captcha").value(is(not(blankString()))));
+    }
+
+    @Test
+    void EmptyJSON() throws Exception {
+        mvc.perform(
+            post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(getResource("json/EmptyJSON.json"))
+        ).andExpect(status().isOk())
+            .andExpect(jsonPath("$.result").value(false))
+            .andExpect(jsonPath("$.errors.e_mail").value(is(not(blankString()))))
+            .andExpect(jsonPath("$.errors.name").value(is(not(blankString()))))
+            .andExpect(jsonPath("$.errors.password").value(is(not(blankString()))))
+            .andExpect(jsonPath("$.errors.captcha").value(is(not(blankString()))))
+            .andExpect(jsonPath("$.errors.captcha_secret").value(is(not(blankString()))));
     }
 
     @Test

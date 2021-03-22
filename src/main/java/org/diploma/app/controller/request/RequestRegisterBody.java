@@ -16,7 +16,7 @@ import javax.validation.constraints.Size;
 public class RequestRegisterBody {
 
     @NotBlank(groups = FirstOrder.class)
-    @Email(message = "неверный формат e-mail", groups = SecondOrder.class)
+    @Email(message = "{email.invalid.message}", groups = SecondOrder.class)
     @JsonProperty("e_mail")
     String email;
 
@@ -24,7 +24,7 @@ public class RequestRegisterBody {
     String name;
 
     @NotBlank(groups = FirstOrder.class)
-    @Size(min = 6, message = "длинна пароля должна быть не менее {min} символов", groups = SecondOrder.class)
+    @Size(message = "{password.length.message}", min = 6, groups = SecondOrder.class)
     String password;
 
     @NotBlank(groups = FirstOrder.class)

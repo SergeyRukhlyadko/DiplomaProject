@@ -24,7 +24,6 @@ public class AuthService {
 
     String from;
     String host;
-    GeneralService generalService;
     EmailService emailService;
     PasswordEncoder passwordEncoder;
     UsersRepository usersRepository;
@@ -33,7 +32,6 @@ public class AuthService {
     public AuthService(
         @Value("${spring.mail.username}") String from,
         @Value("${host}") String host,
-        GeneralService generalService,
         EmailService emailService,
         PasswordEncoder passwordEncoder,
         UsersRepository usersRepository,
@@ -41,7 +39,6 @@ public class AuthService {
     ) {
         this.from = from;
         this.host = host;
-        this.generalService = generalService;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
         this.usersRepository = usersRepository;
@@ -103,20 +100,14 @@ public class AuthService {
     }
 
     /*
-        @return (@code false) if global setting MULTIUSER_MODE disabled
         @throws EmailAlreadyExistsException if user with given email already exists
      */
-    public boolean register(String name, String email, String password) {
-        if (!generalService.isEnabled(GlobalSetting.MULTIUSER_MODE)) {
-            return false;
-        }
-
+    public void register(String name, String email, String password) {
         if (usersRepository.existsUsersByEmail(email)) {
             throw new EmailAlreadyExistsException("Email " + email + " already exists");
         }
 
         usersRepository.save(new Users(false, name, email, passwordEncoder.encode(password)));
-        return true;
     }
 
     /*

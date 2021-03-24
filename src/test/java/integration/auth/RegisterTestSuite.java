@@ -28,7 +28,7 @@ public class RegisterTestSuite {
 
     @Test
     @Transactional
-    @Sql({"/sql/captcha.sql", "/sql/GlobalSetting_MultiUserMode_Enable.sql"})
+    @Sql("/sql/captcha.sql")
     void RegistrationCompleted() throws Exception {
         mvc.perform(
             post("/api/auth/register")
@@ -101,12 +101,9 @@ public class RegisterTestSuite {
 
     @Test
     @Transactional
-    @Sql({"/sql/captcha.sql", "/sql/GlobalSetting_MultiUserMode_Disable.sql"})
+    @Sql("/sql/GlobalSetting_MultiUserMode_Disable.sql")
     void RegistrationIsClosed() throws Exception {
-        mvc.perform(
-            post("/api/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(getResource("json/request/auth/RegisterBody_Ok.json"))
-        ).andExpect(status().isNotFound());
+        mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound());
     }
 }

@@ -90,13 +90,8 @@ class ApiAuthController {
                 new ResponseErrorBody("captcha", messageSource.getMessage("captcha.wrong.message", null, locale)));
         }
 
-        boolean isRegistered = authService.register(body.getName(), body.getEmail(), body.getPassword());
-
-        if (isRegistered) {
-            return ResponseEntity.ok(new ResponseDefaultBody(true));
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        authService.register(body.getName(), body.getEmail(), body.getPassword());
+        return ResponseEntity.ok(new ResponseDefaultBody(true));
     }
 
     @GetMapping("/captcha")

@@ -87,6 +87,9 @@ class ApiAuthController {
         );
     }
 
+    /*
+        New user registration
+     */
     @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<?> register(@Validated(ValidationOrder.class) @RequestBody RequestRegisterBody body, Locale locale) {
         if (!captchaService.matches(body.getCaptcha(), body.getCaptchaSecret())) {
@@ -96,7 +99,7 @@ class ApiAuthController {
 
         if (userService.exists(body.getEmail())) {
             return ResponseEntity.ok(
-                new ResponseErrorBody("email", messageSource.getMessage("email.exists.message", null, locale)));
+                new ResponseErrorBody("e_mail", messageSource.getMessage("email.exists.message", null, locale)));
         }
 
         userService.save(body.getName(), body.getEmail(), body.getPassword());

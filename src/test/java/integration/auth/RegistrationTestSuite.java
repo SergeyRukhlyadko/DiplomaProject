@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.blankString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -21,7 +22,7 @@ import static util.TestUtil.getResource;
 
 @SpringBootTest(classes = Main.class)
 @AutoConfigureMockMvc
-public class RegisterTestSuite {
+public class RegistrationTestSuite {
 
     @Autowired
     MockMvc mvc;
@@ -36,6 +37,27 @@ public class RegisterTestSuite {
                 .content(getResource("json/request/auth/RegisterBody_Ok.json"))
         ).andExpect(status().isOk())
             .andExpect(content().json(new String(getResource("json/response/DefaultBody_True.json"))));
+    }
+
+    @Test
+    @Transactional
+    @Sql("/sql/GlobalSetting_MultiUserMode_Disable.sql")
+    void RegistrationIsClosed() throws Exception {
+        mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @Transactional
+    @Sql({"/sql/captcha.sql", "/sql/user.sql"})
+    void EmailAlreadyExists() throws Exception {
+        mvc.perform(
+            post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(getResource("json/request/auth/RegisterBody_Ok.json"))
+        ).andExpect(status().isOk())
+            .andExpect(jsonPath("$.result").value(false))
+            .andExpect(jsonPath("$.errors.e_mail").value(is(not(blankString()))));
     }
 
     @Test
@@ -62,9 +84,10 @@ public class RegisterTestSuite {
 
     @Test
     void WrongCaptcha() throws Exception {
-        mvc.perform(post("/api/auth/register")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(getResource("json/request/auth/RegisterBody_Ok.json"))
+        mvc.perform(
+            post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(getResource("json/request/auth/RegisterBody_Ok.json"))
         ).andExpect(status().isOk())
             .andExpect(jsonPath("$.result").value(false))
             .andExpect(jsonPath("$.errors.captcha").value(is(not(blankString()))));
@@ -86,24 +109,27 @@ public class RegisterTestSuite {
     }
 
     @Test
-    void RegistrationFailedWithInvalidContentType() throws Exception {
+    void NotSupportedContentType() throws Exception {
         mvc.perform(post("/api/auth/register"))
             .andExpect(status().isBadRequest())
-            .andExpect(content().json(new String(getResource("json/response/BadRequestBody_InvalidContentType.json"))));
+            .andExpect(
+                content().json(new String(getResource("json/response/BadRequestBody_NotSupportedContentType.json"))));
     }
 
     @Test
-    void RegistrationFailedWithNullBody() throws Exception {
+    void EmptyBody() throws Exception {
         mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
-            .andExpect(content().json(new String(getResource("json/response/BadRequestBody_InvalidRequest.json"))));
+            .andExpect(content().json(new String(getResource("json/response/BadRequestBody_InvalidRequestBody.json"))));
     }
 
     @Test
-    @Transactional
-    @Sql("/sql/GlobalSetting_MultiUserMode_Disable.sql")
-    void RegistrationIsClosed() throws Exception {
-        mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isNotFound());
+    void InvalidJSON() throws Exception {
+        mvc.perform(
+            post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(getResource("json/InvalidJSON.json"))
+        ).andExpect(status().isBadRequest())
+            .andExpect(content().json(new String(getResource("json/response/BadRequestBody_InvalidRequestBody.json"))));
     }
 }

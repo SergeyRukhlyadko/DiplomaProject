@@ -2,9 +2,7 @@ package org.diploma.app.service;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
-import org.diploma.app.model.auth.EmailAlreadyExistsException;
 import org.diploma.app.model.db.entity.Users;
-import org.diploma.app.repository.CaptchaCodesRepository;
 import org.diploma.app.repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
@@ -25,22 +23,19 @@ public class AuthService {
     EmailService emailService;
     PasswordEncoder passwordEncoder;
     UsersRepository usersRepository;
-    CaptchaCodesRepository captchaCodesRepository;
 
     public AuthService(
         @Value("${spring.mail.username}") String from,
         @Value("${host}") String host,
         EmailService emailService,
         PasswordEncoder passwordEncoder,
-        UsersRepository usersRepository,
-        CaptchaCodesRepository captchaCodesRepository
+        UsersRepository usersRepository
     ) {
         this.from = from;
         this.host = host;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
         this.usersRepository = usersRepository;
-        this.captchaCodesRepository = captchaCodesRepository;
     }
 
     //temporary implementation for ApiGeneralController.statisticsAll and ApiPostController.postId
@@ -87,32 +82,6 @@ public class AuthService {
             throw new SQLQueryException(
                 updatedRows + " rows have been updated in the Users table with code: " + code);
         }
-    }
-
-    @Deprecated
-    public void register(String name, String email, String password) {
-        if (usersRepository.existsUsersByEmail(email)) {
-            throw new EmailAlreadyExistsException("Email " + email + " already exists");
-        }
-
-        usersRepository.save(new Users(false, name, email, passwordEncoder.encode(password)));
-    }
-
-    /*
-        @param captcha alphanumeric representation of captcha image
-        @param secretCode unique captcha identifier
-        @return false if arguments is null or blank, either if pair of captcha and secretCode not found, otherwise true
-     */
-    public boolean verifyCaptcha(String captcha, String secretCode) {
-        if (captcha == null || secretCode == null) {
-            return false;
-        }
-
-        if (captcha.isBlank() || secretCode.isBlank()) {
-            return false;
-        }
-
-        return captchaCodesRepository.existsByCodeAndSecretCode(captcha, secretCode);
     }
 
     /*

@@ -72,14 +72,14 @@ public class ControllerExceptionHandler {
         return ResponseEntity.status(400).body(new ResponseBadRequestBody(e.getMessage()));
     }
 
-    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
-    ResponseEntity<?> handleHttpMediaTypeNotSupportedException() {
+    @ExceptionHandler
+    ResponseEntity<?> handle(HttpMediaTypeNotSupportedException e) {
         return ResponseEntity.status(400).body(new ResponseBadRequestBody("Not supported content type"));
     }
 
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<?> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
-        return ResponseEntity.status(400).body(new ResponseBadRequestBody("Invalid request message"));
+    @ExceptionHandler
+    ResponseEntity<?> handle(HttpMessageNotReadableException e) {
+        return ResponseEntity.status(400).body(new ResponseBadRequestBody("Invalid request body"));
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)

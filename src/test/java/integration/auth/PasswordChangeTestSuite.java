@@ -28,7 +28,7 @@ public class PasswordChangeTestSuite {
 
     @Test
     @Transactional
-    @Sql({"/sql/captcha.sql", "/sql/user.sql"})
+    @Sql({"/sql/Captcha.sql", "/sql/User.sql"})
     void PasswordChanged() throws Exception {
         mvc.perform(
             post("/api/auth/password")
@@ -40,7 +40,7 @@ public class PasswordChangeTestSuite {
 
     @Test
     @Transactional
-    @Sql({"/sql/captcha.sql", "/sql/SameUsers.sql"})
+    @Sql({"/sql/Captcha.sql", "/sql/SameUsers.sql"})
     void ChangedMoreThanOnePassword() throws Exception {
         mvc.perform(
             post("/api/auth/password")

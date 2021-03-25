@@ -29,7 +29,7 @@ public class RegistrationTestSuite {
 
     @Test
     @Transactional
-    @Sql("/sql/captcha.sql")
+    @Sql("/sql/Captcha.sql")
     void RegistrationCompleted() throws Exception {
         mvc.perform(
             post("/api/auth/register")
@@ -49,7 +49,7 @@ public class RegistrationTestSuite {
 
     @Test
     @Transactional
-    @Sql({"/sql/captcha.sql", "/sql/user.sql"})
+    @Sql({"/sql/Captcha.sql", "/sql/User.sql"})
     void EmailAlreadyExists() throws Exception {
         mvc.perform(
             post("/api/auth/register")

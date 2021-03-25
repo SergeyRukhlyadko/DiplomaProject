@@ -5,7 +5,6 @@ import lombok.experimental.FieldDefaults;
 import org.diploma.app.model.auth.EmailAlreadyExistsException;
 import org.diploma.app.model.auth.InvalidCaptchaException;
 import org.diploma.app.model.db.entity.Users;
-import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
 import org.diploma.app.repository.CaptchaCodesRepository;
 import org.diploma.app.repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -99,9 +98,7 @@ public class AuthService {
         return true;
     }
 
-    /*
-        @throws EmailAlreadyExistsException if user with given email already exists
-     */
+    @Deprecated
     public void register(String name, String email, String password) {
         if (usersRepository.existsUsersByEmail(email)) {
             throw new EmailAlreadyExistsException("Email " + email + " already exists");

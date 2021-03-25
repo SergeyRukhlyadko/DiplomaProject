@@ -13,6 +13,7 @@ import org.diploma.app.service.AuthService;
 import org.diploma.app.service.CaptchaService;
 import org.diploma.app.service.GeneralService;
 import org.diploma.app.service.PostService;
+import org.diploma.app.service.UserService;
 import org.diploma.app.validation.ValidationOrder;
 import org.springframework.context.MessageSource;
 import org.springframework.http.MediaType;
@@ -36,19 +37,22 @@ class ApiAuthController {
     private GeneralService generalService;
     private CaptchaService captchaService;
     private MessageSource messageSource;
+    private UserService userService;
 
     public ApiAuthController(
         AuthService authService,
         PostService postService,
         GeneralService generalService,
         CaptchaService captchaService,
-        MessageSource messageSource
+        MessageSource messageSource,
+        UserService userService
     ) {
         this.authService = authService;
         this.postService = postService;
         this.generalService = generalService;
         this.captchaService = captchaService;
         this.messageSource = messageSource;
+        this.userService = userService;
     }
 
     @PostMapping("/login")
@@ -90,7 +94,12 @@ class ApiAuthController {
                 new ResponseErrorBody("captcha", messageSource.getMessage("captcha.wrong.message", null, locale)));
         }
 
-        authService.register(body.getName(), body.getEmail(), body.getPassword());
+        if (userService.exists(body.getEmail())) {
+            return ResponseEntity.ok(
+                new ResponseErrorBody("email", messageSource.getMessage("email.exists.message", null, locale)));
+        }
+
+        userService.save(body.getName(), body.getEmail(), body.getPassword());
         return ResponseEntity.ok(new ResponseDefaultBody(true));
     }
 

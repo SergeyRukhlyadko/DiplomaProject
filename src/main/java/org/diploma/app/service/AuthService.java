@@ -3,7 +3,6 @@ package org.diploma.app.service;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.diploma.app.model.auth.EmailAlreadyExistsException;
-import org.diploma.app.model.auth.InvalidCaptchaException;
 import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.repository.CaptchaCodesRepository;
 import org.diploma.app.repository.UsersRepository;
@@ -78,24 +77,16 @@ public class AuthService {
     }
 
     /*
-        @return true if password changed
-        @throws SQLQueryException if updated more then one row
-        @throws InvalidCaptchaException if captcha is not valid
+        Update password by recovery code
+        @throws SQLQueryException if updated more than one row
      */
     @Transactional(rollbackFor = Exception.class)
-    public boolean changePassword(String code, String password, String captcha, String secretCode) {
-        boolean isCaptchaValid = verifyCaptcha(captcha, secretCode);
-        if (isCaptchaValid) {
-            int numberOftUpdatedRows = usersRepository.updatePasswordByCode(passwordEncoder.encode(password), code);
-            if (numberOftUpdatedRows != 1) {
-                throw new SQLQueryException(
-                    "More than one row has been updated in the Users table with code: " + code);
-            }
-        } else {
-            throw new InvalidCaptchaException("Invalid " + captcha + " captcha");
+    public void changePassword(String code, String password) {
+        int updatedRows = usersRepository.updatePasswordByCode(passwordEncoder.encode(password), code);
+        if (updatedRows > 1) {
+            throw new SQLQueryException(
+                updatedRows + " rows have been updated in the Users table with code: " + code);
         }
-
-        return true;
     }
 
     @Deprecated

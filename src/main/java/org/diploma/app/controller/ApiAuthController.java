@@ -1,6 +1,6 @@
 package org.diploma.app.controller;
 
-import org.diploma.app.controller.request.RequestPasswordBody;
+import org.diploma.app.controller.request.RequestPasswordChangeBody;
 import org.diploma.app.controller.request.RequestRegisterBody;
 import org.diploma.app.controller.request.RequestRestoreBody;
 import org.diploma.app.controller.response.ResponseCaptchaBody;
@@ -81,10 +81,16 @@ class ApiAuthController {
     }
 
     @PostMapping(value = "/password", consumes = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<?> changePassword(@Validated(ValidationOrder.class) @RequestBody RequestPasswordBody body) {
-        return ResponseEntity.ok(new ResponseDefaultBody(
-            authService.changePassword(body.getCode(), body.getPassword(), body.getCaptcha(), body.getCaptchaSecret()))
-        );
+    ResponseEntity<?> changePassword(
+        @Validated(ValidationOrder.class) @RequestBody RequestPasswordChangeBody body, Locale locale)
+    {
+        if (!captchaService.matches(body.getCaptcha(), body.getCaptchaSecret())) {
+            return ResponseEntity.ok(
+                new ResponseErrorBody("captcha", messageSource.getMessage("captcha.wrong.message", null, locale)));
+        }
+
+        authService.changePassword(body.getCode(), body.getPassword());
+        return ResponseEntity.ok(new ResponseDefaultBody(true));
     }
 
     /*

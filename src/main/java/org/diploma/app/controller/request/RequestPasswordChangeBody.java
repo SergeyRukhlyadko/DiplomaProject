@@ -12,13 +12,13 @@ import javax.validation.constraints.Size;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
-public class RequestPasswordBody {
+public class RequestPasswordChangeBody {
 
     @NotBlank(groups = FirstOrder.class)
     String code;
 
     @NotBlank(groups = FirstOrder.class)
-    @Size(min = 6, message = "длинна пароля должна быть не менее {min} символов", groups = SecondOrder.class)
+    @Size(message = "{password.length.message}", min = 6, groups = SecondOrder.class)
     String password;
 
     @NotBlank(groups = FirstOrder.class)

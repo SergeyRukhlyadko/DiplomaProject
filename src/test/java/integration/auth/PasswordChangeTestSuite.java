@@ -73,29 +73,4 @@ public class PasswordChangeTestSuite {
             .andExpect(jsonPath("$.errors.captcha").value(is(not(blankString()))))
             .andExpect(jsonPath("$.errors.captcha_secret").value(is(not(blankString()))));
     }
-
-    @Test
-    void NotSupportedContentType() throws Exception {
-        mvc.perform(post("/api/auth/password"))
-            .andExpect(status().isBadRequest())
-            .andExpect(
-                content().json(new String(getResource("json/response/BadRequestBody_NotSupportedContentType.json"))));
-    }
-
-    @Test
-    void EmptyBody() throws Exception {
-        mvc.perform(post("/api/auth/password").contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest())
-            .andExpect(content().json(new String(getResource("json/response/BadRequestBody_InvalidRequestBody.json"))));
-    }
-
-    @Test
-    void InvalidJSON() throws Exception {
-        mvc.perform(
-            post("/api/auth/password")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(getResource("json/InvalidJSON.json"))
-        ).andExpect(status().isBadRequest())
-            .andExpect(content().json(new String(getResource("json/response/BadRequestBody_InvalidRequestBody.json"))));
-    }
 }

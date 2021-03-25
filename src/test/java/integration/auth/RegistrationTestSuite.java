@@ -14,7 +14,6 @@ import static org.hamcrest.Matchers.blankString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -106,30 +105,5 @@ public class RegistrationTestSuite {
             .andExpect(jsonPath("$.errors.password").value(is(not(blankString()))))
             .andExpect(jsonPath("$.errors.captcha").value(is(not(blankString()))))
             .andExpect(jsonPath("$.errors.captcha_secret").value(is(not(blankString()))));
-    }
-
-    @Test
-    void NotSupportedContentType() throws Exception {
-        mvc.perform(post("/api/auth/register"))
-            .andExpect(status().isBadRequest())
-            .andExpect(
-                content().json(new String(getResource("json/response/BadRequestBody_NotSupportedContentType.json"))));
-    }
-
-    @Test
-    void EmptyBody() throws Exception {
-        mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest())
-            .andExpect(content().json(new String(getResource("json/response/BadRequestBody_InvalidRequestBody.json"))));
-    }
-
-    @Test
-    void InvalidJSON() throws Exception {
-        mvc.perform(
-            post("/api/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(getResource("json/InvalidJSON.json"))
-        ).andExpect(status().isBadRequest())
-            .andExpect(content().json(new String(getResource("json/response/BadRequestBody_InvalidRequestBody.json"))));
     }
 }

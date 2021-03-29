@@ -3,7 +3,6 @@ package org.diploma.app.service;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.apache.commons.lang3.StringUtils;
-import org.diploma.app.model.auth.EmailAlreadyExistsException;
 import org.diploma.app.model.db.entity.PostComments;
 import org.diploma.app.model.db.entity.Posts;
 import org.diploma.app.model.db.entity.PostsCountByTagName;
@@ -168,10 +167,6 @@ public class GeneralService {
     public void updateProfile(
         String email, String name, String newEmail, String password, String photoPath) throws IOException
     {
-        if (usersRepository.existsUsersByEmail(newEmail)) {
-            throw new EmailAlreadyExistsException("Email " + newEmail + " already exists");
-        }
-
         String oldPhoto = null;
         if (photoPath != null) {
             oldPhoto = usersRepository.findPhoto(email);

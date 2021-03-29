@@ -1,16 +1,14 @@
 package org.diploma.app.controller;
 
-import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
 import org.diploma.app.controller.request.RequestCommentBody;
 import org.diploma.app.controller.request.RequestProfileBody;
-import org.diploma.app.validation.ValidationOrder;
 import org.diploma.app.controller.request.post.RequestModerationBody;
 import org.diploma.app.controller.response.BadRequestBody;
 import org.diploma.app.controller.response.DefaultBody;
 import org.diploma.app.controller.response.ErrorBody;
 import org.diploma.app.controller.response.ResponseBadRequestBody;
 import org.diploma.app.controller.response.ResponseCalendarBody;
+import org.diploma.app.controller.response.ResponseErrorBody;
 import org.diploma.app.controller.response.ResponseStatisticBody;
 import org.diploma.app.controller.response.ResponseTagBody;
 import org.diploma.app.dto.TagDto;
@@ -23,11 +21,14 @@ import org.diploma.app.service.AuthService;
 import org.diploma.app.service.CheckupService;
 import org.diploma.app.service.GeneralService;
 import org.diploma.app.service.PostService;
+import org.diploma.app.service.UserService;
 import org.diploma.app.util.NormalizationAlgorithm;
 import org.diploma.app.util.NullRemover;
+import org.diploma.app.validation.ValidationOrder;
 import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.MessageSource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -56,24 +57,26 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RestController
 @RequestMapping("/api")
 class ApiGeneralController {
 
-    String title;
-    String subtitle;
-    String phone;
-    String email;
-    String copyright;
-    String copyrightFrom;
-    ApplicationContext context;
-    AuthService authService;
-    GeneralService generalService;
-    PostService postService;
+    private String title;
+    private String subtitle;
+    private String phone;
+    private String email;
+    private String copyright;
+    private String copyrightFrom;
+    private ApplicationContext context;
+    private AuthService authService;
+    private GeneralService generalService;
+    private PostService postService;
+    private UserService userService;
+    private MessageSource messageSource;
 
     public ApiGeneralController(
         @Value("${init.title}") String title,
@@ -85,7 +88,9 @@ class ApiGeneralController {
         ApplicationContext context,
         AuthService authService,
         GeneralService generalService,
-        PostService postService
+        PostService postService,
+        UserService userService,
+        MessageSource messageSource
     ) {
         this.title = title;
         this.subtitle = subtitle;
@@ -97,6 +102,8 @@ class ApiGeneralController {
         this.authService = authService;
         this.generalService = generalService;
         this.postService = postService;
+        this.userService = userService;
+        this.messageSource = messageSource;
     }
 
     //Метод смены флага модератора для удобства
@@ -206,8 +213,13 @@ class ApiGeneralController {
 
     @PostMapping(value = "/profile/my", consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<?> changeProfile(
-        Principal principal, @Validated(ValidationOrder.class) @RequestBody RequestProfileBody body) throws IOException
-    {
+        Principal principal, @Validated(ValidationOrder.class) @RequestBody RequestProfileBody body, Locale locale
+    ) throws IOException {
+        if (userService.exists(body.getEmail())) {
+            return ResponseEntity.ok(
+                new ResponseErrorBody("email", messageSource.getMessage("email.exists.message", null, locale)));
+        }
+
         generalService.updateProfile(
             principal.getName(),
             body.getName(),
@@ -222,12 +234,13 @@ class ApiGeneralController {
 
     @PostMapping(value = "/profile/my", consumes = "multipart/form-data")
     ResponseEntity<?> profileMy(
-        HttpSession session, Principal principal,
+        Principal principal,
         @RequestParam("photo") MultipartFile multipartFile,
         @RequestParam(value = "removePhoto", required = false) int removePhoto,
         @RequestParam(value = "name", required = false) String name,
         @RequestParam(value = "email", required = false) String email,
-        @RequestParam(value = "password", required = false) String password
+        @RequestParam(value = "password", required = false) String password,
+        Locale locale
     ) throws IOException {
         ImageInputStream iis = ImageIO.createImageInputStream(multipartFile.getInputStream());
         Iterator<ImageReader> imageReaders = ImageIO.getImageReaders(iis);
@@ -245,13 +258,14 @@ class ApiGeneralController {
             .name(name)
             .password(password);
 
-        if (!principal.getName().equals(email)) {
-            checkupService.email(email);
-        }
-
         Map<String, String> errors = checkupService.getErrors();
         if (!errors.isEmpty()) {
             return ResponseEntity.ok(new ErrorBody(errors));
+        }
+
+        if (userService.exists(email)) {
+            return ResponseEntity.ok(
+                new ResponseErrorBody("email", messageSource.getMessage("email.exists.message", null, locale)));
         }
 
         BufferedImage originalImage = ImageIO.read(iis);

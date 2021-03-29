@@ -18,11 +18,11 @@ public class RequestProfileBody {
     String name;
 
     @NullOrNotBlank(groups = FirstOrder.class)
-    @Email(message = "неверный формат e-mail", groups = SecondOrder.class)
+    @Email(message = "{email.invalid.message}", groups = SecondOrder.class)
     String email;
 
     @NullOrNotBlank(groups = FirstOrder.class)
-    @Size(min = 6, message = "длинна пароля должна быть не менее {min} символов", groups = SecondOrder.class)
+    @Size(message = "{password.length.message}", min = 6, groups = SecondOrder.class)
     String password;
 
     String photo;

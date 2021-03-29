@@ -3,7 +3,6 @@ package org.diploma.app.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.diploma.app.controller.response.ResponseBadRequestBody;
 import org.diploma.app.controller.response.ResponseErrorBody;
-import org.diploma.app.model.auth.EmailAlreadyExistsException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -28,12 +27,6 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(Exception.class)
     public void defaultHandler(Exception e) {
         e.printStackTrace();
-    }
-
-    @ExceptionHandler
-    ResponseEntity<?> handle(EmailAlreadyExistsException e) {
-        log.error(e.getMessage());
-        return ResponseEntity.ok(new ResponseErrorBody("email", "Этот e-mail уже зарегистрирован"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

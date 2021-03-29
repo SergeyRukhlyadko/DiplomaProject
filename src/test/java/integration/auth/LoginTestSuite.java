@@ -79,6 +79,18 @@ public class LoginTestSuite {
     @Test
     @Transactional
     @Sql("/sql/User.sql")
+    void WrongEmail() throws Exception {
+        mvc.perform(
+            post(requestPath)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(getResource("json/request/auth/LoginBody_WrongEmail.json"))
+        ).andExpect(status().isOk())
+            .andExpect(content().json(new String(getResource("json/response/DefaultBody_False.json"))));
+    }
+
+    @Test
+    @Transactional
+    @Sql("/sql/User.sql")
     void WrongPassword() throws Exception {
         mvc.perform(
             post(requestPath)

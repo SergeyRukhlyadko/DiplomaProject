@@ -1,7 +1,9 @@
 package integration.auth;
 
+import integration.RequestPath;
 import org.diploma.app.Main;
 import org.diploma.app.service.EmailService;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -19,7 +21,7 @@ import static util.TestUtil.getResource;
 
 @SpringBootTest(classes = Main.class)
 @AutoConfigureMockMvc
-public class RestorePasswordTestSuite {
+public class PasswordRestoreTestSuite {
 
     @Autowired
     MockMvc mvc;
@@ -27,24 +29,31 @@ public class RestorePasswordTestSuite {
     @MockBean
     EmailService emailService;
 
+    private static String requestPath;
+
+    @BeforeAll
+    static void setUp() {
+        requestPath = RequestPath.PASSWORD_RESTORE.value();
+    }
+
     @Test
     @Transactional
-    @Sql("/sql/TestUser.sql")
+    @Sql("/sql/User.sql")
     void RestoreCodeUpdated() throws Exception {
         mvc.perform(
-            post("/api/auth/restore")
+            post(requestPath)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(getResource("json/request/auth/RestorePasswordBody_Ok.json"))
+                .content(getResource("json/request/auth/PasswordRestoreBody_Ok.json"))
         ).andExpect(status().isOk())
             .andExpect(content().json(new String(getResource("json/response/DefaultBody_True.json"))));
     }
 
     @Test
-    void FailedWithNotExistEmail() throws Exception {
+    void EmailNotExist() throws Exception {
         mvc.perform(
-            post("/api/auth/restore")
+            post(requestPath)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(getResource("json/request/auth/RestorePasswordBody_Ok.json"))
+                .content(getResource("json/request/auth/PasswordRestoreBody_Ok.json"))
         ).andExpect(status().isOk())
             .andExpect(content().json(new String(getResource("json/response/DefaultBody_False.json"))));
     }
@@ -52,40 +61,11 @@ public class RestorePasswordTestSuite {
     @Test
     @Transactional
     @Sql("/sql/SameUsers.sql")
-    void FailedMoreThanOneRowUpdated() throws Exception {
+    void MoreThanOneRowUpdated() throws Exception {
         mvc.perform(
-            post("/api/auth/restore")
+            post(requestPath)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(getResource("json/request/auth/RestorePasswordBody_Ok.json"))
+                .content(getResource("json/request/auth/PasswordRestoreBody_Ok.json"))
         ).andExpect(status().is5xxServerError());
-    }
-
-    @Test
-    void FailedWithEmptyValue() throws Exception {
-        mvc.perform(
-            post("/api/auth/restore")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(getResource("json/request/auth/RestorePassword_EmptyValue.json"))
-        ).andExpect(status().isOk())
-            .andExpect(
-                content().json(
-                    new String(
-                        getResource("json/response/auth/RestorePassword_EmptyValue.json"))));
-    }
-
-    @Test
-    void FailedWithEmptyBody() throws Exception {
-        mvc.perform(post("/api/auth/restore").contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest())
-            .andExpect(
-                content().json(new String(getResource("json/response/BadRequestBody_InvalidRequest.json"))));
-    }
-
-    @Test
-    void FailedWithInvalidContentType() throws Exception {
-        mvc.perform(post("/api/auth/restore"))
-            .andExpect(status().isBadRequest())
-            .andExpect(
-                content().json(new String(getResource("json/response/BadRequestBody_InvalidContentType.json"))));
     }
 }

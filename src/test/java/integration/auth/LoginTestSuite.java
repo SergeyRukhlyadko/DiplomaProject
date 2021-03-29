@@ -1,6 +1,8 @@
 package integration.auth;
 
+import integration.RequestPath;
 import org.diploma.app.Main;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -10,8 +12,12 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static integration.ResponseResultMatcher.invalidEmailFormat;
+import static org.hamcrest.Matchers.blankString;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -25,94 +31,36 @@ public class LoginTestSuite {
     @Autowired
     MockMvc mvc;
 
+    private static String requestPath;
+
+    @BeforeAll
+    static void setUp() {
+        requestPath = RequestPath.LOGIN.value();
+    }
+
     @Test
     @Transactional
-    @Sql("/sql/TestUser.sql")
+    @Sql("/sql/User.sql")
     void LoginCompleted() throws Exception {
         mvc.perform(
-            post("/api/auth/login")
+            post(requestPath)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(getResource("json/request/auth/LoginBody_Ok.json"))
         ).andExpect(status().isOk())
             .andExpect(jsonPath("$.result").value(true))
             .andExpect(jsonPath("$.user.id").value(greaterThan(0)))
-            .andExpect(jsonPath("$.user.name").value("TestName"))
+            .andExpect(jsonPath("$.user.name").value("UserName"))
             .andExpect(jsonPath("$.user.photo").hasJsonPath())
-            .andExpect(jsonPath("$.user.email").value("test@mail.com"))
+            .andExpect(jsonPath("$.user.email").value("user@mail.com"))
             .andExpect(jsonPath("$.user.moderation").value(false))
             .andExpect(jsonPath("$.user.moderationCount").value(greaterThanOrEqualTo(0)))
             .andExpect(jsonPath("$.user.settings").value(false));
     }
 
     @Test
-    void LoginFailedWithEmptyJSON() throws Exception {
+    void LoginUnregisteredUser() throws Exception {
         mvc.perform(
-            post("/api/auth/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(getResource("json/EmptyJSON.json"))
-        ).andExpect(status().isOk())
-            .andExpect(content().json(
-                new String(getResource("json/response/auth/Login_ResponseErrorBody_EmptyAllValues.json"))
-            ));
-    }
-
-    @Test
-    void LoginFailedWithAllEmptyValues() throws Exception {
-        mvc.perform(
-            post("/api/auth/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(getResource("json/request/auth/LoginBody_EmptyAllValues.json"))
-        ).andExpect(status().isOk())
-            .andExpect(content().json(
-                new String(getResource("json/response/auth/Login_ResponseErrorBody_EmptyAllValues.json"))
-            ));
-    }
-
-    @Test
-    void LoginFailedWithInvalidEmail() throws Exception {
-        mvc.perform(
-            post("/api/auth/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(getResource("json/request/auth/LoginBody_InvalidEmail.json"))
-        ).andExpect(status().isOk())
-            .andExpect(content().json(
-                new String(getResource("json/response/BadRequestBody_InvalidEmail.json"))
-            ));
-    }
-
-    @Test
-    void LoginFailedWithPasswordLengthLessThanSix() throws Exception {
-        mvc.perform(
-            post("/api/auth/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(getResource("json/request/auth/LoginBody_ShortPassword.json"))
-        ).andExpect(status().isOk())
-            .andExpect(content().json(
-                new String(getResource("json/response/BadRequestBody_ShortPassword.json"))
-            ));
-    }
-
-    @Test
-    void LoginFailedWithInvalidContentType() throws Exception {
-        mvc.perform(
-            post("/api/auth/login").content(getResource("json/request/auth/LoginBody_Ok.json"))
-        ).andExpect(status().isBadRequest())
-            .andExpect(content().json(
-                new String(getResource("json/response/BadRequestBody_InvalidContentType.json"))
-            ));
-    }
-
-    @Test
-    void LoginFailedWithNullBody() throws Exception {
-        mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isBadRequest())
-            .andExpect(content().json(new String(getResource("json/response/BadRequestBody_InvalidRequest.json"))));
-    }
-
-    @Test
-    void LoginFailedWithUnregisteredUser() throws Exception {
-        mvc.perform(
-            post("/api/auth/login")
+            post(requestPath)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(getResource("json/request/auth/LoginBody_Ok.json"))
         ).andExpect(status().isOk())
@@ -120,14 +68,36 @@ public class LoginTestSuite {
     }
 
     @Test
-    @Transactional
-    @Sql("/sql/TestUser.sql")
-    void LoginFailedWithWrongPassword() throws Exception {
+    void InvalidEmailFormat() throws Exception {
         mvc.perform(
-            post("/api/auth/login")
+            post(requestPath)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(getResource("json/request/auth/LoginBody_InvalidEmailFormat.json"))
+        ).andExpect(invalidEmailFormat("e_mail"));
+    }
+
+    @Test
+    @Transactional
+    @Sql("/sql/User.sql")
+    void WrongPassword() throws Exception {
+        mvc.perform(
+            post(requestPath)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(getResource("json/request/auth/LoginBody_WrongPassword.json"))
         ).andExpect(status().isOk())
             .andExpect(content().json(new String(getResource("json/response/DefaultBody_False.json"))));
+    }
+
+    @Test
+    void EmptyJSON() throws Exception {
+        mvc.perform(
+            post(requestPath)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(getResource("json/EmptyJSON.json"))
+        ).andExpect(status().isOk())
+            .andExpect(jsonPath("$.result").value(false))
+            .andExpect(jsonPath("$.errors.e_mail").value(is(not(blankString()))))
+            .andExpect(jsonPath("$.errors.password").value(is(not(blankString()))));
+
     }
 }

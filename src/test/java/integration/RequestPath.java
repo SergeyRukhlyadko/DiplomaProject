@@ -6,6 +6,7 @@ import java.util.Random;
 public enum RequestPath {
 
     REGISTRATION("/api/auth/register"),
+    LOGIN("/api/auth/login"),
     PASSWORD_CHANGE("/api/auth/password");
 
     private final String value;

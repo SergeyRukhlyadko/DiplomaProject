@@ -1,11 +1,13 @@
 package org.diploma.app.security;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.diploma.app.controller.request.RequestLoginBody;
 import org.diploma.app.validation.ValidationOrder;
-import org.diploma.app.controller.response.ResponseBadRequestBody;
-import org.diploma.app.controller.response.ResponseErrorBody;
+import org.springframework.http.HttpInputMessage;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -14,23 +16,21 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
-import org.springframework.web.filter.GenericFilterBean;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-public class LoginFilter extends GenericFilterBean {
+public class LoginFilter extends OncePerRequestFilter {
 
     private RequestMatcher requiresAuthenticationRequestMatcher = new AntPathRequestMatcher("/api/auth/login", "POST");
     private AuthenticationManager authenticationManager;
@@ -38,42 +38,25 @@ public class LoginFilter extends GenericFilterBean {
     private Validator validator;
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    public LoginFilter(AuthenticationManager authenticationManager, AuthenticationEntryPoint authenticationEntryPoint, Validator validator) {
+    public LoginFilter(
+        AuthenticationManager authenticationManager,
+        AuthenticationEntryPoint authenticationEntryPoint,
+        Validator validator)
+    {
         this.authenticationManager = authenticationManager;
         this.authenticationEntryPoint = authenticationEntryPoint;
         this.validator = validator;
     }
 
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        HttpServletRequest request = (HttpServletRequest) servletRequest;
-        HttpServletResponse response = (HttpServletResponse) servletResponse;
-
+    public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain
+    ) throws IOException, ServletException {
         if (requiresAuthentication(request)) {
+            checkMediaTypeSupport(request.getHeader("Content-Type"));
 
-            if (!isSupported(request.getHeader("Content-Type"))) {
-                response.setStatus(400);
-                response.getWriter().print(objectMapper.writeValueAsString(new ResponseBadRequestBody("Not supported content type")));
-                return;
-            }
-
-            InputStream inputStream = request.getInputStream();
-            byte[] bytes = inputStream.readAllBytes();
-            if (bytes.length == 0) {
-                response.setStatus(400);
-                response.getWriter().print(objectMapper.writeValueAsString(new ResponseBadRequestBody("Invalid request message")));
-                return;
-            }
-
-            RequestLoginBody body = objectMapper.readValue(bytes, RequestLoginBody.class);
-            Set<ConstraintViolation<RequestLoginBody>> errors = validator.validate(body, ValidationOrder.class);
-            if (!errors.isEmpty()) {
-                Map<String, String> errorsMap = errors.stream().collect(Collectors.toMap(
-                    cv -> cv.getPropertyPath().toString(), ConstraintViolation::getMessage));
-                response.setStatus(200);
-                response.getWriter().print(objectMapper.writeValueAsString(new ResponseErrorBody(errorsMap)));
-                return;
-            }
+            ServletServerHttpRequest inputMessage = new ServletServerHttpRequest(request);
+            RequestLoginBody body = readBody(inputMessage);
+            validate(body);
 
             UsernamePasswordAuthenticationToken authRequest =
                 new UsernamePasswordAuthenticationToken(body.getEmail(), body.getPassword());
@@ -89,19 +72,44 @@ public class LoginFilter extends GenericFilterBean {
             SecurityContextHolder.getContext().setAuthentication(authResult);
         }
 
-        filterChain.doFilter(servletRequest, servletResponse);
+        filterChain.doFilter(request, response);
     }
 
     private boolean requiresAuthentication(HttpServletRequest request) {
         return requiresAuthenticationRequestMatcher.matches(request);
     }
 
-    private boolean isSupported(String contentType) {
-        if (contentType != null) {
-            String[] contentTypeSplit = contentType.split(";");
-            return MediaType.APPLICATION_JSON_VALUE.equals(contentTypeSplit[0]);
+    private void checkMediaTypeSupport(String contentType) throws HttpMediaTypeNotSupportedException {
+        List<MediaType> supportedMediaTypes = List.of();
+        if (contentType == null) {
+            throw new HttpMediaTypeNotSupportedException(null, supportedMediaTypes);
         }
 
-        return false;
+        MediaType mediaType = MediaType.valueOf(contentType);
+        boolean compatible = mediaType.isCompatibleWith(MediaType.APPLICATION_JSON);
+        if (!compatible) {
+            throw new HttpMediaTypeNotSupportedException(mediaType, supportedMediaTypes);
+        }
+    }
+
+    private RequestLoginBody readBody(HttpInputMessage inputMessage) throws IOException {
+        byte[] bytes = inputMessage.getBody().readAllBytes();
+        if (bytes.length == 0) {
+            throw new HttpMessageNotReadableException(
+                "Required request body is missing: " + LoginFilter.class, inputMessage);
+        }
+
+        try {
+            return objectMapper.readValue(bytes, RequestLoginBody.class);
+        } catch (JsonParseException e) {
+            throw new HttpMessageNotReadableException(e.getMessage(), e, inputMessage);
+        }
+    }
+
+    private void validate(RequestLoginBody body) {
+        Set<ConstraintViolation<RequestLoginBody>> errors = validator.validate(body, ValidationOrder.class);
+        if (!errors.isEmpty()) {
+            throw new ConstraintViolationException(errors);
+        }
     }
 }

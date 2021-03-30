@@ -1,5 +1,6 @@
 package org.diploma.app.security;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -10,18 +11,25 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import javax.validation.Validator;
 
 @EnableWebSecurity//(debug = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private UserDetailsByEmailService userDetailsByEmailService;
+    private UserDetailsByEmailService userDetailsService;
     private Validator validator;
+    private HandlerExceptionResolver resolver;
 
-    public SecurityConfig(UserDetailsByEmailService userDetailsByEmailService, Validator validator) {
-        this.userDetailsByEmailService = userDetailsByEmailService;
+    public SecurityConfig(
+        UserDetailsByEmailService userDetailsService,
+        Validator validator,
+        @Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver
+    ) {
+        this.userDetailsService = userDetailsService;
         this.validator = validator;
+        this.resolver = resolver;
     }
 
     @Bean
@@ -45,6 +53,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     "/api/comment", "/api/statistics/my", "/api/profile/my", "/api/image").authenticated()
                 .anyRequest().permitAll()
             .and()
+            .addFilterBefore(new ExceptionHandlerFilter(resolver), LogoutFilter.class)
             .addFilterAfter(new CheckAuthenticationFilter(authenticationEntryPoint()), LogoutFilter.class)
             .addFilterAfter(
                 new LoginFilter(authenticationManagerBean(), authenticationEntryPoint(), validator), LogoutFilter.class)
@@ -58,6 +67,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsByEmailService).passwordEncoder(passwordEncoder());
+        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
     }
 }

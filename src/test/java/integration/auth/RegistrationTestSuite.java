@@ -1,6 +1,8 @@
 package integration.auth;
 
+import integration.RequestPath;
 import org.diploma.app.Main;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -26,12 +28,19 @@ public class RegistrationTestSuite {
     @Autowired
     MockMvc mvc;
 
+    static String requestPath;
+
+    @BeforeAll
+    static void setUp() {
+        requestPath = RequestPath.Post.REGISTRATION.value();
+    }
+
     @Test
     @Transactional
     @Sql("/sql/Captcha.sql")
     void RegistrationCompleted() throws Exception {
         mvc.perform(
-            post("/api/auth/register")
+            post(requestPath)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(getResource("json/request/auth/RegisterBody_Ok.json"))
         ).andExpect(status().isOk())
@@ -42,7 +51,7 @@ public class RegistrationTestSuite {
     @Transactional
     @Sql("/sql/GlobalSetting_MultiUserMode_Disable.sql")
     void RegistrationIsClosed() throws Exception {
-        mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(post(requestPath).contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isNotFound());
     }
 
@@ -51,7 +60,7 @@ public class RegistrationTestSuite {
     @Sql({"/sql/Captcha.sql", "/sql/User.sql"})
     void EmailAlreadyExists() throws Exception {
         mvc.perform(
-            post("/api/auth/register")
+            post(requestPath)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(getResource("json/request/auth/RegisterBody_Ok.json"))
         ).andExpect(status().isOk())
@@ -62,7 +71,7 @@ public class RegistrationTestSuite {
     @Test
     void InvalidEmailFormat() throws Exception {
         mvc.perform(
-            post("/api/auth/register")
+            post(requestPath)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(getResource("json/request/auth/RegisterBody_InvalidEmail.json"))
         ).andExpect(status().isOk())
@@ -73,7 +82,7 @@ public class RegistrationTestSuite {
     @Test
     void PasswordLengthLessThanSix() throws Exception {
         mvc.perform(
-            post("/api/auth/register")
+            post(requestPath)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(getResource("json/request/auth/RegisterBody_ShortPassword.json"))
         ).andExpect(status().isOk())
@@ -84,7 +93,7 @@ public class RegistrationTestSuite {
     @Test
     void WrongCaptcha() throws Exception {
         mvc.perform(
-            post("/api/auth/register")
+            post(requestPath)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(getResource("json/request/auth/RegisterBody_Ok.json"))
         ).andExpect(status().isOk())
@@ -95,7 +104,7 @@ public class RegistrationTestSuite {
     @Test
     void EmptyJSON() throws Exception {
         mvc.perform(
-            post("/api/auth/register")
+            post(requestPath)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(getResource("json/EmptyJSON.json"))
         ).andExpect(status().isOk())

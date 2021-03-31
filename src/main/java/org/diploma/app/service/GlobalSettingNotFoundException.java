@@ -8,6 +8,7 @@ public class GlobalSettingNotFoundException extends RuntimeException {
         super(message);
     }
 
+    @Deprecated
     public GlobalSettingNotFoundException(GlobalSetting globalSetting) {
         super("Global setting: " + globalSetting.name() + " not found");
     }

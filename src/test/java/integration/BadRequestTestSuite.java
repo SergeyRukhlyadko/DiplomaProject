@@ -22,8 +22,8 @@ public class BadRequestTestSuite {
     MockMvc mvc;
 
     @ParameterizedTest
-    @EnumSource(RequestPath.class)
-    void NotSupportedContentType(RequestPath path) throws Exception {
+    @EnumSource(RequestPath.Post.class)
+    void NotSupportedContentType(RequestPath.Post path) throws Exception {
         mvc.perform(post(path.value()))
             .andExpect(status().isBadRequest())
             .andExpect(
@@ -31,16 +31,16 @@ public class BadRequestTestSuite {
     }
 
     @ParameterizedTest
-    @EnumSource(RequestPath.class)
-    void EmptyBody(RequestPath path) throws Exception {
+    @EnumSource(RequestPath.Post.class)
+    void EmptyBody(RequestPath.Post path) throws Exception {
         mvc.perform(post(path.value()).contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
             .andExpect(content().json(new String(getResource("json/response/BadRequestBody_InvalidRequestBody.json"))));
     }
 
     @ParameterizedTest
-    @EnumSource(RequestPath.class)
-    void InvalidJSON(RequestPath path) throws Exception {
+    @EnumSource(RequestPath.Post.class)
+    void InvalidJSON(RequestPath.Post path) throws Exception {
         mvc.perform(
             post(path.value())
                 .contentType(MediaType.APPLICATION_JSON)

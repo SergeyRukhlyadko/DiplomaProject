@@ -31,11 +31,11 @@ public class LoginTestSuite {
     @Autowired
     MockMvc mvc;
 
-    private static String requestPath;
+    static String requestPath;
 
     @BeforeAll
     static void setUp() {
-        requestPath = RequestPath.LOGIN.value();
+        requestPath = RequestPath.Post.LOGIN.value();
     }
 
     @Test

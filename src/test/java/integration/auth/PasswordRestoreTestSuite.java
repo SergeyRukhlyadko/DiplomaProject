@@ -29,11 +29,11 @@ public class PasswordRestoreTestSuite {
     @MockBean
     EmailService emailService;
 
-    private static String requestPath;
+    static String requestPath;
 
     @BeforeAll
     static void setUp() {
-        requestPath = RequestPath.PASSWORD_RESTORE.value();
+        requestPath = RequestPath.Post.PASSWORD_RESTORE.value();
     }
 
     @Test

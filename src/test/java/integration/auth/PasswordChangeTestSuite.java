@@ -1,6 +1,8 @@
 package integration.auth;
 
+import integration.RequestPath;
 import org.diploma.app.Main;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -26,12 +28,19 @@ public class PasswordChangeTestSuite {
     @Autowired
     MockMvc mvc;
 
+    static String requestPath;
+
+    @BeforeAll
+    static void setUp() {
+        requestPath = RequestPath.Post.PASSWORD_CHANGE.value();
+    }
+
     @Test
     @Transactional
     @Sql({"/sql/Captcha.sql", "/sql/User.sql"})
     void PasswordChanged() throws Exception {
         mvc.perform(
-            post("/api/auth/password")
+            post(requestPath)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(getResource("json/request/auth/ChangePasswordBody_Ok.json"))
         ).andExpect(status().isOk())
@@ -43,7 +52,7 @@ public class PasswordChangeTestSuite {
     @Sql({"/sql/Captcha.sql", "/sql/SameUsers.sql"})
     void ChangedMoreThanOnePassword() throws Exception {
         mvc.perform(
-            post("/api/auth/password")
+            post(requestPath)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(getResource("json/request/auth/ChangePasswordBody_Ok.json"))
         ).andExpect(status().is5xxServerError());
@@ -52,7 +61,7 @@ public class PasswordChangeTestSuite {
     @Test
     void PasswordLengthLessThanSix() throws Exception {
         mvc.perform(
-            post("/api/auth/password")
+            post(requestPath)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(getResource("json/request/auth/ChangePasswordBody_PasswordLessThanSix.json"))
         ).andExpect(status().isOk())
@@ -63,7 +72,7 @@ public class PasswordChangeTestSuite {
     @Test
     void EmptyJSON() throws Exception {
         mvc.perform(
-            post("/api/auth/password")
+            post(requestPath)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(getResource("json/EmptyJson.json"))
         ).andExpect(status().isOk())

@@ -322,11 +322,6 @@ class ApiGeneralController {
         );
     }
 
-    @GetMapping("/settings")
-    Map<String, Boolean> settings() {
-        return generalService.findAllGlobalSettings();
-    }
-
     @PutMapping("/settings")
     ResponseEntity<?> settings(Principal principal, @RequestBody HashMap<String, Boolean> settings) {
         boolean isModerator = authService.isModerator(principal.getName());

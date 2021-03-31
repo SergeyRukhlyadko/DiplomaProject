@@ -197,6 +197,7 @@ public class GeneralService {
     /*
         throws GlobalSettingNotFoundException
      */
+    @Deprecated
     public Map<String, Boolean> findAllGlobalSettings() {
         Collection<GlobalSettingCodeAndValue> globalSettings = globalSettingsRepository
             .findBy(GlobalSettingCodeAndValue.class);

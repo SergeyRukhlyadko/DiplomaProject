@@ -1,29 +1,35 @@
 package integration;
 
-import java.util.List;
-import java.util.Random;
+public class RequestPath {
 
-public enum RequestPath {
+    public enum Get {
+        SETTINGS("/api/settings");
 
-    REGISTRATION("/api/auth/register"),
-    LOGIN("/api/auth/login"),
-    PASSWORD_RESTORE("/api/auth/restore"),
-    PASSWORD_CHANGE("/api/auth/password");
+        private final String value;
 
-    private final String value;
-    private static final List<RequestPath> VALUES = List.of(values());
-    private static final int SIZE = VALUES.size();
-    private static final Random RANDOM = new Random();
+        Get(String value) {
+            this.value = value;
+        }
 
-    RequestPath(String value) {
-        this.value = value;
+        public String value() {
+            return value;
+        }
     }
 
-    public String value() {
-        return value;
-    }
+    public enum Post {
+        REGISTRATION("/api/auth/register"),
+        LOGIN("/api/auth/login"),
+        PASSWORD_RESTORE("/api/auth/restore"),
+        PASSWORD_CHANGE("/api/auth/password");
 
-    public static RequestPath randomPath() {
-        return VALUES.get(RANDOM.nextInt(SIZE));
+        private final String value;
+
+        Post(String value) {
+            this.value = value;
+        }
+
+        public String value() {
+            return value;
+        }
     }
 }

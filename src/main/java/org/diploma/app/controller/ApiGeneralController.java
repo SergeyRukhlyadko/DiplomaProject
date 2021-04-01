@@ -6,7 +6,6 @@ import org.diploma.app.controller.request.post.RequestModerationBody;
 import org.diploma.app.controller.response.BadRequestBody;
 import org.diploma.app.controller.response.DefaultBody;
 import org.diploma.app.controller.response.ErrorBody;
-import org.diploma.app.controller.response.ResponseBadRequestBody;
 import org.diploma.app.controller.response.ResponseCalendarBody;
 import org.diploma.app.controller.response.ResponseErrorBody;
 import org.diploma.app.controller.response.ResponseStatisticBody;
@@ -23,7 +22,6 @@ import org.diploma.app.service.GeneralService;
 import org.diploma.app.service.PostService;
 import org.diploma.app.service.UserService;
 import org.diploma.app.util.NormalizationAlgorithm;
-import org.diploma.app.util.NullRemover;
 import org.diploma.app.validation.ValidationOrder;
 import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,7 +32,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -320,22 +317,5 @@ class ApiGeneralController {
             postsStatistics.getViewsCount(),
             postsStatistics.getFirstPublication()
         );
-    }
-
-    @PutMapping("/settings")
-    ResponseEntity<?> settings(Principal principal, @RequestBody HashMap<String, Boolean> settings) {
-        boolean isModerator = authService.isModerator(principal.getName());
-        if (!isModerator) {
-            return ResponseEntity.status(400)
-                .body(new ResponseBadRequestBody("Пользователь не модератор"));
-        }
-
-        NullRemover.remove(settings);
-        if (settings.isEmpty()) {
-            return ResponseEntity.ok().build();
-        }
-
-        generalService.updateGlobalSettings(settings);
-        return ResponseEntity.ok().build();
     }
 }

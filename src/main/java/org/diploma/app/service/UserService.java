@@ -5,6 +5,8 @@ import org.diploma.app.repository.UsersRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class UserService {
 
@@ -22,5 +24,9 @@ public class UserService {
 
     public Users save(String name, String email, String password) {
         return usersRepository.save(new Users(false, name, email, passwordEncoder.encode(password)));
+    }
+
+    public Optional<Boolean> isModerator(String email) {
+        return usersRepository.isModeratorByEmail(email);
     }
 }

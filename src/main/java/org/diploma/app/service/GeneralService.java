@@ -208,6 +208,7 @@ public class GeneralService {
         return GlobalSettingCodeAndValue.toMap(globalSettings);
     }
 
+    @Deprecated
     @Transactional(rollbackFor = Exception.class)
     public void updateGlobalSettings(Map<String, Boolean> settings) {
         List<String> trueSettings = new ArrayList<>();

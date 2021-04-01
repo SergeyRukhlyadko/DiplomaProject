@@ -103,18 +103,6 @@ class ApiGeneralController {
         this.messageSource = messageSource;
     }
 
-    //Метод смены флага модератора для удобства
-    @GetMapping("/moderator")
-    ResponseEntity<?> moderator(@RequestParam String email) {
-        try {
-            generalService.changeModeratorStatus(email);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(400).body(
-                new BadRequestBody("Пользователь " + email + " не найден"));
-        }
-        return ResponseEntity.ok().build();
-    }
-
     @GetMapping("/init")
     Map<String, String> init() {
         Map<String, String> initMap = new HashMap<>();

@@ -8,12 +8,9 @@ import org.diploma.app.controller.response.DefaultBody;
 import org.diploma.app.controller.response.ErrorBody;
 import org.diploma.app.controller.response.ResponseCalendarBody;
 import org.diploma.app.controller.response.ResponseErrorBody;
-import org.diploma.app.controller.response.ResponseStatisticBody;
 import org.diploma.app.controller.response.ResponseTagBody;
 import org.diploma.app.dto.TagDto;
 import org.diploma.app.model.db.entity.PostsCountByTagName;
-import org.diploma.app.model.db.entity.projection.PostVotesStatistics;
-import org.diploma.app.model.db.entity.projection.PostsStatistics;
 import org.diploma.app.service.AuthService;
 import org.diploma.app.service.CheckupService;
 import org.diploma.app.service.GeneralService;
@@ -267,19 +264,6 @@ class ApiGeneralController {
         return new ResponseCalendarBody(
             generalService.years(),
             generalService.countByYear(Objects.requireNonNullElseGet(year, () -> LocalDateTime.now().getYear()))
-        );
-    }
-
-    @GetMapping("/statistics/my")
-    ResponseStatisticBody statisticsMy(Principal principal) {
-        PostsStatistics postsStatistics = generalService.getPostStatistics(principal.getName());
-        PostVotesStatistics postVotesStatistics = generalService.getPostVotesStatistics(principal.getName());
-        return new ResponseStatisticBody(
-            postsStatistics.getPostsCount(),
-            postVotesStatistics.getLikesCount(),
-            postVotesStatistics.getDislikesCount(),
-            postsStatistics.getViewsCount(),
-            postsStatistics.getFirstPublication()
         );
     }
 }

@@ -60,4 +60,17 @@ public class ApiStatisticController {
             postsStatistics.getFirstPublication()
         ));
     }
+
+    @GetMapping("/statistics/my")
+    ResponseStatisticBody statisticsMy(Principal principal) {
+        PostsStatistics postsStatistics = generalService.getPostStatistics(principal.getName());
+        PostVotesStatistics postVotesStatistics = generalService.getPostVotesStatistics(principal.getName());
+        return new ResponseStatisticBody(
+            postsStatistics.getPostsCount(),
+            postVotesStatistics.getLikesCount(),
+            postVotesStatistics.getDislikesCount(),
+            postsStatistics.getViewsCount(),
+            postsStatistics.getFirstPublication()
+        );
+    }
 }

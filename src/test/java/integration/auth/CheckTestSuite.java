@@ -27,16 +27,16 @@ public class CheckTestSuite {
 
     @Test
     @Transactional
-    @Sql("/sql/TestUser.sql")
-    @WithMockUser("test@mail.com")
+    @Sql("/sql/User.sql")
+    @WithMockUser("user@mail.com")
     void AuthenticatedUser() throws Exception {
         mvc.perform(get("/api/auth/check"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.result").value(true))
             .andExpect(jsonPath("$.user.id").value(greaterThan(0)))
-            .andExpect(jsonPath("$.user.name").value("TestName"))
+            .andExpect(jsonPath("$.user.name").value("UserName"))
             .andExpect(jsonPath("$.user.photo").hasJsonPath())
-            .andExpect(jsonPath("$.user.email").value("test@mail.com"))
+            .andExpect(jsonPath("$.user.email").value("user@mail.com"))
             .andExpect(jsonPath("$.user.moderation").value(false))
             .andExpect(jsonPath("$.user.moderationCount").value(greaterThanOrEqualTo(0)))
             .andExpect(jsonPath("$.user.settings").value(false));

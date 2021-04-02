@@ -66,13 +66,17 @@ class ApiAuthController {
     }
 
     @GetMapping("/check")
-    ResponseLoginCheckBody check(Principal principal) {
+    ResponseEntity<?> check(Principal principal) {
+        if (!authService.isAuthenticated()) {
+            return ResponseEntity.ok(new ResponseDefaultBody());
+        }
+
         Users user = generalService.findUser(principal.getName());
         boolean isModerator = user.isModerator();
         int moderationCount = isModerator ? postService.moderationCount() : 0;
-        return new ResponseLoginCheckBody(
+        return ResponseEntity.ok(new ResponseLoginCheckBody(
             user.getId(), user.getName(), user.getPhoto(), user.getEmail(), isModerator, moderationCount, isModerator
-        );
+        ));
     }
 
     @PostMapping(value = "/restore", consumes = MediaType.APPLICATION_JSON_VALUE)

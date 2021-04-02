@@ -54,7 +54,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest().permitAll()
             .and()
             .addFilterBefore(new ExceptionHandlerFilter(resolver), LogoutFilter.class)
-            .addFilterAfter(new CheckAuthenticationFilter(authenticationEntryPoint()), LogoutFilter.class)
             .addFilterAfter(
                 new LoginFilter(authenticationManagerBean(), authenticationEntryPoint(), validator), LogoutFilter.class)
             .logout()

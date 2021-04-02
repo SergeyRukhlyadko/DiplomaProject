@@ -12,8 +12,6 @@ import org.diploma.app.controller.response.ResponseStatisticBody;
 import org.diploma.app.controller.response.ResponseTagBody;
 import org.diploma.app.dto.TagDto;
 import org.diploma.app.model.db.entity.PostsCountByTagName;
-import org.diploma.app.model.db.entity.Users;
-import org.diploma.app.model.db.entity.enumeration.GlobalSetting;
 import org.diploma.app.model.db.entity.projection.PostVotesStatistics;
 import org.diploma.app.model.db.entity.projection.PostsStatistics;
 import org.diploma.app.service.AuthService;
@@ -42,7 +40,6 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.persistence.EntityNotFoundException;
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -271,27 +268,6 @@ class ApiGeneralController {
             generalService.years(),
             generalService.countByYear(Objects.requireNonNullElseGet(year, () -> LocalDateTime.now().getYear()))
         );
-    }
-
-    @GetMapping("/statistics/all")
-    ResponseEntity<?> statisticsAll(HttpSession session) {
-        if (!generalService.isEnabled(GlobalSetting.STATISTICS_IS_PUBLIC)) {
-            Users user = authService.checkAuthentication();
-            if (!user.isModerator()) {
-                return ResponseEntity.status(401).build();
-            }
-        }
-
-        PostsStatistics postsStatistics = generalService.getPostStatistics();
-        PostVotesStatistics postVotesStatistics = generalService.getPostVoteStatistics();
-
-        return ResponseEntity.ok(new ResponseStatisticBody(
-            postsStatistics.getPostsCount(),
-            postVotesStatistics.getLikesCount(),
-            postVotesStatistics.getDislikesCount(),
-            postsStatistics.getViewsCount(),
-            postsStatistics.getFirstPublication()
-        ));
     }
 
     @GetMapping("/statistics/my")

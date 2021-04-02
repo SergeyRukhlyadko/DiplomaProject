@@ -6,6 +6,8 @@ import org.diploma.app.model.db.entity.Users;
 import org.diploma.app.repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.AuthenticationTrustResolver;
+import org.springframework.security.authentication.AuthenticationTrustResolverImpl;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,6 +20,7 @@ import java.util.UUID;
 @Service
 public class AuthService {
 
+    private AuthenticationTrustResolver authenticationTrustResolver;
     String from;
     String host;
     EmailService emailService;
@@ -31,6 +34,7 @@ public class AuthService {
         PasswordEncoder passwordEncoder,
         UsersRepository usersRepository
     ) {
+        this.authenticationTrustResolver = new AuthenticationTrustResolverImpl();
         this.from = from;
         this.host = host;
         this.emailService = emailService;
@@ -49,6 +53,11 @@ public class AuthService {
         } else {
             throw new AuthenticationCredentialsNotFoundException("User is not authorized");
         }
+    }
+
+    public boolean isAuthenticated() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication.isAuthenticated() && !authenticationTrustResolver.isAnonymous(authentication);
     }
 
     /*

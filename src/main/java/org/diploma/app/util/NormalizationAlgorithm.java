@@ -2,14 +2,11 @@ package org.diploma.app.util;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
 
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class NormalizationAlgorithm {
 
-    static int DEFAULT_SCALE = 2;
-    static RoundingMode DEFAULT_ROUNDING_MODE = RoundingMode.DOWN;
+    private static final int DEFAULT_SCALE = 2;
+    private static final RoundingMode DEFAULT_ROUNDING_MODE = RoundingMode.DOWN;
 
     public static float normalizeMinMax(double min, double max, double weight) {
         if (Double.isNaN(min) || Double.isNaN(max)) {

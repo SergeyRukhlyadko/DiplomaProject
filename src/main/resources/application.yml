@@ -4,6 +4,7 @@ server:
   servlet.encoding:
     charset: UTF-8
     force: true
+  shutdown: graceful
 
 spring:
   jpa:
@@ -26,6 +27,7 @@ spring:
   servlet.multipart:
     max-file-size: 5MB
     max-request-size: 5MB
+  batch.job.enabled: false # disable run batch jobs on startup
 
 init:
   title: DevPub

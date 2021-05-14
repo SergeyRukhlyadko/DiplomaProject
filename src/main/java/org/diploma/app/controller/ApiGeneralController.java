@@ -10,13 +10,10 @@ import org.diploma.app.controller.response.ResponseCalendarBody;
 import org.diploma.app.controller.response.ResponseErrorBody;
 import org.diploma.app.controller.response.ResponseTagBody;
 import org.diploma.app.dto.TagDto;
-import org.diploma.app.model.db.entity.PostsCountByTagName;
-import org.diploma.app.service.AuthService;
 import org.diploma.app.service.CheckupService;
 import org.diploma.app.service.GeneralService;
-import org.diploma.app.service.PostService;
+import org.diploma.app.service.TagStatisticService;
 import org.diploma.app.service.UserService;
-import org.diploma.app.util.NormalizationAlgorithm;
 import org.diploma.app.validation.ValidationOrder;
 import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Value;
@@ -63,11 +60,10 @@ class ApiGeneralController {
     private String copyright;
     private String copyrightFrom;
     private ApplicationContext context;
-    private AuthService authService;
     private GeneralService generalService;
-    private PostService postService;
     private UserService userService;
     private MessageSource messageSource;
+    private TagStatisticService tagStatisticService;
 
     public ApiGeneralController(
         @Value("${init.title}") String title,
@@ -77,11 +73,10 @@ class ApiGeneralController {
         @Value("${init.copyright}") String copyright,
         @Value("${init.copyrightFrom}") String copyrightFrom,
         ApplicationContext context,
-        AuthService authService,
         GeneralService generalService,
-        PostService postService,
         UserService userService,
-        MessageSource messageSource
+        MessageSource messageSource,
+        TagStatisticService tagStatisticService
     ) {
         this.title = title;
         this.subtitle = subtitle;
@@ -90,11 +85,10 @@ class ApiGeneralController {
         this.copyright = copyright;
         this.copyrightFrom = copyrightFrom;
         this.context = context;
-        this.authService = authService;
         this.generalService = generalService;
-        this.postService = postService;
         this.userService = userService;
         this.messageSource = messageSource;
+        this.tagStatisticService = tagStatisticService;
     }
 
     @GetMapping("/init")
@@ -111,40 +105,13 @@ class ApiGeneralController {
 
     @GetMapping("/tag")
     ResponseEntity<?> tag(@RequestParam(required = false) String query) {
-        List<PostsCountByTagName> postsCountByTagNameList = generalService.getAllTags();
         List<TagDto> tagDtoList = new ArrayList<>();
-        if (postsCountByTagNameList.size() == 0) {
-            return ResponseEntity.ok(new ResponseTagBody(tagDtoList));
-        }
-
-        long postsCount = postService.postsCount();
-        double min = (float) postsCountByTagNameList.get(0).getPostsCount() / postsCount;
-        double max = min;
-        Map<String, Double> weights = new HashMap<>();
-        weights.put(postsCountByTagNameList.get(0).getName(), min);
-        for (int i = 1; i < postsCountByTagNameList.size(); i++) {
-            double weight = (float) postsCountByTagNameList.get(i).getPostsCount() / postsCount;
-            if (min > weight) {
-                min = weight;
-            } else if (max < weight) {
-                max = weight;
-            }
-
-            weights.put(postsCountByTagNameList.get(i).getName(), weight);
-        }
-
-        if (query == null || query.isEmpty()) {
-            for (Map.Entry<String, Double> entry : weights.entrySet()) {
-                tagDtoList.add(
-                    new TagDto(entry.getKey(),
-                        NormalizationAlgorithm.normalizeMinMax(min, max, entry.getValue())));
-            }
+        if (query == null || query.isBlank()) {
+            Map<String, Float> normalizedWeights = tagStatisticService.getAllNormalizedWeight();
+            normalizedWeights.forEach((k, v) -> tagDtoList.add(new TagDto(k, v)));
         } else {
-            if (weights.containsKey(query)) {
-                tagDtoList.add(
-                    new TagDto(query,
-                        NormalizationAlgorithm.normalizeMinMax(min, max, weights.get(query))));
-            }
+            float normalizedWeight = tagStatisticService.getNormalizedWeight(query);
+            tagDtoList.add(new TagDto(query, normalizedWeight));
         }
 
         return ResponseEntity.ok(new ResponseTagBody(tagDtoList));

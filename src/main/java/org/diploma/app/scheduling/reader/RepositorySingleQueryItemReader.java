@@ -1,14 +1,12 @@
-package org.diploma.app.scheduling;
+package org.diploma.app.scheduling.reader;
 
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemStreamException;
 import org.springframework.batch.item.ItemStreamReader;
-import org.springframework.batch.item.NonTransientResourceException;
-import org.springframework.batch.item.ParseException;
-import org.springframework.batch.item.UnexpectedInputException;
 import org.springframework.batch.item.adapter.AbstractMethodInvokingDelegator.InvocationTargetThrowableWrapper;
 import org.springframework.batch.item.adapter.DynamicMethodInvocationException;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.lang.Nullable;
 import org.springframework.util.MethodInvoker;
 
 import java.lang.reflect.InvocationTargetException;
@@ -40,6 +38,7 @@ public class RepositorySingleQueryItemReader<T> implements ItemStreamReader<T> {
     }
 
     @Override
+    @Nullable
     public T read() throws Exception {
         if (queryIsNotDone) {
             MethodInvoker invoker = createMethodInvoker(repository, methodName);

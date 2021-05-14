@@ -9,13 +9,15 @@ import lombok.experimental.FieldDefaults;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @AllArgsConstructor
 @Setter
 @Getter
-@Entity(name = "global_statistic")
+@Entity
+@Table(name = "global_statistic")
 public class GlobalStatistic {
 
     @Id

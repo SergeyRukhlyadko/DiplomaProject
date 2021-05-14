@@ -3,6 +3,7 @@ package org.diploma.app.config;
 import org.hibernate.validator.HibernateValidator;
 import org.shredzone.commons.captcha.CaptchaGenerator;
 import org.shredzone.commons.captcha.impl.DefaultCaptchaGenerator;
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -15,6 +16,7 @@ import java.util.Locale;
 
 @Configuration
 @EnableScheduling
+@EnableBatchProcessing
 public class AppConfig {
 
     @Bean

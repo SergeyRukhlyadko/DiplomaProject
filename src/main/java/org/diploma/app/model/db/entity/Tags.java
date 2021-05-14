@@ -12,6 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import java.util.Set;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -30,6 +31,13 @@ public class Tags {
 
     @OneToMany(mappedBy = "tag")
     Set<Tag2post> tag2posts;
+
+    @OneToOne(mappedBy = "tag")
+    TagStatistic tagStatistic;
+
+    public Tags(int id) {
+        this.id = id;
+    }
 
     public Tags(String name) {
         this.name = name;

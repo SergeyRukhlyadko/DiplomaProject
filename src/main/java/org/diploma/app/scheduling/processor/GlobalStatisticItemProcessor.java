@@ -1,7 +1,8 @@
-package org.diploma.app.scheduling;
+package org.diploma.app.scheduling.processor;
 
 import org.diploma.app.model.db.entity.GlobalStatistic;
 import org.springframework.batch.item.ItemProcessor;
+import org.springframework.lang.Nullable;
 
 public class GlobalStatisticItemProcessor<T> implements ItemProcessor<T, GlobalStatistic> {
 
@@ -12,6 +13,7 @@ public class GlobalStatisticItemProcessor<T> implements ItemProcessor<T, GlobalS
     }
 
     @Override
+    @Nullable
     public GlobalStatistic process(T value) {
         return new GlobalStatistic(name, String.valueOf(value));
     }
